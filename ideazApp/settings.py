@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-tta!r4ckzl@vgrp$qm^ji_=-u6^)n5gj732)b6(u!4p##6g@^y'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -40,6 +40,7 @@ CORS_ALLOW_HEADERS = "access-control-allow-origin"
 CORS_ALLOWED_ORIGINS = [
     "https://localhost",
     "http://localhost:5001",
+    "https://ideaz-pro-025620ea91b7.herokuapp.com",
 ]
 
 
