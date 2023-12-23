@@ -1,10 +1,12 @@
 from django.db import models
 import uuid
+from autoslug import AutoSlugField
 
 class IdeaGroup(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(default='')
     status = models.CharField(max_length=255, default='active')
+    slug = AutoSlugField(unique=True, populate_from='name')
 
     def __str__(self):
         return self.name

@@ -1,5 +1,7 @@
-// IdeaGroupList.js
+// Import necessary Tailwind CSS classes
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [ideaGroups, setIdeaGroups] = useState([]);
@@ -19,11 +21,17 @@ const Home = () => {
   }, []);
 
   return (
-    <div>
-      <h2>Idea Groups</h2>
-      <ul>
+    <div className="h-screen flex flex-col justify-between">
+      <h2 className="text-2xl mb-4">Idea Groups</h2>
+      <ul className="overflow-y-auto">
         {ideaGroups.map((group) => (
-          <li key={group.id}>{group.name}</li>
+          <Link
+            to={`www.teszter.com`}
+            key={group.id}
+            className="bg-white border-2 border-[#E16C37] rounded-9 p-4 mb-4 block"
+          >
+            {group.name}
+          </Link>
         ))}
       </ul>
     </div>
