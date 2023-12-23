@@ -5,9 +5,14 @@ from autoslug import AutoSlugField
 class IdeaGroup(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(default='')
-    status = models.CharField(max_length=255, default='active')
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('closed', 'Closed'),
+        ('archived', 'Archived'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     slug = AutoSlugField(unique=True, populate_from='name', editable=True) 
-    
+
     def __str__(self):
         return self.name
 
