@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
-const Home = () => {
+const IdeaGroup = () => {
   const [ideaGroups, setIdeaGroups] = useState([]);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const Home = () => {
       <ul className="overflow-y-auto">
         {ideaGroups.map((group) => (
           <Link
-            to={`www.teszter.com`}
+            to={`/${group.slug}/`}
             key={group.id}
             className="bg-white border-2 border-[#E16C37] rounded-9 p-4 mb-4 block"
           >
@@ -38,4 +38,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default IdeaGroup;

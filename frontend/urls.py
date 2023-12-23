@@ -16,4 +16,5 @@ urlpatterns = [
 
     #API
     path('api/ideagroups/', api.IdeaGroupList.as_view(), name='ideagroup-list'),
+    path('<slug>/', views.group_view, name='idea-group'),
 ]
