@@ -22,10 +22,9 @@ class Person(models.Model):
     lastName = models.CharField(max_length=255)
     email = models.CharField(max_length=255)
     regDate = models.DateTimeField(auto_now_add=True)
-    ideas = models.ForeignKey('Idea', on_delete=models.CASCADE, related_name='persons')
 
     def __str__(self):
-        return self.id
+        return self.firstName + " " + self.lastName
 
 class Idea(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -34,7 +33,7 @@ class Idea(models.Model):
     likes = models.IntegerField(default=0)
     postedDate = models.DateTimeField(auto_now_add=True)
     group = models.ForeignKey(IdeaGroup, on_delete=models.CASCADE)
-    person = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True)
+    person = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True, related_name='ideas')
 
     def __str__(self):
         return self.id
