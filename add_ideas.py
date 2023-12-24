@@ -35,37 +35,44 @@ def main():
         idea_group.save()
         idea_groups.append(idea_group)
 
-    # Create Persons
-    person_data = [
+    # Create Persons and Ideas
+    persons_and_ideas_data = [
         {
             'firstName': 'John',
             'lastName': 'Doe',
-            'email': 'john.doe@example.com'
+            'email': 'john.doe@example.com',
+            'ideas': [
+                {
+                    'title': 'Idea 1 for Group 1',
+                    'description': 'Description for Idea 1',
+                    'group': idea_groups[0]
+                },
+                # Add more ideas for John as needed
+            ]
         },
         {
             'firstName': 'Jane',
             'lastName': 'Smith',
-            'email': 'jane.smith@example.com'
+            'email': 'jane.smith@example.com',
+            'ideas': [
+                {
+                    'title': 'Idea 1 for Group 2',
+                    'description': 'Description for Idea 1',
+                    'group': idea_groups[1]
+                },
+                # Add more ideas for Jane as needed
+            ]
         }
     ]
 
-    persons = []
-    for person_info in person_data:
+    for person_info in persons_and_ideas_data:
         person = Person(**person_info)
         person.save()
-        persons.append(person)
 
-    # Loop through each IdeaGroup and add 4 ideas to each
-    for idea_group in idea_groups:
-        for i in range(1, 5):  # Add 4 ideas
-            idea_data = {
-                'title': f'Idea {i} for {idea_group.name}',
-                'description': f'Description for Idea {i}',
-                'group': idea_group,
-                'person': persons[i % len(persons)]  # Assign a person to the idea
-            }
-
-            idea = Idea(**idea_data)
+        # Create and assign ideas for the person
+        for idea_info in person_info['ideas']:
+            idea = Idea(**idea_info)
+            idea.person = person  # Assign the person to the idea
             idea.save()
 
     print("Idea Groups, Persons, and Ideas created successfully!")
