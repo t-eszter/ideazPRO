@@ -1,3 +1,12 @@
+import os
+import django
+
+# Set the DJANGO_SETTINGS_MODULE environment variable to your project's settings module.
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ideazApp.settings")
+
+# Initialize Django
+django.setup()
+
 from frontend.models import Idea, IdeaGroup
 
 def main():
