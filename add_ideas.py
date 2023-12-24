@@ -69,11 +69,11 @@ def main():
         person = Person(**person_info)
         person.save()
 
-        # Create and assign ideas for the person
-        for idea_info in person_info['ideas']:
-            idea = Idea(**idea_info)
-            idea.person = person  # Assign the person to the idea
-            idea.save()
+    # Create and assign ideas for the person
+    for idea_info in person_info['ideas']:
+        idea = Idea(**idea_info)
+        idea.person = person  # Assign the person to the idea
+        idea.save()
 
     print("Idea Groups, Persons, and Ideas created successfully!")
 
