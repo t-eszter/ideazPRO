@@ -7,7 +7,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ideazApp.settings")
 # Initialize Django
 django.setup()
 
-from frontend.models import Idea, IdeaGroup, Person
+from frontend.models import Idea, IdeaGroup
 
 def main():
     # Create Idea Groups first
@@ -35,48 +35,20 @@ def main():
         idea_group.save()
         idea_groups.append(idea_group)
 
-    # Create Persons and Ideas
-    persons_and_ideas_data = [
-        {
-            'firstName': 'John',
-            'lastName': 'Doe',
-            'email': 'john.doe@example.com',
-            'ideas': [
-                {
-                    'title': 'Idea 1 for Group 1',
-                    'description': 'Description for Idea 1',
-                    'group': idea_groups[0]
-                },
-                # Add more ideas for John as needed
-            ]
-        },
-        {
-            'firstName': 'Jane',
-            'lastName': 'Smith',
-            'email': 'jane.smith@example.com',
-            'ideas': [
-                {
-                    'title': 'Idea 1 for Group 2',
-                    'description': 'Description for Idea 1',
-                    'group': idea_groups[1]
-                },
-                # Add more ideas for Jane as needed
-            ]
-        }
-    ]
+    # Create Ideas for the Idea Groups
+    num_ideas_per_group = 3  # Change this number as needed
 
-    for person_info in persons_and_ideas_data:
-        person = Person(**person_info)
-        person.save()
-
-        # Create and assign ideas for the person
-        for idea_data in person_info['ideas']:
+    for group in idea_groups:
+        for i in range(1, num_ideas_per_group + 1):
+            idea_data = {
+                'title': f'Idea {i} for {group.name}',
+                'description': f'Description for Idea {i}',
+                'group': group
+            }
             idea = Idea(**idea_data)
-            idea.group = idea_data['group']  # Assign the group to the idea
-            idea.person = person  # Assign the person to the idea
             idea.save()
 
-    print("Idea Groups, Persons, and Ideas created successfully!")
+    print(f"{num_ideas_per_group} Ideas added to each Idea Group successfully!")
 
 if __name__ == "__main__":
     main()
