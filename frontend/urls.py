@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 
 from . import views
 from . import api
@@ -11,10 +11,14 @@ from .api import IdeaGroupList
 
 
 urlpatterns = [
-    #Public
-    path('', views.index, name='index'),
-
     #API
     path('api/ideagroups/', api.IdeaGroupList.as_view(), name='ideagroup-list'),
-    path('<slug>/', views.group_view, name='idea-group'),
+
+    #React
+    re_path(r'^(?:.*)/?$', views.index, name='index'),
+
+
+    # path('', views.index, name='index'),
+    # path('api/ideagroups/', api.IdeaGroupList.as_view(), name='ideagroup-list'),
+    # path('<slug>/', views.group_view, name='idea-group'),
 ]

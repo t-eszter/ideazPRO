@@ -14,7 +14,7 @@ class App extends React.Component {
   render() {
     return (
       <HelmetProvider>
-        <h1>React app</h1>
+        <h1>Ideaz PRO</h1>
         <Router>
           <Routes>
             <Route path="/" element={<IdeaGroup />} />
