@@ -31,12 +31,14 @@ const IdeaGroup = () => {
       if (activeGroup) {
         try {
           const response = await fetch(
-            `api/ideagroups/${activeGroup.id}/ideas`
+            `http://0.0.0.0:5001/api/ideagroups/${activeGroup.id}/ideas`
           );
           const data = await response.json();
-          setIdeas(data);
+          console.log("Fetched ideas:", data);
+          setIdeas(data.ideas);
         } catch (error) {
           console.error("Error fetching ideas:", error);
+          console.error(error.response);
         }
       }
     };
