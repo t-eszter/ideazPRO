@@ -30,9 +30,12 @@ const IdeaGroup = () => {
     const fetchIdeas = async () => {
       if (activeGroup) {
         try {
+          const apiUrl =
+            process.env.REACT_APP_API_BASE_URL || "http://localhost:5001";
           const response = await fetch(
-            `http://0.0.0.0:5001/api/ideagroups/${activeGroup.id}/ideas`
+            `${apiUrl}/api/ideagroups/${activeGroup.id}/ideas`
           );
+
           const data = await response.json();
           console.log("Fetched ideas:", data);
           setIdeas(data.ideas);
