@@ -35,11 +35,10 @@ const IdeaGroup = () => {
             `/api/ideagroups/${activeGroup.id}/ideas`
           );
           const data = await response.json();
-          console.log("Fetched ideas:", data); // Check the structure here
-          setIdeas(data); // Or data.ideas if that's the structure
+          console.log("Fetched ideas:", data); // To confirm the data structure
+          setIdeas(data.ideas); // Extract the 'ideas' array from the response
         } catch (error) {
           console.error("Error fetching ideas:", error);
-          console.error(error.response);
         }
       }
     };
@@ -72,16 +71,17 @@ const IdeaGroup = () => {
         ))}
       </ul>
       <div className="grid grid-cols-3 gap-4">
-        {ideas.map((idea) => (
-          <div
-            key={idea.id}
-            className="bg-white border-2 border-gray-300 rounded p-4"
-          >
-            <h3 className="text-xl font-bold">{idea.title}</h3>
-            <p>{idea.description}</p>
-            <span className="text-sm text-gray-500">Likes: {idea.likes}</span>
-          </div>
-        ))}
+        {Array.isArray(ideas) &&
+          ideas.map((idea) => (
+            <div
+              key={idea.id}
+              className="bg-white border-2 border-gray-300 rounded p-4"
+            >
+              <h3 className="text-xl font-bold">{idea.title}</h3>
+              <p>{idea.description}</p>
+              <span className="text-sm text-gray-500">Likes: {idea.likes}</span>
+            </div>
+          ))}
       </div>
     </div>
   );
