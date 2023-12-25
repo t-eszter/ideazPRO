@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import BASE_URL from "./config";
 
 const IdeaGroup = () => {
   const [ideaGroups, setIdeaGroups] = useState([]);
@@ -10,7 +11,7 @@ const IdeaGroup = () => {
   useEffect(() => {
     const fetchIdeaGroups = async () => {
       try {
-        const response = await fetch("api/ideagroups/");
+        const response = await fetch("/api/ideagroups/");
         const data = await response.json();
         setIdeaGroups(data);
         // Automatically select the first group as active if available
