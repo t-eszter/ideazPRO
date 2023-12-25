@@ -1,19 +1,16 @@
 from django.contrib import admin
 from django.urls import path, re_path
 
-from . import views
-from . import api
-
 from .views import index
-from .api import IdeaGroupList, ideas_for_group
-
+from .api import IdeaGroupList, group_view, ideas_for_group
 
 urlpatterns = [
     #API
-    path('api/ideagroups/', api.IdeaGroupList.as_view(), name='ideagroup-list'),
+    path('api/ideagroups/', IdeaGroupList.as_view(), name='ideagroup-list'),
     path('api/ideagroups/<int:group_id>/ideas', ideas_for_group, name='group-ideas'),
+    path('api/ideagroups/<slug:slug>/', group_view, name='group-view'),
 
-    #React
+    # React
     re_path(r'^(?:.*)/?$', views.index, name='index'),
 
 
