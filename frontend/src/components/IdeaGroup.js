@@ -30,15 +30,12 @@ const IdeaGroup = () => {
     const fetchIdeas = async () => {
       if (activeGroup) {
         try {
-          const apiUrl =
-            process.env.REACT_APP_API_BASE_URL || "http://localhost:5001";
           const response = await fetch(
-            `${apiUrl}/api/ideagroups/${activeGroup.id}/ideas`
+            `/api/ideagroups/${activeGroup.id}/ideas`
           );
-
           const data = await response.json();
-          console.log("Fetched ideas:", data);
-          setIdeas(data.ideas);
+          console.log("Fetched ideas:", data); // Check the structure here
+          setIdeas(data); // Or data.ideas if that's the structure
         } catch (error) {
           console.error("Error fetching ideas:", error);
           console.error(error.response);
