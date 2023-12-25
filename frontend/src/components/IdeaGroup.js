@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import BASE_URL from "./config";
 
 const IdeaGroup = () => {
   const [ideaGroups, setIdeaGroups] = useState([]);
   const [activeGroup, setActiveGroup] = useState(null);
   const [ideas, setIdeas] = useState([]);
+
   const navigate = useNavigate();
+  const { groupSlug } = useParams();
 
   useEffect(() => {
     const fetchIdeaGroups = async () => {
@@ -14,10 +16,20 @@ const IdeaGroup = () => {
         const response = await fetch("/api/ideagroups/");
         const data = await response.json();
         setIdeaGroups(data);
-        // Automatically select the first group as active if available
+
         if (data && data.length > 0) {
-          setActiveGroup(data[0]);
-          navigate(`/${data[0].slug}/`);
+          // Check if a groupSlug is available in the URL
+          if (groupSlug) {
+            const foundGroup = data.find((group) => group.slug === groupSlug);
+            if (foundGroup) {
+              setActiveGroup(foundGroup);
+            } else {
+              navigate("/"); // Redirect to a default route if no matching group is found
+            }
+          } else {
+            // Optionally, set the first group as active if no groupSlug is in the URL
+            setActiveGroup(data[0]);
+          }
         }
       } catch (error) {
         console.error("Error fetching idea groups:", error);
@@ -25,7 +37,7 @@ const IdeaGroup = () => {
     };
 
     fetchIdeaGroups();
-  }, [navigate]);
+  }, [navigate, groupSlug]);
 
   useEffect(() => {
     const fetchIdeas = async () => {
