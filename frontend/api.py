@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import IdeaGroup, Idea
 from .serializers import IdeaGroupSerializer, IdeaSerializer
+from rest_framework import status
 
 class IdeaGroupList(generics.ListAPIView):
     queryset = IdeaGroup.objects.all()
@@ -33,3 +34,11 @@ def ideas_for_group(request, group_id):
         # Log the error for debugging
         print(e)
         return JsonResponse({'error': 'An error occurred'}, status=500)
+
+@api_view(['POST'])
+def post_idea(request):
+    serializer = IdeaSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
