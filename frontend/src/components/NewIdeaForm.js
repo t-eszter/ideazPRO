@@ -1,35 +1,43 @@
 // NewIdeaForm.js
 import React, { useState } from "react";
+import CSRFToken, { getCookie } from "./csrftoken";
 
 const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded }) => {
-  const [newIdea, setNewIdea] = useState("");
+  const [ideaTitle, setIdeaTitle] = useState("");
+  const [ideaDescription, setIdeaDescription] = useState("");
   const postAnonymously = true; // Since there's no authentication, always post anonymously
 
-  const handleNewIdeaChange = (e) => {
-    setNewIdea(e.target.value);
+  const handleIdeaTitleChange = (e) => {
+    setIdeaTitle(e.target.value);
   };
 
-  const handlePostIdea = async () => {
-    const ideaData = {
-      groupId: activeGroup.id,
-      title: "New Idea", // You need to add a way to capture the title
-      description: newIdea,
-      person: null, // Always null since it's anonymous
-    };
+  const handleIdeaDescriptionChange = (e) => {
+    setIdeaDescription(e.target.value);
+  };
+
+  const handlePostIdea = async (event) => {
+    event.preventDefault();
+    const formData = new FormData();
+    formData.append("title", ideaTitle);
+    formData.append("description", ideaDescription);
+    formData.append("group", activeGroup.id);
+    formData.append("person", null); // Since it's posted anonymously
+    formData.append("csrfmiddlewaretoken", getCookie("csrftoken"));
+
+    const csrfToken = getCookie("csrftoken");
+    console.log("CSRF Token:", csrfToken);
 
     try {
       const response = await fetch(`/api/ideas`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(ideaData),
+        body: formData, // Send as FormData
       });
 
       if (response.ok) {
         const newIdea = await response.json();
         onNewIdeaAdded(newIdea);
-        setNewIdea("");
+        setIdeaTitle("");
+        setIdeaDescription("");
       }
     } catch (error) {
       console.error("Error posting idea:", error);
@@ -38,18 +46,35 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded }) => {
 
   return (
     <div className="absolute top-1/4 left-1/4 bg-white p-4 rounded shadow-lg">
-      {/* ... other form elements ... */}
+      <form onSubmit={handlePostIdea}>
+        <CSRFToken />
+        <label htmlFor="ideaTitle">Title</label>
+        <input
+          id="ideaTitle"
+          type="text"
+          value={ideaTitle}
+          onChange={handleIdeaTitleChange}
+          className="w-full mb-2"
+        />
 
-      <label htmlFor="postAnonymously">Post Anonymously</label>
-      <input
-        type="checkbox"
-        id="postAnonymously"
-        checked={postAnonymously}
-        disabled={true}
-        onChange={() => {}}
-      />
+        <label htmlFor="ideaDescription">Description</label>
+        <textarea
+          id="ideaDescription"
+          value={ideaDescription}
+          onChange={handleIdeaDescriptionChange}
+          className="w-full mb-2"
+        ></textarea>
 
-      <button onClick={handlePostIdea}>Post Idea</button>
+        <label htmlFor="postAnonymously">Post Anonymously</label>
+        <input
+          type="checkbox"
+          id="postAnonymously"
+          checked={postAnonymously}
+          disabled={true}
+        />
+
+        <button type="submit">Post Idea</button>
+      </form>
     </div>
   );
 };

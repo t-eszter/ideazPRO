@@ -2,11 +2,13 @@ from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from .models import IdeaGroup, Idea
 from .serializers import IdeaGroupSerializer, IdeaSerializer
 from rest_framework import status
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 class IdeaGroupList(generics.ListAPIView):
     queryset = IdeaGroup.objects.all()
@@ -35,6 +37,7 @@ def ideas_for_group(request, group_id):
         print(e)
         return JsonResponse({'error': 'An error occurred'}, status=500)
 
+@permission_classes((AllowAny,))
 @api_view(['POST'])
 def post_idea(request):
     serializer = IdeaSerializer(data=request.data)
@@ -42,3 +45,8 @@ def post_idea(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@permission_classes((AllowAny,))
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    return JsonResponse({'csrfToken': csrf_token})

@@ -1062,6 +1062,9 @@ html {
 .mb-4 {
   margin-bottom: 1rem;
 }
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
 .block {
   display: block;
 }
@@ -1071,8 +1074,14 @@ html {
 .grid {
   display: grid;
 }
+.hidden {
+  display: none;
+}
 .h-screen {
   height: 100vh;
+}
+.w-full {
+  width: 100%;
 }
 .grid-cols-3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));

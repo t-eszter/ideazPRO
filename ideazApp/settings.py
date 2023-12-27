@@ -41,16 +41,19 @@ ALLOWED_HOSTS = [
 
 CORS_ALLOW_HEADERS = "access-control-allow-origin"
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
-# CORS_ALLOWED_ORIGINS = [
-#     "https://localhost",
-#     "https://localhost:5001",
-#     "https://ideaz-pro-025620ea91b7.herokuapp.com",
-#     "https://0.0.0.0:8000",
-#     "https://0.0.0.0:5001",
-#     "https://127.0.0.1",
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "https://localhost",
+    "https://localhost:5001",
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "https://ideaz-pro-025620ea91b7.herokuapp.com",
+    "https://0.0.0.0:8000",
+    "https://0.0.0.0:5001",
+    "https://127.0.0.1",
+]
 
 # Application definition
 

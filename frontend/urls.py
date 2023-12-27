@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, re_path
 
 from . import views
-from .api import IdeaGroupList, group_view, ideas_for_group, post_idea
+from .api import IdeaGroupList, group_view, ideas_for_group, post_idea, get_csrf_token
 
 urlpatterns = [
     #API
@@ -13,6 +13,9 @@ urlpatterns = [
 
     # React
     re_path(r'^(?:.*)/?$', views.index, name='index'),
+
+    #CSRF token
+    path('get-csrf-token/', get_csrf_token, name='get-csrf-token'),
 
     # path('', views.index, name='index'),
     # path('api/ideagroups/', api.IdeaGroupList.as_view(), name='ideagroup-list'),
