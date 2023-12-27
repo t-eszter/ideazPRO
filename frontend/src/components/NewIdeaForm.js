@@ -24,6 +24,10 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded }) => {
     formData.append("person", null); // Since it's posted anonymously
     formData.append("csrfmiddlewaretoken", getCookie("csrftoken"));
 
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`);
+    }
+
     const csrfToken = getCookie("csrftoken");
     console.log("CSRF Token:", csrfToken);
 
