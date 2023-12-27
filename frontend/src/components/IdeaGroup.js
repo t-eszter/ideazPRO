@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import BASE_URL from "./config";
+import NewIdeaForm from "./NewIdeaForm";
 
 const IdeaGroup = () => {
   const [ideaGroups, setIdeaGroups] = useState([]);
@@ -9,6 +10,14 @@ const IdeaGroup = () => {
 
   const navigate = useNavigate();
   const { groupSlug } = useParams();
+
+  // NewIdeaForm
+  const [showNewIdeaForm, setShowNewIdeaForm] = useState(false);
+
+  const handleNewIdeaAdded = (newIdea) => {
+    setIdeas([...ideas, newIdea]);
+    setShowNewIdeaForm(false);
+  };
 
   useEffect(() => {
     const fetchIdeaGroups = async () => {
@@ -65,8 +74,38 @@ const IdeaGroup = () => {
 
   return (
     <div className="h-screen flex flex-col justify-between">
-      {/* <h2 className="text-2xl mb-4">Idea Groups</h2> */}
-      <ul className="overflow-y-auto">
+      {/* Render the ideas grid first */}
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        {Array.isArray(ideas) &&
+          ideas.map((idea) => (
+            <div
+              key={idea.id}
+              className="bg-white border-2 border-gray-300 rounded p-4"
+            >
+              <h3 className="text-xl font-bold">{idea.title}</h3>
+              <p>{idea.description}</p>
+              <span className="text-sm text-gray-500">Likes: {idea.likes}</span>
+            </div>
+          ))}
+      </div>
+      {/* NewIdeaForm */}
+      <button
+        className="bg-blue-500 text-white p-2 rounded"
+        onClick={() => setShowNewIdeaForm(true)}
+      >
+        New Idea
+      </button>
+
+      {showNewIdeaForm && (
+        <NewIdeaForm
+          ideaGroups={ideaGroups}
+          activeGroup={activeGroup}
+          onNewIdeaAdded={handleNewIdeaAdded}
+        />
+      )}
+
+      {/* Render the idea groups list, which will stick to the bottom horizontally */}
+      <ul className="overflow-y-auto flex justify-around">
         {ideaGroups.map((group) => (
           <Link
             to={`/${group.slug}/`}
@@ -82,19 +121,6 @@ const IdeaGroup = () => {
           </Link>
         ))}
       </ul>
-      <div className="grid grid-cols-3 gap-4">
-        {Array.isArray(ideas) &&
-          ideas.map((idea) => (
-            <div
-              key={idea.id}
-              className="bg-white border-2 border-gray-300 rounded p-4"
-            >
-              <h3 className="text-xl font-bold">{idea.title}</h3>
-              <p>{idea.description}</p>
-              <span className="text-sm text-gray-500">Likes: {idea.likes}</span>
-            </div>
-          ))}
-      </div>
     </div>
   );
 };
