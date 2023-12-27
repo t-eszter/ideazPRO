@@ -34,15 +34,19 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded }) => {
     try {
       const response = await fetch(`/api/ideas`, {
         method: "POST",
-        body: formData, // Send as FormData
+        body: formData,
       });
 
-      if (response.ok) {
-        const newIdea = await response.json();
-        onNewIdeaAdded(newIdea);
-        setIdeaTitle("");
-        setIdeaDescription("");
+      if (!response.ok) {
+        const text = await response.text(); // Get the response text
+        console.error("Server response:", text); // Log the response text
+        throw new Error("Response not OK");
       }
+
+      const newIdea = await response.json();
+      onNewIdeaAdded(newIdea);
+      setIdeaTitle("");
+      setIdeaDescription("");
     } catch (error) {
       console.error("Error posting idea:", error);
     }
