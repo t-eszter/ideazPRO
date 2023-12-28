@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import IdeaGroup, Idea
 from .serializers import IdeaGroupSerializer, IdeaSerializer
+from rest_framework.permissions import AllowAny
 
 class IdeaGroupList(generics.ListAPIView):
     queryset = IdeaGroup.objects.all()
