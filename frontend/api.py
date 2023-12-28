@@ -40,20 +40,24 @@ class IdeaAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data.copy()  # Create a mutable copy of the request data
-        group_id = data.get('group')
 
+        #Person
         # Handle the case where person is "null"
         if data.get('person') == 'null':
             data['person'] = None
 
+        #IdeaGroup
+        group_id = data.get('group')
+        if not group_id:
+            return Response({'error': 'Group ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            group = IdeaGroup.objects.get(id=group_id)
+            # Validate if the group exists
+            IdeaGroup.objects.get(id=group_id)
         except IdeaGroup.DoesNotExist:
             return Response({'error': 'Group not found'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Update the mutable data with actual group instance
-        data['group'] = group
-
+        #Idea
         serializer = IdeaSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
