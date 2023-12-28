@@ -7,7 +7,18 @@ from rest_framework.views import APIView
 from .models import IdeaGroup, Idea, Person
 from .serializers import IdeaGroupSerializer, IdeaSerializer
 from rest_framework.permissions import AllowAny
-from profanity_check import predict, predict_prob
+# from .profanity_filter import contains_profanity
+import subprocess
+import os
+from django.conf import settings
+
+import subprocess
+
+def check_profanity(text):
+    profanity_script = os.path.join(settings.BASE_DIR, 'frontend', 'profanity.mjs')
+    result = subprocess.run(['node', profanity_script, text], capture_output=True, text=True)
+    print("Node.js script output:", result.stdout)  # Debugging line
+    return "Profanity detected!" in result.stdout
 
 class IdeaGroupList(generics.ListAPIView):
     queryset = IdeaGroup.objects.all()
@@ -60,7 +71,9 @@ class IdeaAPIView(APIView):
 
         # Profanity Check
         description = data.get('description', '')
-        if predict([description])[0] == 1:
+        # if contains_profanity(description):
+        #     return Response({'error': 'Your idea description contains profanity. Please be respectful and rephrase your message.'}, status=status.HTTP_400_BAD_REQUEST)
+        if check_profanity(description):
             return Response({'error': 'Your idea description contains profanity. Please be respectful and rephrase your message.'}, status=status.HTTP_400_BAD_REQUEST)
 
         #Idea
