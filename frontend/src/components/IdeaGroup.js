@@ -73,24 +73,36 @@ const IdeaGroup = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col justify-between">
+    <div className="h-screen flex flex-col justify-between bg-gray-100">
       {/* Render the ideas grid first */}
-      <div className="grid grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-3 gap-4 p-4">
         {Array.isArray(ideas) &&
           ideas.map((idea) => (
             <div
               key={idea.id}
-              className="bg-white border-2 border-gray-300 rounded p-4"
+              className="bg-white shadow rounded p-4 flex flex-col justify-between"
             >
-              <h3 className="text-xl font-bold">{idea.title}</h3>
-              <p>{idea.description}</p>
-              <span className="text-sm text-gray-500">Likes: {idea.likes}</span>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700">
+                  {idea.title}
+                </h3>
+                <p className="text-gray-600">{idea.description}</p>
+              </div>
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-sm text-gray-500">
+                  Posted by: {idea.user}
+                </span>
+                <span className="text-sm text-gray-500">
+                  Likes: {idea.likes}
+                </span>
+              </div>
             </div>
           ))}
       </div>
+
       {/* NewIdeaForm */}
       <button
-        className="bg-blue-500 text-white p-2 rounded"
+        className="bg-orange-500 text-white p-3 rounded fixed bottom-4 right-4 shadow-lg"
         onClick={() => setShowNewIdeaForm(true)}
       >
         New Idea
@@ -105,16 +117,14 @@ const IdeaGroup = () => {
       )}
 
       {/* Render the idea groups list, which will stick to the bottom horizontally */}
-      <ul className="overflow-y-auto flex justify-around">
+      <ul className="overflow-y-auto flex justify-around p-4 bg-white shadow">
         {ideaGroups.map((group) => (
           <Link
             to={`/${group.slug}/`}
             key={group.id}
-            className={`bg-white border-2 ${
-              group.id === activeGroup?.id
-                ? "border-blue-500"
-                : "border-[#E16C37]"
-            } rounded-9 p-4 mb-4 block`}
+            className={`text-center bg-gray-200 hover:bg-gray-300 ${
+              group.id === activeGroup?.id ? "text-orange-500" : "text-gray-700"
+            } rounded-lg px-6 py-2 m-1 transition duration-300 ease-in-out`}
             onClick={() => handleGroupClick(group)}
           >
             {group.name}
