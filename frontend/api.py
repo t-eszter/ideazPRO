@@ -39,14 +39,24 @@ def ideas_for_group(request, group_id):
 
 @api_view(['POST'])
 @permission_classes((AllowAny,))
-@parser_classes([MultiPartParser])
 def post_idea(request):
+    # Convert 'group' from ID to IdeaGroup instance
+    group_id = request.data.get('group')
+    try:
+        group = IdeaGroup.objects.get(id=group_id)
+    except IdeaGroup.DoesNotExist:
+        return Response({'error': 'Group not found'}, status=status.HTTP_400_BAD_REQUEST)
 
+    # Update request data with actual group instance
+    request.data['group'] = group
+
+    # Rest of your code
     serializer = IdeaSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @permission_classes((AllowAny,))
 def get_csrf_token(request):
