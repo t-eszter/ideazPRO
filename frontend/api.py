@@ -35,35 +35,31 @@ def ideas_for_group(request, group_id):
         print(e)
         return JsonResponse({'error': 'An error occurred'}, status=500)
 
-@permission_classes((AllowAny,))
 class IdeaAPIView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request, *args, **kwargs):
         data = request.data.copy()  # Create a mutable copy of the request data
-
-        # Handle the group field
         group_id = data.get('group')
+
+        # Handle the case where person is "null"
+        if data.get('person') == 'null':
+            data['person'] = None
+
         try:
             group = IdeaGroup.objects.get(id=group_id)
         except IdeaGroup.DoesNotExist:
             return Response({'error': 'Group not found'}, status=status.HTTP_400_BAD_REQUEST)
-        data['group'] = group
 
-        # Handle the person field
-        person_id = data.get('person')
-        if person_id:
-            try:
-                person = Person.objects.get(id=person_id)
-                data['person'] = person
-            except Person.DoesNotExist:
-                return Response({'error': 'Person not found'}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            data['person'] = None  # Allow null value
+        # Update the mutable data with actual group instance
+        data['group'] = group
 
         serializer = IdeaSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @permission_classes((AllowAny,))
 def get_csrf_token(request):
