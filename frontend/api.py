@@ -37,7 +37,7 @@ def ideas_for_group(request, group_id):
 
 @permission_classes((AllowAny,))
 class IdeaAPIView(APIView):
-    def post(self, request, *args, **kwargs):
+    def post_idea(self, request, *args, **kwargs):
         data = request.data.copy()  # Create a mutable copy of the request data
         group_id = data.get('group')
 
