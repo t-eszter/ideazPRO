@@ -1,13 +1,13 @@
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
-from rest_framework import generics
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import generics, status
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser
 from .models import IdeaGroup, Idea
 from .serializers import IdeaGroupSerializer, IdeaSerializer
-from rest_framework import status
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 class IdeaGroupList(generics.ListAPIView):
@@ -37,9 +37,11 @@ def ideas_for_group(request, group_id):
         print(e)
         return JsonResponse({'error': 'An error occurred'}, status=500)
 
-@permission_classes((AllowAny,))
 @api_view(['POST'])
+@permission_classes((AllowAny,))
+@parser_classes([MultiPartParser])
 def post_idea(request):
+
     serializer = IdeaSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
