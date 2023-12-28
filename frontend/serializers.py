@@ -7,11 +7,14 @@ class IdeaGroupSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class IdeaSerializer(serializers.ModelSerializer):
-    group = IdeaGroupSerializer(read_only=True)
+    group = serializers.PrimaryKeyRelatedField(
+        queryset=IdeaGroup.objects.all()
+    )
 
     class Meta:
         model = Idea
         fields = '__all__'
+
 
 class PersonSerializer(serializers.ModelSerializer):
     ideas = IdeaSerializer(many=True, read_only=True)
