@@ -37,25 +37,26 @@ def ideas_for_group(request, group_id):
         print(e)
         return JsonResponse({'error': 'An error occurred'}, status=500)
 
-@api_view(['POST'])
 @permission_classes((AllowAny,))
-def post_idea(request):
-    # Convert 'group' from ID to IdeaGroup instance
-    group_id = request.data.get('group')
-    try:
-        group = IdeaGroup.objects.get(id=group_id)
-    except IdeaGroup.DoesNotExist:
-        return Response({'error': 'Group not found'}, status=status.HTTP_400_BAD_REQUEST)
+class IdeaAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data.copy()  # Create a mutable copy of the request data
+        group_id = data.get('group')
 
-    # Update request data with actual group instance
-    request.data['group'] = group
+        try:
+            group = IdeaGroup.objects.get(id=group_id)
+        except IdeaGroup.DoesNotExist:
+            return Response({'error': 'Group not found'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Rest of your code
-    serializer = IdeaSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Update the mutable data with actual group instance
+        data['group'] = group
+
+        serializer = IdeaSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @permission_classes((AllowAny,))
