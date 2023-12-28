@@ -32,7 +32,7 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded }) => {
     console.log("CSRF Token:", csrfToken);
 
     try {
-      const response = await fetch(`/api/ideas`, {
+      const response = await fetch(`/api/ideas/`, {
         method: "POST",
         body: formData,
       });
