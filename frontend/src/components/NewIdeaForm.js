@@ -1,35 +1,30 @@
-// NewIdeaForm.js
 import React, { useState } from "react";
 import CSRFToken, { getCookie } from "./csrftoken";
 
 const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded }) => {
   const [ideaTitle, setIdeaTitle] = useState("");
   const [ideaDescription, setIdeaDescription] = useState("");
-  const postAnonymously = true; // Since there's no authentication, always post anonymously
+  const [descriptionError, setDescriptionError] = useState(""); // New state for error message
+  const postAnonymously = true;
 
   const handleIdeaTitleChange = (e) => {
     setIdeaTitle(e.target.value);
   };
 
   const handleIdeaDescriptionChange = (e) => {
+    if (descriptionError) setDescriptionError(""); // Clear error when user starts editing
     setIdeaDescription(e.target.value);
   };
 
   const handlePostIdea = async (event) => {
     event.preventDefault();
+
     const formData = new FormData();
     formData.append("title", ideaTitle);
     formData.append("description", ideaDescription);
     formData.append("group", activeGroup.id);
-    formData.append("person", null); // Since it's posted anonymously
+    formData.append("person", null);
     formData.append("csrfmiddlewaretoken", getCookie("csrftoken"));
-
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}: ${value}`);
-    }
-
-    const csrfToken = getCookie("csrftoken");
-    console.log("CSRF Token:", csrfToken);
 
     try {
       const response = await fetch(`/api/ideas/`, {
@@ -38,8 +33,11 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded }) => {
       });
 
       if (!response.ok) {
-        const text = await response.text(); // Get the response text
-        console.error("Server response:", text); // Log the response text
+        const data = await response.json();
+        if (data.error) {
+          setDescriptionError(data.error); // Set the error message
+          return; // Prevent form from closing
+        }
         throw new Error("Response not OK");
       }
 
@@ -64,7 +62,6 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded }) => {
           onChange={handleIdeaTitleChange}
           className="w-full mb-2"
         />
-
         <label htmlFor="ideaDescription">Description</label>
         <textarea
           id="ideaDescription"
@@ -72,7 +69,10 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded }) => {
           onChange={handleIdeaDescriptionChange}
           className="w-full mb-2"
         ></textarea>
-
+        {descriptionError && (
+          <div className="text-red-500 text-sm">{descriptionError}</div>
+        )}{" "}
+        {/* Error message */}
         <label htmlFor="postAnonymously">Post Anonymously</label>
         <input
           type="checkbox"
@@ -80,7 +80,6 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded }) => {
           checked={postAnonymously}
           disabled={true}
         />
-
         <button type="submit">Post Idea</button>
       </form>
     </div>

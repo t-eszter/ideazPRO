@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'rest_framework',
     'corsheaders',
+    'profanity',
     'frontend.apps.FrontendConfig',
     'django.contrib.admin',
     'django.contrib.auth',

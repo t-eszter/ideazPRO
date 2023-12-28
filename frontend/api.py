@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from .models import IdeaGroup, Idea, Person
 from .serializers import IdeaGroupSerializer, IdeaSerializer
 from rest_framework.permissions import AllowAny
+from profanity_check import predict, predict_prob
 
 class IdeaGroupList(generics.ListAPIView):
     queryset = IdeaGroup.objects.all()
@@ -56,6 +57,11 @@ class IdeaAPIView(APIView):
             IdeaGroup.objects.get(id=group_id)
         except IdeaGroup.DoesNotExist:
             return Response({'error': 'Group not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Profanity Check
+        description = data.get('description', '')
+        if predict([description])[0] == 1:
+            return Response({'error': 'Your idea description contains profanity. Please be respectful and rephrase your message.'}, status=status.HTTP_400_BAD_REQUEST)
 
         #Idea
         serializer = IdeaSerializer(data=data)
