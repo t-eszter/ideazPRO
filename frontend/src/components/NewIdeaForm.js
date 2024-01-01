@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import CSRFToken, { getCookie } from "./csrftoken";
 
-const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded }) => {
+const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
   const [ideaTitle, setIdeaTitle] = useState("");
   const [ideaDescription, setIdeaDescription] = useState("");
   const [descriptionError, setDescriptionError] = useState(""); // New state for error message
   const postAnonymously = true;
+
+  const handleClose = () => {
+    onClose(); // Call the onClose function passed as a prop
+  };
 
   const handleIdeaTitleChange = (e) => {
     setIdeaTitle(e.target.value);
@@ -52,6 +56,9 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded }) => {
 
   return (
     <div className="absolute top-1/4 left-1/4 bg-white p-4 rounded shadow-lg">
+      <button onClick={handleClose} className="absolute top-0 right-0 p-2">
+        Close
+      </button>
       <form onSubmit={handlePostIdea}>
         <CSRFToken />
         <label htmlFor="ideaTitle">Title</label>

@@ -19,6 +19,10 @@ const IdeaGroup = () => {
     setShowNewIdeaForm(false);
   };
 
+  const handleCloseForm = () => {
+    setShowNewIdeaForm(false); // This will hide the form
+  };
+
   useEffect(() => {
     const fetchIdeaGroups = async () => {
       try {
@@ -101,29 +105,34 @@ const IdeaGroup = () => {
       </div>
 
       {/* NewIdeaForm */}
-      <button
-        className="bg-orange-500 text-white p-3 rounded fixed bottom-4 right-4 shadow-lg"
-        onClick={() => setShowNewIdeaForm(true)}
-      >
-        New Idea
-      </button>
+      <div className="fixed bottom-4 right-4">
+        <button
+          className="flex items-center justify-center w-16 h-16 pt-2.5 text-5xl bg-flamingo-500 text-white p-4 rounded-full"
+          onClick={() => setShowNewIdeaForm(true)}
+        >
+          +
+        </button>
+        <p className="text-flamingo-500">New Idea</p>
+      </div>
 
       {showNewIdeaForm && (
         <NewIdeaForm
           ideaGroups={ideaGroups}
           activeGroup={activeGroup}
           onNewIdeaAdded={handleNewIdeaAdded}
+          onClose={handleCloseForm}
         />
       )}
 
-      {/* Render the idea groups list, which will stick to the bottom horizontally */}
-      <ul className="overflow-y-auto flex justify-around p-4 bg-white shadow">
+      <ul className="overflow-y-auto flex justify-left gap-8 m-8">
         {ideaGroups.map((group) => (
           <Link
             to={`/${group.slug}/`}
             key={group.id}
-            className={`text-center bg-gray-200 hover:bg-gray-300 ${
-              group.id === activeGroup?.id ? "text-orange-500" : "text-gray-700"
+            className={`font-kumbh text-xl text-center ${
+              group.id === activeGroup?.id
+                ? "text-white bg-lochmara-900 hover:bg-cerulean-700"
+                : "text-lochmara-900 bg-white border-lochmara-900 border-2 border-solid hover:bg-lochmara-50"
             } rounded-lg px-6 py-2 m-1 transition duration-300 ease-in-out`}
             onClick={() => handleGroupClick(group)}
           >
