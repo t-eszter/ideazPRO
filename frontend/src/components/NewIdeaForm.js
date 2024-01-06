@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import CSRFToken, { getCookie } from "./csrftoken";
+import { IoClose } from "react-icons/io5";
 
 const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
   const [ideaTitle, setIdeaTitle] = useState("");
   const [ideaDescription, setIdeaDescription] = useState("");
   const [descriptionError, setDescriptionError] = useState(""); // New state for error message
   const postAnonymously = true;
+  const [selectedGroup, setSelectedGroup] = useState(activeGroup.id);
 
   const handleClose = () => {
     onClose(); // Call the onClose function passed as a prop
@@ -17,7 +19,14 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
 
   const handleIdeaDescriptionChange = (e) => {
     if (descriptionError) setDescriptionError(""); // Clear error when user starts editing
-    setIdeaDescription(e.target.value);
+    if (e.target.value.length <= 280) {
+      // Check if the length is within the limit
+      setIdeaDescription(e.target.value);
+    }
+  };
+
+  const handleGroupChange = (e) => {
+    setSelectedGroup(e.target.value);
   };
 
   const handlePostIdea = async (event) => {
@@ -26,7 +35,7 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
     const formData = new FormData();
     formData.append("title", ideaTitle);
     formData.append("description", ideaDescription);
-    formData.append("group", activeGroup.id);
+    formData.append("group", selectedGroup);
     formData.append("person", null);
     formData.append("csrfmiddlewaretoken", getCookie("csrftoken"));
 
@@ -55,39 +64,83 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
   };
 
   return (
-    <div className="absolute top-1/4 left-1/4 bg-white p-4 rounded shadow-lg">
-      <button onClick={handleClose} className="absolute top-0 right-0 p-2">
-        Close
+    <div className="absolute bottom-40 right-4 w-1/4 h-[540px] bg-white p-4 rounded drop-shadow-lg">
+      <button
+        onClick={handleClose}
+        className="absolute top-0 right-0 p-2 text-xl"
+      >
+        <IoClose />
       </button>
       <form onSubmit={handlePostIdea}>
         <CSRFToken />
-        <label htmlFor="ideaTitle">Title</label>
-        <input
-          id="ideaTitle"
-          type="text"
-          value={ideaTitle}
-          onChange={handleIdeaTitleChange}
-          className="w-full mb-2"
-        />
-        <label htmlFor="ideaDescription">Description</label>
-        <textarea
-          id="ideaDescription"
-          value={ideaDescription}
-          onChange={handleIdeaDescriptionChange}
-          className="w-full mb-2"
-        ></textarea>
+        <label className="form-control w-full max-w-xs">
+          <div className="label">
+            <span className="label-text" htmlFor="ideaTitle">
+              Title
+            </span>
+          </div>
+          <input
+            id="ideaTitle"
+            type="text"
+            placeholder="Title..."
+            className="input input-bordered max-w-xs w-full mb-2"
+            value={ideaTitle}
+            onChange={handleIdeaTitleChange}
+          />
+        </label>
+        <label className="form-control">
+          <div className="label">
+            <span className="label-text" htmlFor="ideaDescription">
+              Your idea
+            </span>
+          </div>
+          <textarea
+            id="ideaDescription"
+            value={ideaDescription}
+            maxLength="280"
+            onChange={handleIdeaDescriptionChange}
+            style={{ height: "184px" }}
+            className="textarea textarea-bordered w-full mb-2 h-46"
+            placeholder="Idea desciption..."
+          ></textarea>
+        </label>
         {descriptionError && (
           <div className="text-red-500 text-sm">{descriptionError}</div>
         )}{" "}
         {/* Error message */}
-        <label htmlFor="postAnonymously">Post Anonymously</label>
-        <input
-          type="checkbox"
-          id="postAnonymously"
-          checked={postAnonymously}
-          disabled={true}
-        />
-        <button type="submit">Post Idea</button>
+        <label className="form-control">
+          <div className="label">
+            <span className="label-text">Posting to</span>
+          </div>
+          <select
+            className="select select-bordered w-full mb-2"
+            value={selectedGroup}
+            onChange={handleGroupChange}
+          >
+            {ideaGroups.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="form-control">
+          <label className="label cursor-pointer w-40">
+            <input
+              type="checkbox"
+              id="postAnonymously"
+              checked={postAnonymously}
+              className="checkbox"
+              disabled
+            />
+            <span className="label-text" htmlFor="postAnonymously">
+              Post Anonymously
+            </span>
+          </label>
+        </div>
+        <button class="btn btn-primary" type="submit">
+          Post idea
+        </button>
       </form>
     </div>
   );

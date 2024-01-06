@@ -3,7 +3,7 @@ import uuid
 from autoslug import AutoSlugField
 
 class IdeaGroup(models.Model):
-    name = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
     description = models.TextField(default='')
     STATUS_CHOICES = [
         ('active', 'Active'),
@@ -22,6 +22,7 @@ class Person(models.Model):
     lastName = models.CharField(max_length=255)
     email = models.CharField(max_length=255)
     regDate = models.DateTimeField(auto_now_add=True)
+    profilePic = models.ImageField()
 
     def __str__(self):
         return self.firstName + " " + self.lastName

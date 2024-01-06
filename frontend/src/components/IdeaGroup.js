@@ -1,7 +1,11 @@
-import React, { useEffect, useState } from "react";
+//IdeaGroup.js
+import React, { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import BASE_URL from "./config";
 import NewIdeaForm from "./NewIdeaForm";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import DraggableIdeaCard from "./DraggableIdeaCard";
 
 const IdeaGroup = () => {
   const [ideaGroups, setIdeaGroups] = useState([]);
@@ -15,13 +19,48 @@ const IdeaGroup = () => {
   const [showNewIdeaForm, setShowNewIdeaForm] = useState(false);
 
   const handleNewIdeaAdded = (newIdea) => {
-    setIdeas([...ideas, newIdea]);
+    // Only add the idea if it belongs to the currently active group
+    if (newIdea.group === activeGroup.id) {
+      setIdeas([...ideas, newIdea]);
+    }
     setShowNewIdeaForm(false);
   };
 
   const handleCloseForm = () => {
     setShowNewIdeaForm(false); // This will hide the form
   };
+
+  const [positions, setPositions] = useState({});
+
+  useEffect(() => {
+    if (ideas) {
+      const newPositions = ideas.reduce((acc, idea) => {
+        acc[idea.id] = { x: 0, y: 0, isMoved: false }; // Default position
+        return acc;
+      }, {});
+      setPositions(newPositions);
+    }
+  }, [ideas]);
+
+  const handleMove = useCallback((id, newX, newY) => {
+    setPositions((prevPositions) => {
+      const currentPos = prevPositions[id] || { x: 0, y: 0, isMoved: false };
+      return {
+        ...prevPositions,
+        [id]: { x: currentPos.x + newX, y: currentPos.y + newY, isMoved: true },
+      };
+    });
+  }, []);
+
+  const [, dropRef] = useDrop({
+    accept: "idea",
+    drop: (item, monitor) => {
+      const delta = monitor.getDifferenceFromInitialOffset();
+      if (delta) {
+        handleMove(item.id, delta.x, delta.y);
+      }
+    },
+  });
 
   useEffect(() => {
     const fetchIdeaGroups = async () => {
@@ -77,30 +116,20 @@ const IdeaGroup = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col justify-between bg-gray-100">
+    <div
+      ref={dropRef}
+      className="h-screen flex flex-col justify-between relative bg-alabaster-100"
+    >
       {/* Render the ideas grid first */}
-      <div className="grid grid-cols-3 gap-4 p-4">
+      <div className="flex flex-row flex-wrap p-12 gap-8">
         {Array.isArray(ideas) &&
           ideas.map((idea) => (
-            <div
+            <DraggableIdeaCard
               key={idea.id}
-              className="bg-white shadow rounded p-4 flex flex-col justify-between"
-            >
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700">
-                  {idea.title}
-                </h3>
-                <p className="text-gray-600">{idea.description}</p>
-              </div>
-              <div className="flex justify-between items-center mt-4">
-                <span className="text-sm text-gray-500">
-                  Posted by: {idea.user}
-                </span>
-                <span className="text-sm text-gray-500">
-                  Likes: {idea.likes}
-                </span>
-              </div>
-            </div>
+              idea={idea}
+              position={positions[idea.id] || { x: 0, y: 0, isMoved: false }}
+              onMove={handleMove}
+            />
           ))}
       </div>
 

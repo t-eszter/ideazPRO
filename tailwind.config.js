@@ -3,7 +3,17 @@ module.exports = {
   content: ["./frontend/src/**/*.{html,js,jsx}"],
   plugins: [require("daisyui"), require("@tailwindcss/line-clamp")],
   daisyui: {
-    themes: ["fantasy"],
+    themes: [
+      {
+        ideaz: {
+          primary: "#005a8a",
+          secondary: "#0480b3",
+          accent: "#b24c1b",
+          neutral: "#f1f7f8",
+          "base-100": "#fafafa",
+        },
+      },
+    ],
   },
   variants: {
     extend: {
@@ -73,7 +83,7 @@ module.exports = {
           400: "#fcfcfc",
           300: "#fdfdfd",
           200: "#fefefe",
-          100: "#ffffff",
+          100: "#FAFAFA",
           50: "#ffffff",
         },
         flamingo: {

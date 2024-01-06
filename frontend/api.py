@@ -4,10 +4,10 @@ from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import RetrieveAPIView
 from .models import IdeaGroup, Idea, Person
 from .serializers import IdeaGroupSerializer, IdeaSerializer
 from rest_framework.permissions import AllowAny
-# from .profanity_filter import contains_profanity
 import subprocess
 import os
 from django.conf import settings
@@ -24,11 +24,10 @@ class IdeaGroupList(generics.ListAPIView):
     queryset = IdeaGroup.objects.all()
     serializer_class = IdeaGroupSerializer
 
-@api_view(['GET'])
-def group_view(request, slug):
-    idea_group = get_object_or_404(IdeaGroup, slug=slug)
-    serializer = IdeaGroupSerializer(idea_group)
-    return Response(serializer.data)
+class GroupDetailView(RetrieveAPIView):
+    queryset = IdeaGroup.objects.all()
+    serializer_class = IdeaGroupSerializer
+    lookup_field = 'slug'
 
 def ideagroup_list(request):
     ideagroups = IdeaGroup.objects.values('id', 'name')
