@@ -5,12 +5,12 @@ import { IoClose } from "react-icons/io5";
 const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
   const [ideaTitle, setIdeaTitle] = useState("");
   const [ideaDescription, setIdeaDescription] = useState("");
-  const [descriptionError, setDescriptionError] = useState(""); // New state for error message
+  const [descriptionError, setDescriptionError] = useState("");
   const postAnonymously = true;
   const [selectedGroup, setSelectedGroup] = useState(activeGroup.id);
 
   const handleClose = () => {
-    onClose(); // Call the onClose function passed as a prop
+    onClose();
   };
 
   const handleIdeaTitleChange = (e) => {
@@ -18,9 +18,8 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
   };
 
   const handleIdeaDescriptionChange = (e) => {
-    if (descriptionError) setDescriptionError(""); // Clear error when user starts editing
+    if (descriptionError) setDescriptionError("");
     if (e.target.value.length <= 280) {
-      // Check if the length is within the limit
       setIdeaDescription(e.target.value);
     }
   };
@@ -48,8 +47,8 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
       if (!response.ok) {
         const data = await response.json();
         if (data.error) {
-          setDescriptionError(data.error); // Set the error message
-          return; // Prevent form from closing
+          setDescriptionError(data.error);
+          return;
         }
         throw new Error("Response not OK");
       }

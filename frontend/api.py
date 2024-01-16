@@ -17,13 +17,15 @@ import subprocess
 def check_profanity(text):
     profanity_script = os.path.join(settings.BASE_DIR, 'frontend', 'profanity.mjs')
     result = subprocess.run(['node', profanity_script, text], capture_output=True, text=True)
-    print("Node.js script output:", result.stdout)  # Debugging line
+    print("Node.js script output:", result.stdout)
     return "Profanity detected!" in result.stdout
 
+# api.py
 class IdeaGroupList(generics.ListAPIView):
     queryset = IdeaGroup.objects.all()
     serializer_class = IdeaGroupSerializer
 
+# api.py
 class GroupDetailView(RetrieveAPIView):
     queryset = IdeaGroup.objects.all()
     serializer_class = IdeaGroupSerializer
@@ -50,10 +52,10 @@ class IdeaAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        data = request.data.copy()  # Create a mutable copy of the request data
+        data = request.data.copy()  # create mutable copy of request data
 
         #Person
-        # Handle the case where person is "null"
+        # handle case where person is "null"
         if data.get('person') == 'null':
             data['person'] = None
 
@@ -63,15 +65,13 @@ class IdeaAPIView(APIView):
             return Response({'error': 'Group ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Validate if the group exists
+            # validate if the group exists
             IdeaGroup.objects.get(id=group_id)
         except IdeaGroup.DoesNotExist:
             return Response({'error': 'Group not found'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Profanity Check
         description = data.get('description', '')
-        # if contains_profanity(description):
-        #     return Response({'error': 'Your idea description contains profanity. Please be respectful and rephrase your message.'}, status=status.HTTP_400_BAD_REQUEST)
         if check_profanity(description):
             return Response({'error': 'Your idea description contains profanity. Please be respectful and rephrase your message.'}, status=status.HTTP_400_BAD_REQUEST)
 

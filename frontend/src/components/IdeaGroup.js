@@ -19,7 +19,6 @@ const IdeaGroup = () => {
   const [showNewIdeaForm, setShowNewIdeaForm] = useState(false);
 
   const handleNewIdeaAdded = (newIdea) => {
-    // Only add the idea if it belongs to the currently active group
     if (newIdea.group === activeGroup.id) {
       setIdeas([...ideas, newIdea]);
     }
@@ -27,7 +26,7 @@ const IdeaGroup = () => {
   };
 
   const handleCloseForm = () => {
-    setShowNewIdeaForm(false); // This will hide the form
+    setShowNewIdeaForm(false);
   };
 
   const [positions, setPositions] = useState({});
@@ -35,7 +34,7 @@ const IdeaGroup = () => {
   useEffect(() => {
     if (ideas) {
       const newPositions = ideas.reduce((acc, idea) => {
-        acc[idea.id] = { x: 0, y: 0, isMoved: false }; // Default position
+        acc[idea.id] = { x: 0, y: 0, isMoved: false };
         return acc;
       }, {});
       setPositions(newPositions);
@@ -70,16 +69,16 @@ const IdeaGroup = () => {
         setIdeaGroups(data);
 
         if (data && data.length > 0) {
-          // Check if a groupSlug is available in the URL
+          // check if a groupSlug is available in the URL
           if (groupSlug) {
             const foundGroup = data.find((group) => group.slug === groupSlug);
             if (foundGroup) {
               setActiveGroup(foundGroup);
             } else {
-              navigate("/"); // Redirect to a default route if no matching group is found
+              navigate("/"); // redirect to a default route if no matching group is found
             }
           } else {
-            // Optionally, set the first group as active if no groupSlug is in the URL
+            //  set first group as active if no groupSlug is in the URL
             setActiveGroup(data[0]);
           }
         }
@@ -99,8 +98,8 @@ const IdeaGroup = () => {
             `/api/ideagroups/${activeGroup.id}/ideas`
           );
           const data = await response.json();
-          console.log("Fetched ideas:", data); // To confirm the data structure
-          setIdeas(data.ideas); // Extract the 'ideas' array from the response
+          console.log("Fetched ideas:", data);
+          setIdeas(data.ideas);
         } catch (error) {
           console.error("Error fetching ideas:", error);
         }
@@ -120,7 +119,6 @@ const IdeaGroup = () => {
       ref={dropRef}
       className="h-screen flex flex-col justify-between relative bg-alabaster-100"
     >
-      {/* Render the ideas grid first */}
       <div className="flex flex-row flex-wrap p-12 gap-8">
         {Array.isArray(ideas) &&
           ideas.map((idea) => (

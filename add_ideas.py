@@ -1,7 +1,6 @@
 import os
 import django
 
-# Set the DJANGO_SETTINGS_MODULE environment variable to your project's settings module.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ideazApp.settings")
 
 # Initialize Django
@@ -10,7 +9,7 @@ django.setup()
 from frontend.models import Idea, IdeaGroup
 
 def main():
-    # Create Idea Groups first
+    # create Idea Groups
     idea_group_data = [
         {
             'name': 'Group 1',
@@ -35,8 +34,8 @@ def main():
         idea_group.save()
         idea_groups.append(idea_group)
 
-    # Create Ideas for the Idea Groups
-    num_ideas_per_group = 3  # Change this number as needed
+    # create Ideas for the Idea Groups
+    num_ideas_per_group = 3 
 
     for group in idea_groups:
         for i in range(1, num_ideas_per_group + 1):

@@ -11,32 +11,29 @@ const DraggableIdeaCard = ({ idea, position, onMove }) => {
     end: (item, monitor) => {
       const clientOffset = monitor.getClientOffset();
       if (item && clientOffset) {
-        // Directly use clientX and clientY for positioning
         onMove(item.id, clientOffset.x, clientOffset.y);
       }
     },
   }));
 
   const formatDate = (dateString) => {
-    // Ensure dateString is valid and not undefined
     if (!dateString) return "";
 
-    // Create a Date object from the dateString
     const date = new Date(dateString);
 
-    // Check if the date is valid
+    // check if date is valid
     if (isNaN(date.getTime())) {
       return "Invalid Date";
     }
 
-    // Format the date
+    // format date
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      hour12: true, // Optional: Use 12-hour format
+      hour12: true,
     });
   };
 

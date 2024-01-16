@@ -7,17 +7,18 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
 import IdeaGroup from "./IdeaGroup";
+import Home from "./Home";
 
 class App extends React.Component {
   render() {
     return (
       <HelmetProvider>
         <DndProvider backend={HTML5Backend}>
-          <h1>Ideaz PRO</h1>
           <Router>
             <Routes>
-              <Route path="/" element={<IdeaGroup />} />
-              <Route path="/:groupSlug" element={<IdeaGroup />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/:organization/:groupSlug" element={<IdeaGroup />} />
+              {/* <Route path="/:groupSlug" element={<IdeaGroup />} /> */}
             </Routes>
           </Router>
         </DndProvider>
