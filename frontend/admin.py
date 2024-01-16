@@ -5,7 +5,7 @@ from .forms import IdeaGroupForm
 from .models import IdeaGroup, Idea, Person
 
 class IdeaGroupAdmin(admin.ModelAdmin):
-    form = IdeaGroupForm  # Use the custom form for this admin class
+    form = IdeaGroupForm 
     prepopulated_fields = {'slug': ('name',)}
 
 admin.site.register(IdeaGroup, IdeaGroupAdmin)

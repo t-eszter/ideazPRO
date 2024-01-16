@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, IdeaGroup, Idea
+from .models import Person, IdeaGroup, Idea, Organization
 
 class IdeaGroupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,4 +21,10 @@ class PersonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Person
+        fields = '__all__'
+
+class OrganizationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Organization
         fields = '__all__'
