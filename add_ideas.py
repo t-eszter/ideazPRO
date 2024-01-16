@@ -6,7 +6,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ideazApp.settings")
 # Initialize Django
 django.setup()
 
-from frontend.models import Idea, IdeaGroup
+from frontend.models import Idea, IdeaGroup, Organization
 
 def main():
     organization = Organization(name='teszter')
