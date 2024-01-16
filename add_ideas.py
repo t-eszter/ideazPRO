@@ -9,22 +9,27 @@ django.setup()
 from frontend.models import Idea, IdeaGroup
 
 def main():
+    organization = Organization(name='teszter')
+    organization.save()
     # create Idea Groups
     idea_group_data = [
         {
             'name': 'Group 1',
             'description': 'Description for Group 1',
-            'status': 'active'
+            'status': 'active',
+            'organization': organization
         },
         {
             'name': 'Group 2',
             'description': 'Description for Group 2',
-            'status': 'active'
+            'status': 'active',
+            'organization': organization
         },
         {
             'name': 'Group 3',
             'description': 'Description for Group 3',
-            'status': 'active'
+            'status': 'active',
+            'organization': organization
         }
     ]
 
