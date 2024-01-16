@@ -16,7 +16,8 @@ class IdeaGroup(models.Model):
         ('archived', 'Archived'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
-    slug = AutoSlugField(unique=True, populate_from='name', editable=True) 
+    slug = AutoSlugField(unique=True, populate_from='name', editable=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='ideas')
 
     def __str__(self):
         return self.name
