@@ -7,13 +7,23 @@ from .models import IdeaGroup, Idea, Person, Organization
 class IdeaGroupAdmin(admin.ModelAdmin):
     form = IdeaGroupForm 
     prepopulated_fields = {'slug': ('name',)}
-    list_display = ('name', 'description', 'status', 'slug')
+    list_display = ('name', 'description', 'status', 'slug', 'display_organization')
 
     def display_organization(self, obj):
-        return obj.organization.name
+        return obj.organization.name if obj.organization else "No Organization"
+    display_organization.short_description = 'Organization'
+
+class IdeaAdmin(admin.ModelAdmin):
+    list_display = ('title', 'person', 'display_organization', 'postedDate')
+    
+    def display_organization(self, obj):
+        # Accessing the organization through the related IdeaGroup
+        if obj.group and obj.group.organization:
+            return obj.group.organization.name
+        return "No Organization"
     display_organization.short_description = 'Organization'
 
 admin.site.register(IdeaGroup, IdeaGroupAdmin)
-admin.site.register(Idea)
+admin.site.register(Idea, IdeaAdmin)
 admin.site.register(Person)
 admin.site.register(Organization)
