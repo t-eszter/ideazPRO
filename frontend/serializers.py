@@ -24,7 +24,6 @@ class PersonSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class OrganizationSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Organization
         fields = '__all__'
