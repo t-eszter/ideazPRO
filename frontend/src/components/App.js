@@ -18,7 +18,7 @@ class App extends React.Component {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/:organization/:groupSlug" element={<IdeaGroup />} />
-              {/* <Route path="/:groupSlug" element={<IdeaGroup />} /> */}
+              <Route path="/:groupSlug" element={<IdeaGroup />} />
             </Routes>
           </Router>
         </DndProvider>

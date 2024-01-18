@@ -48,6 +48,18 @@ def ideas_for_group(request, group_id):
         print(e)
         return JsonResponse({'error': 'An error occurred'}, status=500)
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_idea_group(request):
+    serializer = IdeaGroupSerializer(data=request.data)
+    if serializer.is_valid():
+        ideagroup = serializer.save()
+        return Response({
+            'success': True,
+            'data': serializer.data
+        }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class IdeaAPIView(APIView):
     permission_classes = [AllowAny]
 

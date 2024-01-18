@@ -8,7 +8,7 @@ module.exports = {
         ideaz: {
           primary: "#005a8a",
           secondary: "#0480b3",
-          accent: "#b24c1b",
+          accent: "#E16C37",
           neutral: "#f1f7f8",
           "base-100": "#fafafa",
         },
