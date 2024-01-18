@@ -10,7 +10,7 @@ urlpatterns = [
     path('api/ideagroups/<int:group_id>/ideas', ideas_for_group, name='group-ideas'),
     path('api/ideagroups/<slug:slug>/', GroupDetailView.as_view(), name='group-detail'),
     path('api/ideas/', IdeaAPIView.as_view(), name='post_idea'),
-    path('api/create_idea_group/', views.create_idea_group, name='create_idea_group'),
+    path('api/create_idea_group/', create_idea_group, name='create_idea_group'),
 
     # React
     re_path(r'^(?:.*)/?$', views.index, name='index'),
