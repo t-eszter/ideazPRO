@@ -1,18 +1,20 @@
 import React, { useState } from "react";
 import ReactLogo from "./ideaz_logo.svg";
 import { useNavigate } from "react-router-dom";
+import CSRFToken, { getCookie } from "./csrftoken";
 
 function Home() {
   const [ideaTitle, setIdeaTitle] = useState("");
   const navigate = useNavigate();
 
   const createIdeaGroup = async (title) => {
+    const csrftoken = getCookie("csrftoken");
     try {
       const response = await fetch("/api/create_idea_group/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Include other headers as needed, e.g., for authentication
+          "X-CSRFToken": csrftoken,
         },
         body: JSON.stringify({ name: title }),
       });
@@ -52,6 +54,7 @@ function Home() {
         What topic would you like to brainstorm about?
       </h3>
       <form onSubmit={handleSubmit} className="w-full max-w-xs">
+        <CSRFToken />
         <label className="form-control w-full max-w-xs">
           <input
             id="ideaTitle"
