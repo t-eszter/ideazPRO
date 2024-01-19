@@ -4,7 +4,9 @@ from .models import Person, IdeaGroup, Idea, Organization
 class IdeaGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = IdeaGroup
-        fields = '__all__'
+        fields = ['id', 'name', 'description', 'status', 'slug', 'organization']
+        read_only_fields = ('slug',)
+
 
 class IdeaSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(
