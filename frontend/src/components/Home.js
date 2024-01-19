@@ -4,17 +4,19 @@ import { useNavigate } from "react-router-dom";
 import CSRFToken, { getCookie } from "./csrftoken";
 
 function Home() {
-  const [ideaTitle, setIdeaTitle] = useState("");
+  const [groupName, setgroupName] = useState("");
   const navigate = useNavigate();
 
-  const createIdeaGroup = async (title) => {
-    const formData = new FormData();
-    formData.append("name", groupName);
-    formData.append("csrfmiddlewaretoken", getCookie("csrftoken"));
+  const createIdeaGroup = async (name) => {
+    const csrftoken = getCookie("csrftoken");
     try {
       const response = await fetch("/api/create_idea_group/", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({ name: name }),
       });
 
       if (!response.ok) {
