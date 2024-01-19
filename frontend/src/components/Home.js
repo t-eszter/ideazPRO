@@ -8,15 +8,13 @@ function Home() {
   const navigate = useNavigate();
 
   const createIdeaGroup = async (name) => {
-    const csrftoken = getCookie("csrftoken");
+    const formData = new FormData();
+    formData.append("name", groupName);
+    formData.append("csrfmiddlewaretoken", getCookie("csrftoken"));
     try {
       const response = await fetch("/api/create_idea_group/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrftoken,
-        },
-        body: JSON.stringify({ name: name }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -61,6 +59,8 @@ function Home() {
             type="text"
             placeholder="Title..."
             className="input input-bordered max-w-xs w-full mb-2"
+            value={groupName}
+            onChange={(e) => setgroupName(e.target.value)}
           />
         </label>
         <button
