@@ -22,6 +22,7 @@ class App extends React.Component {
                 element={<IdeaGroup />}
               />
               <Route path="/:organizationName" element={<IdeaGroup />} />
+              <Route path="/:ideaGroupId" element={<IdeaGroup />} />
             </Routes>
           </Router>
         </DndProvider>

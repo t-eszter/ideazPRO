@@ -106,11 +106,6 @@ class IdeaAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@permission_classes((AllowAny,))
-class GuestUserView(RetrieveAPIView):
-    queryset = IdeaGroup.objects.all()
-    serializer_class = IdeaGroupSerializer
-    lookup_field = 'id'
 
 @permission_classes((AllowAny,))
 def get_csrf_token(request):
