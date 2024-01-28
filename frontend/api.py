@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
-from .models import IdeaGroup, Idea, Person
+from .models import IdeaGroup, Idea, Person, Organization
 from .serializers import IdeaGroupSerializer, IdeaSerializer
 from rest_framework.permissions import AllowAny
 import subprocess
@@ -22,43 +22,55 @@ def check_profanity(text):
 
 # api.py
 class IdeaGroupList(generics.ListAPIView):
-    queryset = IdeaGroup.objects.all()
     serializer_class = IdeaGroupSerializer
+
+    def get_queryset(self):
+        organization_name = self.kwargs.get('organization_name')
+        return IdeaGroup.objects.filter(organization__name=organization_name)
 
 # api.py
 class GroupDetailView(RetrieveAPIView):
-    queryset = IdeaGroup.objects.all()
     serializer_class = IdeaGroupSerializer
     lookup_field = 'slug'
 
-def ideagroup_list(request):
-    ideagroups = IdeaGroup.objects.values('id', 'name')
-    return JsonResponse({'ideagroups': list(ideagroups)}, safe=False)
+    def get_queryset(self):
+        organization_name = self.kwargs.get('organization_name')
+        return IdeaGroup.objects.filter(organization__name=organization_name)
 
-def ideas_for_group(request, group_id):
+@api_view(['GET'])
+def ideas_for_group(request, organization_name, slug):
     try:
-        group = IdeaGroup.objects.get(id=group_id)
+        organization = Organization.objects.get(name=organization_name)
+        group = IdeaGroup.objects.get(slug=slug, organization=organization)
         ideas = Idea.objects.filter(group=group)
         serialized_ideas = IdeaSerializer(ideas, many=True).data
         return JsonResponse({'ideas': serialized_ideas})
-    except ObjectDoesNotExist:
-        return JsonResponse({'error': 'Group not found'}, status=404)
-    except Exception as e:
-        # Log the error for debugging
-        print(e)
-        return JsonResponse({'error': 'An error occurred'}, status=500)
+    except (Organization.DoesNotExist, IdeaGroup.DoesNotExist):
+        return JsonResponse({'error': 'Group or Organization not found'}, status=404)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_idea_group(request):
-    serializer = IdeaGroupSerializer(data=request.data)
+    try:
+        organization = Organization.objects.get(name=organization_name)
+    except Organization.DoesNotExist:
+        return Response({'error': 'Organization not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    data = request.data.copy()
+    data['organization'] = organization.pk  # Set organization to the found organization
+
+    serializer = IdeaGroupSerializer(data=data)
     if serializer.is_valid():
         ideagroup = serializer.save()
         return Response({
             'success': True,
-            'data': serializer.data
+            'data': {
+                'id': ideagroup.id,  # Return the id of the newly created group
+                # Include other necessary data if needed
+            }
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class IdeaAPIView(APIView):
     permission_classes = [AllowAny]
@@ -94,6 +106,11 @@ class IdeaAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@permission_classes((AllowAny,))
+class GuestUserView(RetrieveAPIView):
+    queryset = IdeaGroup.objects.all()
+    serializer_class = IdeaGroupSerializer
+    lookup_field = 'id'
 
 @permission_classes((AllowAny,))
 def get_csrf_token(request):

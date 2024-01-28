@@ -32,7 +32,7 @@ function Home() {
     e.preventDefault();
     const response = await createIdeaGroup(groupName);
     if (response.success) {
-      navigate(`/${response.data.slug}`);
+      navigate(`/${response.data.id}`);
     } else {
       // Handle error here, e.g., display a notification
     }

@@ -11,6 +11,7 @@ const IdeaGroup = () => {
   const [ideaGroups, setIdeaGroups] = useState([]);
   const [activeGroup, setActiveGroup] = useState(null);
   const [ideas, setIdeas] = useState([]);
+  const { organizationName } = useParams();
 
   const navigate = useNavigate();
   const { groupSlug } = useParams();
@@ -64,41 +65,31 @@ const IdeaGroup = () => {
   useEffect(() => {
     const fetchIdeaGroups = async () => {
       try {
-        const response = await fetch("/api/ideagroups/");
+        const response = await fetch(`/api/${organizationName}`);
         const data = await response.json();
         setIdeaGroups(data);
 
-        if (data && data.length > 0) {
-          // check if a groupSlug is available in the URL
-          if (groupSlug) {
-            const foundGroup = data.find((group) => group.slug === groupSlug);
-            if (foundGroup) {
-              setActiveGroup(foundGroup);
-            } else {
-              navigate("/"); // redirect to a default route if no matching group is found
-            }
-          } else {
-            //  set first group as active if no groupSlug is in the URL
-            setActiveGroup(data[0]);
-          }
-        }
+        // Automatically set the first group as active if it exists
+        const activeGroupFromSlug = data.find(
+          (group) => group.slug === groupSlug
+        );
+        setActiveGroup(activeGroupFromSlug || data[0]);
       } catch (error) {
         console.error("Error fetching idea groups:", error);
       }
     };
 
     fetchIdeaGroups();
-  }, [navigate, groupSlug]);
+  }, [organizationName, groupSlug]);
 
   useEffect(() => {
     const fetchIdeas = async () => {
       if (activeGroup) {
         try {
           const response = await fetch(
-            `/api/ideagroups/${activeGroup.id}/ideas`
+            `/api/${organizationName}/${activeGroup.slug}/ideas`
           );
           const data = await response.json();
-          console.log("Fetched ideas:", data);
           setIdeas(data.ideas);
         } catch (error) {
           console.error("Error fetching ideas:", error);
@@ -106,12 +97,14 @@ const IdeaGroup = () => {
       }
     };
 
-    fetchIdeas();
-  }, [activeGroup]);
+    if (activeGroup) {
+      fetchIdeas();
+    }
+  }, [activeGroup, organizationName]);
 
   const handleGroupClick = (group) => {
     setActiveGroup(group);
-    navigate(`/${group.slug}/`);
+    navigate(`/${organizationName}/${group.slug}/`);
   };
 
   return (
@@ -154,7 +147,7 @@ const IdeaGroup = () => {
       <ul className="overflow-y-auto flex justify-left gap-8 m-8">
         {ideaGroups.map((group) => (
           <Link
-            to={`/${group.slug}/`}
+            to={`/${organizationName}/${group.slug}/`}
             key={group.id}
             className={`font-kumbh text-xl text-center ${
               group.id === activeGroup?.id

@@ -29,7 +29,7 @@ class IdeaGroup(models.Model):
         null=True,
         blank=True,
         related_name='ideagroups',
-        default=get_default_organization
+        default=None
     )
 
     def __str__(self):

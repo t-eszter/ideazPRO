@@ -48,6 +48,7 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
         const data = await response.json();
         if (data.error) {
           setDescriptionError(data.error);
+          console.log("does not work");
           return;
         }
         throw new Error("Response not OK");
@@ -137,7 +138,7 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
             </span>
           </label>
         </div>
-        <button class="btn btn-primary" type="submit">
+        <button className="btn btn-primary" type="submit">
           Post idea
         </button>
       </form>

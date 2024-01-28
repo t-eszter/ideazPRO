@@ -7,24 +7,17 @@ function removePunctuation(text) {
 }
 
 async function containsProfanity(text) {
-  // remove punctuation from the text
+  // remove punctuation from text
   const cleanedText = removePunctuation(text);
 
-  // split the text into words
-  const words = cleanedText.split(/\s+/);
-
-  // check each word for regular and obfuscated profanity
-  for (const word of words) {
-    if (isObfuscatedProfanity(word)) {
-      return true;
-    }
-  }
-
+  // create an instance of ProfanityEngine
   const profanity = new ProfanityEngine({ language: "en" });
+
+  // check cleaned text for profanity
   return await profanity.hasCurseWords(cleanedText);
 }
 
-// Get text from command-line argument
+// get text from command-line argument
 let text = process.argv[2];
 
 containsProfanity(text).then((isProfane) => {
