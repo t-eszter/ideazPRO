@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  a {
+    @apply text-lochmara-500;
+  }
+}
+
 .flip-card-wrapper {
   perspective: 1000px;
 }
@@ -33,10 +39,6 @@
   min-height: 140px;
   height: fit-content;
   backface-visibility: hidden;
-}
-
-.flip-card-front {
-  /* Front face styles */
 }
 
 .flip-card-back {

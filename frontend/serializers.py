@@ -9,7 +9,6 @@ class IdeaGroupSerializer(serializers.ModelSerializer):
 
 class IdeaSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=IdeaGroup.objects.all())
-
     organization = serializers.SerializerMethodField()
 
     class Meta:
@@ -17,7 +16,10 @@ class IdeaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_organization(self, obj):
-        return obj.group.organization.name 
+        # Check if the organization is None before accessing its attributes
+        if obj.group.organization is not None:
+            return obj.group.organization.name
+        return None  # or return a default value or empty string
 
 class PersonSerializer(serializers.ModelSerializer):
     ideas = IdeaSerializer(many=True, read_only=True)

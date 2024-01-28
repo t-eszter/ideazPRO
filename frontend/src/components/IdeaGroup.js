@@ -6,15 +6,19 @@ import NewIdeaForm from "./NewIdeaForm";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import DraggableIdeaCard from "./DraggableIdeaCard";
+import Header from "./Header";
 
 const IdeaGroup = () => {
   const [ideaGroups, setIdeaGroups] = useState([]);
   const [activeGroup, setActiveGroup] = useState(null);
   const [ideas, setIdeas] = useState([]);
-  const { organizationName } = useParams();
-
+  const { organizationName, groupId, groupSlug } = useParams();
   const navigate = useNavigate();
-  const { groupSlug } = useParams();
+
+  // Determine the mode based on the URL parameters
+  const isGuestUserMode = groupId !== undefined;
+  // console.log("Is Guest User Mode:", isGuestUserMode, "Group ID:", groupId);
+  const isOrganizationMode = organizationName !== undefined && !isGuestUserMode;
 
   // NewIdeaForm
   const [showNewIdeaForm, setShowNewIdeaForm] = useState(false);
@@ -64,31 +68,64 @@ const IdeaGroup = () => {
 
   useEffect(() => {
     const fetchIdeaGroups = async () => {
-      try {
-        const response = await fetch(`/api/${organizationName}`);
-        const data = await response.json();
-        setIdeaGroups(data);
+      let url;
 
-        // Automatically set the first group as active if it exists
-        const activeGroupFromSlug = data.find(
-          (group) => group.slug === groupSlug
-        );
-        setActiveGroup(activeGroupFromSlug || data[0]);
+      if (isOrganizationMode) {
+        url = `/api/${organizationName}`;
+      } else if (isGuestUserMode) {
+        url = `/api/group/${groupId}/`;
+        // console.log(url);
+      } else {
+        console.error("Invalid URL parameters");
+        return;
+      }
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        // console.log("Response Data:", data);
+
+        if (isOrganizationMode) {
+          setIdeaGroups(data);
+
+          // Set active group based on slug or first group
+          if (groupSlug) {
+            const activeGroupFromSlug = data.find(
+              (group) => group.slug === groupSlug
+            );
+            setActiveGroup(activeGroupFromSlug || data[0]);
+          } else {
+            setActiveGroup(data[0]);
+          }
+        } else if (isGuestUserMode) {
+          setActiveGroup(data.group); // Set active group using data about the group
+          setIdeaGroups([data.group]); // Optionally set ideaGroups to an array containing only this group
+          setIdeas(data.ideas); // Set ideas using data about the ideas
+          console.log(data);
+        }
       } catch (error) {
         console.error("Error fetching idea groups:", error);
       }
     };
 
     fetchIdeaGroups();
-  }, [organizationName, groupSlug]);
+  }, [organizationName, groupId, groupSlug]);
 
   useEffect(() => {
     const fetchIdeas = async () => {
       if (activeGroup) {
+        let url;
+        if (isOrganizationMode) {
+          url = `/api/${organizationName}/${activeGroup.slug}/ideas`;
+        } else if (isGuestUserMode) {
+          url = `/api/group/${activeGroup.id}/`;
+        } else {
+          console.error("Invalid mode for fetching ideas");
+          return;
+        }
+
         try {
-          const response = await fetch(
-            `/api/${organizationName}/${activeGroup.slug}/ideas`
-          );
+          const response = await fetch(url);
           const data = await response.json();
           setIdeas(data.ideas);
         } catch (error) {
@@ -96,11 +133,10 @@ const IdeaGroup = () => {
         }
       }
     };
-
     if (activeGroup) {
       fetchIdeas();
     }
-  }, [activeGroup, organizationName]);
+  }, [activeGroup, isOrganizationMode, isGuestUserMode, organizationName]);
 
   const handleGroupClick = (group) => {
     setActiveGroup(group);
@@ -108,58 +144,75 @@ const IdeaGroup = () => {
   };
 
   return (
-    <div
-      ref={dropRef}
-      className="h-screen flex flex-col justify-between relative bg-alabaster-100"
-    >
-      <div className="flex flex-row flex-wrap p-12 gap-8">
-        {Array.isArray(ideas) &&
-          ideas.map((idea) => (
-            <DraggableIdeaCard
-              key={idea.id}
-              idea={idea}
-              position={positions[idea.id] || { x: 0, y: 0, isMoved: false }}
-              onMove={handleMove}
-            />
-          ))}
-      </div>
+    <div className="h-screen">
+      <Header />
+      <div
+        ref={dropRef}
+        className="h-full flex flex-col justify-between relative bg-alabaster-100"
+      >
+        <div className="flex flex-row flex-wrap p-12 gap-8">
+          {Array.isArray(ideas) &&
+            ideas.map((idea) => (
+              <DraggableIdeaCard
+                key={idea.id}
+                idea={idea}
+                position={positions[idea.id] || { x: 0, y: 0, isMoved: false }}
+                onMove={handleMove}
+              />
+            ))}
+        </div>
 
-      {/* NewIdeaForm */}
-      <div className="fixed bottom-4 right-4">
-        <button
-          className="flex items-center justify-center w-16 h-16 pt-2.5 text-5xl bg-flamingo-500 text-white p-4 rounded-full"
-          onClick={() => setShowNewIdeaForm(true)}
-        >
-          +
-        </button>
-        <p className="text-flamingo-500">New Idea</p>
-      </div>
-
-      {showNewIdeaForm && (
-        <NewIdeaForm
-          ideaGroups={ideaGroups}
-          activeGroup={activeGroup}
-          onNewIdeaAdded={handleNewIdeaAdded}
-          onClose={handleCloseForm}
-        />
-      )}
-
-      <ul className="overflow-y-auto flex justify-left gap-8 m-8">
-        {ideaGroups.map((group) => (
-          <Link
-            to={`/${organizationName}/${group.slug}/`}
-            key={group.id}
-            className={`font-kumbh text-xl text-center ${
-              group.id === activeGroup?.id
-                ? "text-white bg-lochmara-900 hover:bg-cerulean-700"
-                : "text-lochmara-900 bg-white border-lochmara-900 border-2 border-solid hover:bg-lochmara-50"
-            } rounded-lg px-6 py-2 m-1 transition duration-300 ease-in-out`}
-            onClick={() => handleGroupClick(group)}
+        {/* NewIdeaForm */}
+        <div className="fixed bottom-4 right-4">
+          <button
+            className="flex items-center justify-center w-16 h-16 pt-2.5 text-5xl bg-flamingo-500 text-white p-4 rounded-full"
+            onClick={() => setShowNewIdeaForm(true)}
           >
-            {group.name}
-          </Link>
-        ))}
-      </ul>
+            +
+          </button>
+          <p className="text-flamingo-500">New Idea</p>
+        </div>
+
+        {showNewIdeaForm && activeGroup && (
+          <NewIdeaForm
+            ideaGroups={ideaGroups}
+            activeGroup={activeGroup}
+            onNewIdeaAdded={handleNewIdeaAdded}
+            onClose={handleCloseForm}
+          />
+        )}
+
+        <ul className="overflow-y-auto flex justify-left gap-8 my-4 mx-8 sticky bottom-8">
+          {ideaGroups.map((group) => {
+            // Check if it's GuestUserMode
+            if (isGuestUserMode) {
+              return (
+                <div
+                  key={activeGroup?.id || "guest-group"}
+                  className="font-kumbh text-xl text-center text-lochmara-900 bg-white border-lochmara-900 border-2 border-solid hover:bg-lochmara-50 rounded-lg px-6 py-2 m-1 transition duration-300 ease-in-out"
+                >
+                  {activeGroup?.name}
+                </div>
+              );
+            } else {
+              return (
+                <Link
+                  to={`/${organizationName}/${group.slug}/`}
+                  key={group.id}
+                  className={`font-kumbh text-xl text-center ${
+                    group.id === activeGroup?.id
+                      ? "text-white bg-lochmara-900 hover:bg-cerulean-700"
+                      : "text-lochmara-900 bg-white border-lochmara-900 border-2 border-solid hover:bg-lochmara-50"
+                  } rounded-lg px-6 py-2 m-1 transition duration-300 ease-in-out`}
+                  onClick={() => handleGroupClick(group)}
+                >
+                  {group.name}
+                </Link>
+              );
+            }
+          })}
+        </ul>
+      </div>
     </div>
   );
 };

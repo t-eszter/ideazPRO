@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ReactLogo from "./ideaz_logo.svg";
 import { useNavigate } from "react-router-dom";
 import CSRFToken, { getCookie } from "./csrftoken";
+import Header from "./Header";
 
 function Home() {
   const [groupName, setgroupName] = useState("");
@@ -32,9 +33,9 @@ function Home() {
     e.preventDefault();
     const response = await createIdeaGroup(groupName);
     if (response.success) {
-      navigate(`/${response.data.id}`);
+      navigate(`/guests/${response.data.id}`);
     } else {
-      // Handle error here, e.g., display a notification
+      console.error("There was a problem with the url", error);
     }
   };
 

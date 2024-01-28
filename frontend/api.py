@@ -51,13 +51,18 @@ def ideas_for_group(request, organization_name, slug):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_idea_group(request):
-    try:
-        organization = Organization.objects.get(name=organization_name)
-    except Organization.DoesNotExist:
-        return Response({'error': 'Organization not found'}, status=status.HTTP_404_NOT_FOUND)
-
     data = request.data.copy()
-    data['organization'] = organization.pk  # Set organization to the found organization
+    organization_name = data.get('organization_name', None)
+
+    if organization_name:
+        try:
+            organization = Organization.objects.get(name=organization_name)
+            data['organization'] = organization.pk
+        except Organization.DoesNotExist:
+            return Response({'error': 'Organization not found'}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        # In case of a guest user, organization is not set
+        data['organization'] = None
 
     serializer = IdeaGroupSerializer(data=data)
     if serializer.is_valid():
@@ -65,7 +70,7 @@ def create_idea_group(request):
         return Response({
             'success': True,
             'data': {
-                'id': ideagroup.id,  # Return the id of the newly created group
+                'id': ideagroup.id,
                 # Include other necessary data if needed
             }
         }, status=status.HTTP_201_CREATED)
@@ -111,3 +116,21 @@ class IdeaAPIView(APIView):
 def get_csrf_token(request):
     csrf_token = get_token(request)
     return JsonResponse({'csrfToken': csrf_token})
+
+@api_view(['GET'])
+def ideas_for_guest(request, id):
+    try:
+        group = IdeaGroup.objects.get(pk=id)
+        ideas = Idea.objects.filter(group=group)
+
+        # Serialize both group and ideas
+        serialized_group = IdeaGroupSerializer(group).data
+        serialized_ideas = IdeaSerializer(ideas, many=True).data
+
+        return Response({
+            'group': serialized_group,  # Data about the group
+            'ideas': serialized_ideas   # Data about the ideas
+        })
+
+    except IdeaGroup.DoesNotExist:
+        return Response({'error': 'Group not found'}, status=404)

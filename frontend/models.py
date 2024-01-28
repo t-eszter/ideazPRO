@@ -42,7 +42,7 @@ class Person(models.Model):
     username = models.CharField(max_length=100)
     email = models.CharField(max_length=255)
     regDate = models.DateTimeField(auto_now_add=True)
-    profilePic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+    profilePic = models.ImageField(upload_to='profile_pics/', null=True, blank=True, default='profile_pics/profile_pic_anon.svg')
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     ROLE_CHOICES = [
         ('user', 'User'),

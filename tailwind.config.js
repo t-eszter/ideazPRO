@@ -30,6 +30,7 @@ module.exports = {
         rubik: ["Rubik", "sans-serif"],
         kumbh: ["Kumbh Sans", "sans-serif"],
       },
+
       backgroundSize: {
         "size-200": "200% 200%",
       },
@@ -38,6 +39,7 @@ module.exports = {
         "pos-100": "100% 100%",
       },
       colors: {
+        link: "#0074BD",
         lochmara: {
           900: "#005a8a",
           800: "#0064a0",
