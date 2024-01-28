@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, re_path
 
 from . import views
-from .api import IdeaGroupList, GroupDetailView, ideas_for_group, IdeaAPIView, get_csrf_token, create_idea_group, ideas_for_guest
+from .api import IdeaGroupList, GroupDetailView, ideas_for_group, IdeaAPIView, get_csrf_token, create_idea_group, ideas_for_guest, UpdateIdeaView
 
 urlpatterns = [
     #API
@@ -14,6 +14,8 @@ urlpatterns = [
 
 
     path('api/group/<uuid:id>/', ideas_for_guest, name='guest-user-view'),
+    path('api/group/<uuid:idea_id>/like', UpdateIdeaView.as_view(), name='guest-user-view'),
+
 
     path('api/ideas/', IdeaAPIView.as_view(), name='post_idea'),
 

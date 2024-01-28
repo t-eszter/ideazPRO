@@ -32,3 +32,8 @@ class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
         fields = '__all__'
+
+class IdeaUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Idea
+        fields = ['likes']

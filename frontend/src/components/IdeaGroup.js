@@ -7,6 +7,7 @@ import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import DraggableIdeaCard from "./DraggableIdeaCard";
 import Header from "./Header";
+import CSRFToken, { getCookie } from "./csrftoken";
 
 const IdeaGroup = () => {
   const [ideaGroups, setIdeaGroups] = useState([]);
@@ -143,6 +144,41 @@ const IdeaGroup = () => {
     navigate(`/${organizationName}/${group.slug}/`);
   };
 
+  const handleLike = async (ideaId, increment) => {
+    try {
+      // Prepare FormData
+      const formData = new FormData();
+      formData.append("increment", increment);
+      formData.append("csrfmiddlewaretoken", getCookie("csrftoken"));
+
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+
+      // Fetch request
+      const response = await fetch(`/api/ideas/${ideaId}/like/`, {
+        method: "PUT",
+        body: formData,
+      });
+
+      // Error handling
+      if (!response.ok) {
+        throw new Error("Failed to like the idea");
+      }
+
+      // Parsing the response
+      const updatedIdea = await response.json();
+
+      // Update the idea's likes in the local state
+      const updatedIdeas = ideas.map(
+        (idea) => (idea.id === ideaId ? updatedIdea : idea) // Use the updated idea from the response
+      );
+      setIdeas(updatedIdeas);
+    } catch (error) {
+      console.error("Error liking the idea:", error);
+    }
+  };
+
   return (
     <div className="h-screen">
       <Header />
@@ -158,6 +194,7 @@ const IdeaGroup = () => {
                 idea={idea}
                 position={positions[idea.id] || { x: 0, y: 0, isMoved: false }}
                 onMove={handleMove}
+                onLike={(increment) => handleLike(idea.id, increment)}
               />
             ))}
         </div>

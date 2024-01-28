@@ -12,7 +12,12 @@ function Header() {
             <a href="#"> Login</a>
           </span>
         </div>
-        <div className="h-10 w-10 rounded-full bg-sinbad-400"></div>
+        <div className="h-10 w-10 rounded-full bg-sinbad-400 flex items-center justfy-center">
+          <img
+            src="/images/profile_pics/profile_pic_anon.svg"
+            className="block mx-auto my-auto"
+          />
+        </div>
       </div>
       {/* Example colored circle */}
     </header>

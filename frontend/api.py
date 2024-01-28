@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
 from .models import IdeaGroup, Idea, Person, Organization
-from .serializers import IdeaGroupSerializer, IdeaSerializer
+from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer
 from rest_framework.permissions import AllowAny
 import subprocess
 import os
@@ -134,3 +134,18 @@ def ideas_for_guest(request, id):
 
     except IdeaGroup.DoesNotExist:
         return Response({'error': 'Group not found'}, status=404)
+
+@permission_classes([AllowAny])
+class UpdateIdeaView(APIView):
+    def put(self, request, id):
+        try:
+            idea = Idea.objects.get(id=idea_id)
+        except Idea.DoesNotExist:
+            return Response({'error': 'Idea not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        increment = request.data.get("increment", 0)
+        idea.likes += increment  # Adjust the likes
+        idea.save()  # Save the changes
+
+        serializer = IdeaUpdateSerializer(idea)
+        return Response(serializer.data, status=status.HTTP_200_OK)

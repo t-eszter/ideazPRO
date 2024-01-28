@@ -1,7 +1,8 @@
 import React from "react";
 import { useDrag } from "react-dnd";
+import LikeCounter from "./LikeCounter";
 
-const DraggableIdeaCard = ({ idea, position, onMove }) => {
+const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
   const [{ isDragging }, dragRef] = useDrag(() => ({
     type: "idea",
     item: { id: idea.id, originalPosition: position },
@@ -43,6 +44,7 @@ const DraggableIdeaCard = ({ idea, position, onMove }) => {
   };
 
   return (
+    <div>
     <div
       ref={dragRef}
       className="flip-card-wrapper rounded p-4 w-72 flex flex-col justify-left "
@@ -66,6 +68,10 @@ const DraggableIdeaCard = ({ idea, position, onMove }) => {
           </div>
         </div>
       </div>
+    </div>
+      <div className="flex items-center justify-between">
+      <LikeCounter idea={idea} onLike={onLike} />
+    </div>
     </div>
   );
 };
