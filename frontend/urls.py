@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, re_path
+from dj_rest_auth.views import LoginView, LogoutView
 
 from . import views
 from .api import IdeaGroupList, GroupDetailView, ideas_for_group, IdeaAPIView, get_csrf_token, create_idea_group, ideas_for_guest, UpdateIdeaView, RegisterView
@@ -20,6 +21,9 @@ urlpatterns = [
 
 
     path('api/ideas/', IdeaAPIView.as_view(), name='post_idea'),
+
+    path('auth/login/', LoginView.as_view(), name='rest_login'),
+    path('auth/logout/', LogoutView.as_view(), name='rest_logout'),
 
     # React
     re_path(r'^(?:.*)/?$', views.index, name='index'),

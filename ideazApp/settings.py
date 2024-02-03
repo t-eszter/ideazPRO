@@ -63,6 +63,7 @@ CORS_ALLOWED_ORIGINS = [
 INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
     'frontend.apps.FrontendConfig',
     'django.contrib.admin',
