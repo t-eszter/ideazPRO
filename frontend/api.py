@@ -6,11 +6,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
 from .models import IdeaGroup, Idea, Person, Organization
-from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer
+from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer, PersonSerializer
 from rest_framework.permissions import AllowAny
 import subprocess
 import os
 from django.conf import settings
+from uuid import UUID
 
 import subprocess
 
@@ -136,16 +137,48 @@ def ideas_for_guest(request, id):
         return Response({'error': 'Group not found'}, status=404)
 
 @permission_classes([AllowAny])
+
 class UpdateIdeaView(APIView):
-    def put(self, request, id):
+    def put(self, request, idea_id):
         try:
-            idea = Idea.objects.get(id=idea_id)
+            # Validate and convert idea_id to a UUID object
+            if isinstance(idea_id, str):
+                uuid_idea_id = UUID(idea_id)
+            else:
+                uuid_idea_id = idea_id
+
+            # Log received data for debugging
+            print("Received idea_id:", uuid_idea_id)
+
+            # Retrieve the idea using the UUID
+            idea = Idea.objects.get(id=uuid_idea_id)
+
+            # Parse and validate the 'increment' value
+            increment = request.data.get("increment", 0)
+            increment_value = int(increment)
+
+            # Log increment value
+            print("Received increment:", increment_value)
+
+            # Update the likes count
+            idea.likes += increment_value
+            idea.save()
+
+            # Serialize the updated idea and return the response
+            serializer = IdeaUpdateSerializer(idea)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
         except Idea.DoesNotExist:
             return Response({'error': 'Idea not found'}, status=status.HTTP_404_NOT_FOUND)
+        except (ValueError, TypeError, AttributeError) as e:
+            # Provide a more detailed error message
+            return Response({'error': 'Invalid input data: {}'.format(str(e))}, status=status.HTTP_400_BAD_REQUEST)
 
-        increment = request.data.get("increment", 0)
-        idea.likes += increment  # Adjust the likes
-        idea.save()  # Save the changes
 
-        serializer = IdeaUpdateSerializer(idea)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class RegisterView(APIView):
+    def post(self, request, format=None):
+        serializer = PersonSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

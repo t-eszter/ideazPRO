@@ -44,19 +44,18 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
   };
 
   return (
-    <div>
     <div
       ref={dragRef}
-      className="flip-card-wrapper rounded p-4 w-72 flex flex-col justify-left "
+      className="flip-card-wrapper rounded  w-72 flex flex-row justify-left "
       style={cardStyle}
     >
       <div className="flip-card h-fit">
         <div className="flip-card-inner h-fit p-6">
           <div className="flip-card-front h-fit">
-            <h3 className="text-lg font-semibold text-gray-700">
+            <h3 className="text-sm font-semibold text-gray-700">
               {idea.title}
             </h3>
-            <p className="text-gray-600">{idea.description}</p>
+            <p className="text-gray-600 text-sm">{idea.description}</p>
           </div>
           <div className="flip-card-back h-fit flex flex-col">
             <span className="text-sm text-gray-500">
@@ -68,10 +67,9 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
           </div>
         </div>
       </div>
-    </div>
       <div className="flex items-center justify-between">
-      <LikeCounter idea={idea} onLike={onLike} />
-    </div>
+        <LikeCounter idea={idea} onLike={onLike} />
+      </div>
     </div>
   );
 };

@@ -38,6 +38,9 @@ module.exports = {
         "pos-0": "0% 0%",
         "pos-100": "100% 100%",
       },
+      dropShadow: {
+        card: "5px 5px rgba(0, 0, 0, 0.05)",
+      },
       colors: {
         link: "#0074BD",
         lochmara: {

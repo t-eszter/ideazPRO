@@ -19,7 +19,7 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
 
   const handleIdeaDescriptionChange = (e) => {
     if (descriptionError) setDescriptionError("");
-    if (e.target.value.length <= 280) {
+    if (e.target.value.length <= 240) {
       setIdeaDescription(e.target.value);
     }
   };
@@ -76,7 +76,7 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
         <label className="form-control w-full max-w-xs">
           <div className="label">
             <span className="label-text" htmlFor="ideaTitle">
-              Title
+              Title:
             </span>
           </div>
           <input
@@ -91,18 +91,19 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
         <label className="form-control">
           <div className="label">
             <span className="label-text" htmlFor="ideaDescription">
-              Your idea
+              My idea:
             </span>
           </div>
           <textarea
             id="ideaDescription"
             value={ideaDescription}
-            maxLength="280"
+            maxLength="300" // Updated character limit
             onChange={handleIdeaDescriptionChange}
             style={{ height: "184px" }}
             className="textarea textarea-bordered w-full mb-2 h-46"
-            placeholder="Idea desciption..."
+            placeholder="Idea description..."
           ></textarea>
+          <div className="text-sm">{ideaDescription.length}/240</div>
         </label>
         {descriptionError && (
           <div className="text-red-500 text-sm">{descriptionError}</div>

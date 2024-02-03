@@ -77,7 +77,7 @@ const IdeaGroup = () => {
         url = `/api/group/${groupId}/`;
         // console.log(url);
       } else {
-        console.error("Invalid URL parameters");
+        // console.error("Invalid URL parameters");
         return;
       }
 
@@ -102,10 +102,10 @@ const IdeaGroup = () => {
           setActiveGroup(data.group); // Set active group using data about the group
           setIdeaGroups([data.group]); // Optionally set ideaGroups to an array containing only this group
           setIdeas(data.ideas); // Set ideas using data about the ideas
-          console.log(data);
+          // console.log(data);
         }
       } catch (error) {
-        console.error("Error fetching idea groups:", error);
+        // console.error("Error fetching idea groups:", error);
       }
     };
 
@@ -121,7 +121,7 @@ const IdeaGroup = () => {
         } else if (isGuestUserMode) {
           url = `/api/group/${activeGroup.id}/`;
         } else {
-          console.error("Invalid mode for fetching ideas");
+          // console.error("Invalid mode for fetching ideas");
           return;
         }
 
@@ -130,7 +130,7 @@ const IdeaGroup = () => {
           const data = await response.json();
           setIdeas(data.ideas);
         } catch (error) {
-          console.error("Error fetching ideas:", error);
+          // console.error("Error fetching ideas:", error);
         }
       }
     };
@@ -146,21 +146,24 @@ const IdeaGroup = () => {
 
   const handleLike = async (ideaId, increment) => {
     try {
-      // Prepare FormData
+      console.log("Async handleLike called with:", ideaId, increment);
+      const csrfToken = getCookie("csrftoken"); // Retrieve the CSRF token
+      // console.log("CSRF Token:", csrfToken); // Log the CSRF token
+
       const formData = new FormData();
       formData.append("increment", increment);
-      formData.append("csrfmiddlewaretoken", getCookie("csrftoken"));
 
       for (let [key, value] of formData.entries()) {
         console.log(key, value);
       }
 
-      // Fetch request
-      const response = await fetch(`/api/ideas/${ideaId}/like/`, {
+      const response = await fetch(`/api/group/${ideaId}/like`, {
         method: "PUT",
+        headers: {
+          "X-CSRFToken": csrfToken, // Include CSRF token in headers
+        },
         body: formData,
       });
-
       // Error handling
       if (!response.ok) {
         throw new Error("Failed to like the idea");
@@ -175,7 +178,7 @@ const IdeaGroup = () => {
       );
       setIdeas(updatedIdeas);
     } catch (error) {
-      console.error("Error liking the idea:", error);
+      // console.error("Error liking the idea:", error);
     }
   };
 
@@ -184,23 +187,30 @@ const IdeaGroup = () => {
       <Header />
       <div
         ref={dropRef}
-        className="h-full flex flex-col justify-between relative bg-alabaster-100"
+        className="h-screen flex flex-col justify-between relative bg-alabaster-100"
       >
-        <div className="flex flex-row flex-wrap p-12 gap-8">
+        <div className="columns-4 gap-8 p-12" style={{ columnGap: "1rem" }}>
           {Array.isArray(ideas) &&
             ideas.map((idea) => (
-              <DraggableIdeaCard
+              <div
                 key={idea.id}
-                idea={idea}
-                position={positions[idea.id] || { x: 0, y: 0, isMoved: false }}
-                onMove={handleMove}
-                onLike={(increment) => handleLike(idea.id, increment)}
-              />
+                className="grid-item mb-8"
+                style={{ breakInside: "avoid" }}
+              >
+                <DraggableIdeaCard
+                  idea={idea}
+                  position={
+                    positions[idea.id] || { x: 0, y: 0, isMoved: false }
+                  }
+                  onMove={handleMove}
+                  onLike={(ideaId, increment) => handleLike(ideaId, increment)}
+                />
+              </div>
             ))}
         </div>
 
         {/* NewIdeaForm */}
-        <div className="fixed bottom-4 right-4">
+        <div className="fixed bottom-4 right-4 z-40">
           <button
             className="flex items-center justify-center w-16 h-16 pt-2.5 text-5xl bg-flamingo-500 text-white p-4 rounded-full"
             onClick={() => setShowNewIdeaForm(true)}
@@ -219,7 +229,7 @@ const IdeaGroup = () => {
           />
         )}
 
-        <ul className="overflow-y-auto flex justify-left gap-8 my-4 mx-8 sticky bottom-8">
+        <ul className="flex justify-left gap-8 py-4 px-8 sticky bottom-0 z-30 bg-alabaster-100">
           {ideaGroups.map((group) => {
             // Check if it's GuestUserMode
             if (isGuestUserMode) {
