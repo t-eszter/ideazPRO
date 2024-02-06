@@ -91,8 +91,12 @@ class PersonSerializer(serializers.ModelSerializer):
         organization_name = validated_data.pop('organization_name')
 
         # Handle the organization logic
-        organization, _ = Organization.objects.get_or_create(name=organization_name)
+        organization, created = Organization.objects.get_or_create(name=organization_name)
         validated_data['organization'] = organization
+
+        # If the organization is newly created, set the person's role to 'admin'
+        if created:
+            validated_data['role'] = 'admin'
 
         # Create the User
         user = UserSerializer.create(UserSerializer(), validated_data=user_data)

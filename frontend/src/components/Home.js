@@ -2,11 +2,18 @@ import React, { useState } from "react";
 import ReactLogo from "./ideaz_logo.svg";
 import { useNavigate } from "react-router-dom";
 import CSRFToken, { getCookie } from "./csrftoken";
-import Header from "./Header";
+import { useAuth } from "./AuthContext";
+import Login from "./Login";
 
 function Home() {
   const [groupName, setgroupName] = useState("");
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  const toggleLoginModal = () => {
+    setIsLoginOpen(!isLoginOpen);
+  };
 
   const createIdeaGroup = async (name) => {
     const formData = new FormData();
@@ -71,6 +78,17 @@ function Home() {
           Create idea board
         </button>
       </form>
+      <p>
+        If you already have an account, you can
+        <a href="#" onClick={toggleLoginModal}>
+          Log in
+        </a>
+        here
+      </p>
+      {/* Login Modal */}
+      {isLoginOpen && (
+        <Login isOpen={isLoginOpen} toggleLogin={toggleLoginModal} />
+      )}
     </div>
   );
 }

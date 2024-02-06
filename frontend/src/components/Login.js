@@ -21,9 +21,9 @@ function Login({ isOpen, toggleLogin }) {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
 
+  // Inside your Login component
   async function handleSubmit(e) {
-    e.preventDefault();
-    setLoginError("");
+    e.preventDefault(); // Prevent default form submission
 
     try {
       const response = await fetch("/auth/login/", {
@@ -40,10 +40,17 @@ function Login({ isOpen, toggleLogin }) {
       }
 
       const data = await response.json();
-      login(data.userName); // Adjust according to your backend response
-      console.log(data.userName);
-      navigate(`/${data.organizationName}/`);
-      toggleLogin();
+      if (data.organizationName) {
+        login(data.userName); // Assuming this updates some global state or context
+        console.log("Login successful for:", data.userName);
+        toggleLogin(); // Close the login modal
+        navigate(`/${data.organizationName}/`); // Navigate to the organization page
+      } else {
+        // Handle case where organizationName is not provided
+        setLoginError(
+          "Login successful, but redirection failed. Organization name missing."
+        );
+      }
     } catch (error) {
       console.error("Login failed:", error);
       setLoginError(error.message || "Login failed. Please try again.");
