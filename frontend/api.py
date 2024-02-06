@@ -1,19 +1,23 @@
+import json
+import os
+import subprocess
+
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import AllowAny
+from django.contrib.auth import authenticate, login
+from django.views.decorators.csrf import csrf_exempt
+from uuid import UUID
+from django.conf import settings
+from rest_framework.authtoken.models import Token
+
 from .models import IdeaGroup, Idea, Person, Organization
 from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer, PersonSerializer
-from rest_framework.permissions import AllowAny
-import subprocess
-import os
-from django.conf import settings
-from uuid import UUID
 
-import subprocess
 
 def check_profanity(text):
     profanity_script = os.path.join(settings.BASE_DIR, 'frontend', 'profanity.mjs')
@@ -182,3 +186,37 @@ class RegisterView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@csrf_exempt  # Use this decorator cautiously and only if necessary
+def login_view(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        username = data['username']
+        password = data['password']
+        user = authenticate(username=username, password=password)
+
+        print('Username:', username)
+        print('Password:', password)
+
+        if user is not None:
+            login(request, user)
+            try:
+                person = Person.objects.get(user=user)
+                if person.organization:
+                    organization_name = person.organization.name
+                else:
+                    organization_name = 'guest'
+
+                token, _ = Token.objects.get_or_create(user=user)
+
+                return JsonResponse({
+                    'key': token.key, 
+                    'organizationName': organization_name,
+                    'userName': user.username,
+                })
+            except Person.DoesNotExist:
+                return JsonResponse({'error': 'Person profile does not exist.'}, status=400)
+        else:
+            return JsonResponse({'error': 'Invalid credentials'}, status=400)
+

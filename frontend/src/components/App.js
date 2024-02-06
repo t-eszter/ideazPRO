@@ -9,24 +9,28 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import IdeaGroup from "./IdeaGroup";
 import Home from "./Home";
 
+import { AuthProvider } from "./AuthContext";
+
 class App extends React.Component {
   render() {
     return (
-      <HelmetProvider>
-        <DndProvider backend={HTML5Backend}>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route
-                path="/:organizationName/:groupSlug"
-                element={<IdeaGroup />}
-              />
-              <Route path="/:organizationName" element={<IdeaGroup />} />
-              <Route path="/guests/:groupId" element={<IdeaGroup />} />
-            </Routes>
-          </Router>
-        </DndProvider>
-      </HelmetProvider>
+      <AuthProvider>
+        <HelmetProvider>
+          <DndProvider backend={HTML5Backend}>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route
+                  path="/:organizationName/:groupSlug"
+                  element={<IdeaGroup />}
+                />
+                <Route path="/:organizationName" element={<IdeaGroup />} />
+                <Route path="/guests/:groupId" element={<IdeaGroup />} />
+              </Routes>
+            </Router>
+          </DndProvider>
+        </HelmetProvider>
+      </AuthProvider>
     );
   }
 }

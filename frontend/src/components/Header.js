@@ -1,18 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Logo from "./ideaz_logo.svg";
 import { IoClose } from "react-icons/io5";
 import { IoShareSocialOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import Register from "./Register";
+import Login from "./Login";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
 function Header() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [userName, setUserName] = useState("Anon"); // Use null to explicitly indicate no user
+  const navigate = useNavigate();
+  const { currentUser, logout } = useAuth();
+
+  useEffect(() => {
+    const storedUserName = localStorage.getItem("userName");
+    setUserName(storedUserName); // This will be null if not logged in, which is fine
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    localStorage.removeItem("token");
+    localStorage.removeItem("userName");
+    setUserName("Anon"); // Or "Anon" if you prefer to default to "Anon" instead of hiding the user-specific UI
+    window.dispatchEvent(new Event("loginSuccess"));
+    console.log(localStorage.username);
+    navigate("/"); // Reuse the same event to trigger UI update
+  };
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedUserName = localStorage.getItem("userName");
+      setUserName(storedUserName || "Anon");
+    };
+
+    // Listen for local storage changes
+    window.addEventListener("storage", handleStorageChange);
+
+    // Cleanup listener
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const updateUserName = (name) => {
+    localStorage.setItem("userName", name);
+    setUserName(name); // Assuming this function is accessible in the login flow
+  };
 
   const toggleRegister = () => {
     setIsRegisterOpen(!isRegisterOpen);
+  };
+
+  const toggleLogin = () => {
+    setIsLoginOpen(!isLoginOpen);
   };
 
   const toggleModal = () => {
@@ -20,6 +63,18 @@ function Header() {
     // Reset the copied state whenever the modal is opened or closed
     setIsCopied(false);
   };
+
+  useEffect(() => {
+    const handleLoginSuccess = () => {
+      const storedUserName = localStorage.getItem("userName");
+      console.log(storedUserName);
+      setUserName(storedUserName || "Anon");
+    };
+
+    window.addEventListener("loginSuccess", handleLoginSuccess);
+
+    return () => window.removeEventListener("loginSuccess", handleLoginSuccess);
+  }, []);
 
   const copyToClipboard = () => {
     // Create a temporary text element
@@ -46,11 +101,11 @@ function Header() {
   };
 
   return (
-    <header className="bg-alabaster-100  px-4 py-2 flex justify-between items-center">
+    <header className="bg-alabaster-100 px-4 py-2 flex justify-between items-center">
       <Link to="/">
         <img src={Logo} alt="Logo" className="h-8" />
       </Link>
-      <div className="flex flex-row gap-8 items-center ">
+      <div className="flex flex-row gap-8 items-center">
         <button
           onClick={toggleModal}
           className="btn-share flex flex-row items-center gap-2"
@@ -59,13 +114,31 @@ function Header() {
           Share
         </button>
         <div className="w-1/11 flex flex-col">
-          <span>Hello, Anon! </span>
+          <span>Hello, {currentUser ? currentUser.name : "Anon"}!</span>
+          {/* Assuming currentUser has a name property */}
           <span className="text-sm flex gap-4">
-            <a href="#" onClick={toggleRegister}>
-              Register
-            </a>
-            <Register isOpen={isRegisterOpen} toggleRegister={toggleRegister} />
-            <a href="#"> Login</a>
+            {currentUser ? (
+              <a href="#" onClick={handleLogout}>
+                Logout
+              </a>
+            ) : (
+              <>
+                <a href="#" onClick={toggleRegister}>
+                  Register
+                </a>
+                {/* The Register component and its modal toggle logic */}
+                <Register
+                  isOpen={isRegisterOpen}
+                  toggleRegister={toggleRegister}
+                />
+
+                <a href="#" onClick={toggleLogin}>
+                  Login
+                </a>
+                {/* The Login component and its modal toggle logic */}
+                <Login isOpen={isLoginOpen} toggleLogin={toggleLogin} />
+              </>
+            )}
           </span>
         </div>
         <div className="h-10 w-10 rounded-full bg-sinbad-400 flex items-center justfy-center">
@@ -75,6 +148,7 @@ function Header() {
           />
         </div>
       </div>
+
       {isModalOpen && (
         <div
           className="fixed inset-0 bg-lochmara-800 bg-opacity-80 z-50 overflow-y-auto h-full w-full z-50"
