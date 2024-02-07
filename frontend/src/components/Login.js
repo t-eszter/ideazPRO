@@ -13,8 +13,6 @@ function Login({ isOpen, toggleLogin }) {
   const [loginError, setLoginError] = useState("");
   const navigate = useNavigate();
 
-  // Now, check if the modal should be open and return early if not.
-  // This check comes after all hooks have been called.
   if (!isOpen) return null;
 
   const handleChange = (e) => {
@@ -40,8 +38,10 @@ function Login({ isOpen, toggleLogin }) {
       }
 
       const data = await response.json();
+      // login(data.userName, data.organizationName);
+
       if (data.organizationName) {
-        login(data.userName); // Assuming this updates some global state or context
+        login(data.userName, data.organizationName); // Assuming this updates some global state or context
         console.log("Login successful for:", data.userName);
         toggleLogin(); // Close the login modal
         navigate(`/${data.organizationName}/`); // Navigate to the organization page

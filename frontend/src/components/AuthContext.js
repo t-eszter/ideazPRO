@@ -9,30 +9,33 @@ export function useAuth() {
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [organizationName, setOrganizationName] = useState("");
 
   useEffect(() => {
-    // Simulate loading the user from local storage or check session
     const user = localStorage.getItem("userName");
-    if (user) {
-      setCurrentUser({ name: user });
+    const orgName = localStorage.getItem("organizationName"); // Retrieve organization name
+    if (user && orgName) {
+      setCurrentUser({ name: user, organizationName: orgName });
     }
   }, []);
 
-  const login = (userName) => {
-    console.log(currentUser);
-    // setAuthState({ ...authState, currentUser: { name: userName } });
+  const login = (userName, orgName) => {
     localStorage.setItem("userName", userName);
-    setCurrentUser({ name: userName });
+    localStorage.setItem("organizationName", orgName);
+    setCurrentUser({ name: userName, organizationName: orgName }); // Ensure this correctly updates the context
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
-    setCurrentUser(null); // This will trigger re-render
+    localStorage.removeItem("organizationName");
+    setCurrentUser(null);
+    setOrganizationName("");
   };
 
   const value = {
     currentUser,
+    organizationName,
     login,
     logout,
   };

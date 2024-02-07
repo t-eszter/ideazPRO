@@ -15,20 +15,23 @@ function Header() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [userName, setUserName] = useState("Anon"); // Use null to explicitly indicate no user
   const navigate = useNavigate();
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, organizationName } = useAuth();
+
+  console.log(currentUser);
 
   useEffect(() => {
     const storedUserName = localStorage.getItem("userName");
-    setUserName(storedUserName); // This will be null if not logged in, which is fine
+    setUserName(storedUserName);
+    console.log("Org name:::" + localStorage.getItem("organizationName"));
   }, []);
 
   const handleLogout = () => {
     logout();
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
+    localStorage.removeItem("organizationName");
     setUserName("Anon"); // Or "Anon" if you prefer to default to "Anon" instead of hiding the user-specific UI
     window.dispatchEvent(new Event("loginSuccess"));
-    console.log(localStorage.username);
     navigate("/"); // Reuse the same event to trigger UI update
   };
 
@@ -44,11 +47,6 @@ function Header() {
     // Cleanup listener
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
-
-  const updateUserName = (name) => {
-    localStorage.setItem("userName", name);
-    setUserName(name); // Assuming this function is accessible in the login flow
-  };
 
   const toggleRegister = () => {
     setIsRegisterOpen(!isRegisterOpen);
@@ -102,9 +100,18 @@ function Header() {
 
   return (
     <header className="bg-alabaster-100 px-4 py-2 flex justify-between items-center">
-      <Link to="/">
-        <img src={Logo} alt="Logo" className="h-8" />
-      </Link>
+      <div className=" flex flex-row gap-4">
+        <Link to="/">
+          <img src={Logo} alt="Logo" className="h-8" />
+        </Link>
+        {currentUser && currentUser.organizationName && (
+          <div className="organization-name">
+            <h2 className="font-kumbh text-3xl">
+              {currentUser.organizationName}
+            </h2>
+          </div>
+        )}
+      </div>
       <div className="flex flex-row gap-8 items-center">
         <button
           onClick={toggleModal}

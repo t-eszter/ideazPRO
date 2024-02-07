@@ -8,7 +8,7 @@ import Login from "./Login";
 function Home() {
   const [groupName, setgroupName] = useState("");
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  // const { currentUser } = useAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const toggleLoginModal = () => {
