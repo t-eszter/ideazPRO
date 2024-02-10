@@ -7,7 +7,7 @@ from .models import IdeaGroup, Idea, Person, Organization
 class IdeaGroupAdmin(admin.ModelAdmin):
     form = IdeaGroupForm 
     prepopulated_fields = {'slug': ('name',)}
-    list_display = ('name', 'description', 'status', 'slug', 'display_organization')
+    list_display = ('id','name', 'description', 'status', 'slug', 'display_organization')
 
     def display_organization(self, obj):
         return obj.organization.name if obj.organization else "No Organization"

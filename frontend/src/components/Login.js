@@ -20,7 +20,7 @@ function Login({ isOpen, toggleLogin }) {
   };
 
   // Inside your Login component
-  async function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission
 
     try {
@@ -38,24 +38,29 @@ function Login({ isOpen, toggleLogin }) {
       }
 
       const data = await response.json();
-      // login(data.userName, data.organizationName);
 
-      if (data.organizationName) {
-        login(data.userName, data.organizationName); // Assuming this updates some global state or context
-        console.log("Login successful for:", data.userName);
+      // Check if organizationId is included in the response
+      if (data.organizationName && data.organizationId !== undefined) {
+        login(data.userName, data.organizationName, data.organizationId);
+        console.log(
+          "Login successful for:",
+          data.userName,
+          data.organizationName,
+          data.organizationId
+        );
         toggleLogin(); // Close the login modal
         navigate(`/${data.organizationName}/`); // Navigate to the organization page
       } else {
-        // Handle case where organizationName is not provided
+        // Handle case where organizationName or organizationId is not provided
         setLoginError(
-          "Login successful, but redirection failed. Organization name missing."
+          "Login successful, but redirection failed. Organization info missing."
         );
       }
     } catch (error) {
       console.error("Login failed:", error);
       setLoginError(error.message || "Login failed. Please try again.");
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">

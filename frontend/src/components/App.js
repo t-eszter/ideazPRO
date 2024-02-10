@@ -8,6 +8,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 
 import IdeaGroup from "./IdeaGroup";
 import Home from "./Home";
+import UserSettings from "./UserSettings";
 
 import { AuthProvider } from "./AuthContext";
 
@@ -20,6 +21,7 @@ class App extends React.Component {
             <Router>
               <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/settings/:username" element={<UserSettings />} />
                 <Route
                   path="/:organizationName/:groupSlug"
                   element={<IdeaGroup />}

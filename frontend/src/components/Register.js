@@ -12,9 +12,11 @@ function Register({ isOpen, toggleRegister }) {
     },
     firstName: "",
     lastName: "",
-    organization_name: "", // Assuming you handle organization through name
+    organization_name: "", // Allow for new organization input
+    existingOrganizationId: null,
   });
 
+  const [organizationDetails, setOrganizationDetails] = useState(null);
   const { groupId } = useParams();
 
   useEffect(() => {
@@ -37,6 +39,30 @@ function Register({ isOpen, toggleRegister }) {
     checkLoginStatus();
   }, [groupId]);
 
+  useEffect(() => {
+    if (groupId) {
+      fetch(`/api/idea-groups/${groupId}/`)
+        .then((response) => response.json())
+        .then((data) => {
+          // Assuming the API returns the organization as part of the IdeaGroup details
+          // and that it includes an organization object with at least an id or name when present
+          setOrganizationDetails(data.organization);
+          // Adjust organization options based on whether an organization is present
+          setOrganizationOptions((prev) => ({
+            ...prev,
+            existingOrganizationId: data.organization
+              ? data.organization.id
+              : null,
+            newOrganizationName: "",
+            joinExisting: !!data.organization,
+          }));
+        })
+        .catch((error) =>
+          console.error("Failed to fetch IdeaGroup details:", error)
+        );
+    }
+  }, [groupId]);
+
   const handleChange = (e) => {
     if (e.target.name in formData.user) {
       setFormData({
@@ -53,57 +79,87 @@ function Register({ isOpen, toggleRegister }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Track if user is logged in
   const [user, setUser] = useState(null);
 
-  const handleSubmit = (e) => {
+  const [organizationOptions, setOrganizationOptions] = useState({
+    existingOrganizationId: null,
+    newOrganizationName: "",
+    joinExisting: true, // Default to joining an existing organization
+  });
+
+  // Example: Handler for changing between joining an existing organization or creating a new one
+  const handleOrganizationChoiceChange = (e) => {
+    const isJoiningExisting = e.target.value === "existing";
+    setOrganizationOptions((prev) => ({
+      ...prev,
+      joinExisting: isJoiningExisting,
+    }));
+  };
+
+  // Example: Handler for updating the new organization name
+  const handleNewOrganizationNameChange = (e) => {
+    setOrganizationOptions((prev) => ({
+      ...prev,
+      newOrganizationName: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({}); // Reset error messages
+    setErrors({}); // Reset error messages before starting
 
-    console.log("Submitting formData:", formData); // This should include idea_group_id if set
-
-    fetch("/api/register/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCookie("csrftoken"), // Ensure CSRF token is included
+    // Initialize the request payload with user information
+    const registrationData = {
+      user: {
+        username: formData.user.username,
+        email: formData.user.email,
+        password: formData.user.password,
       },
-      body: JSON.stringify({
-        ...formData,
-        idea_group_id: groupId, // Assuming your backend handles this field.
-      }),
-    })
-      .then((response) =>
-        response.json().then((data) => ({
-          status: response.status,
-          body: data,
-        }))
-      )
-      .then(({ status, body }) => {
-        if (status >= 400 && status < 600) {
-          setErrors(body);
-          console.error("Registration failed:", body);
-        } else {
-          console.log("Registration successful:", body);
-          setIsRegistered(true);
-          setFormData({
-            user: {
-              username: "",
-              email: "",
-              password: "",
-            },
-            firstName: "",
-            lastName: "",
-            organization_name: "",
-          });
-          setErrors({});
-        }
-      })
-      .catch((error) => {
-        console.error("Network or other error:", error);
-        setErrors({
-          non_field_errors: [
-            "A network or server error occurred. Please try again.",
-          ],
-        });
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      idea_group_id: groupId, // Assuming the backend expects the idea group's ID to link the user
+    };
+
+    // Check if the user opts to create a new organization
+    if (
+      !organizationOptions.joinExisting &&
+      organizationOptions.newOrganizationName
+    ) {
+      registrationData.organization_name =
+        organizationOptions.newOrganizationName;
+    } else if (organizationOptions.joinExisting && organizationDetails) {
+      // If joining an existing organization, use its ID (ensure this logic aligns with your backend's expectation)
+      registrationData.organization_id = organizationDetails.id;
+    }
+
+    try {
+      const registerResponse = await fetch("/api/register/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"), // Include CSRF token as needed
+        },
+        body: JSON.stringify(registrationData),
       });
+
+      if (!registerResponse.ok) {
+        // Handle registration errors
+        const errorData = await registerResponse.json();
+        setErrors(errorData);
+        console.error("Registration failed:", errorData);
+      } else {
+        // Handle successful registration
+        const registerData = await registerResponse.json();
+        console.log("Registration successful:", registerData);
+        setIsRegistered(true);
+        // Perform post-registration actions here, like redirecting the user or clearing the form
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      setErrors({
+        non_field_errors: [
+          "A network or server error occurred. Please try again.",
+        ],
+      });
+    }
   };
 
   if (!isOpen) return null;
@@ -163,14 +219,56 @@ function Register({ isOpen, toggleRegister }) {
               value={formData.idea_group_id} // Ensure this is set based on your app's logic
             />
 
-            <input
-              type="text"
-              name="organization_name"
-              value={formData.organization_name}
-              onChange={handleChange}
-              placeholder="Group or Organization"
-              className="block w-full p-2 mb-4"
-            />
+            {organizationDetails ? (
+              <div>
+                <label>
+                  <input
+                    type="radio"
+                    name="organizationChoice"
+                    value="existing"
+                    checked={organizationOptions.joinExisting}
+                    onChange={() =>
+                      setOrganizationOptions((prev) => ({
+                        ...prev,
+                        joinExisting: true,
+                      }))
+                    }
+                  />
+                  Join existing organization: {organizationDetails.name}
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="organizationChoice"
+                    value="new"
+                    checked={!organizationOptions.joinExisting}
+                    onChange={() =>
+                      setOrganizationOptions((prev) => ({
+                        ...prev,
+                        joinExisting: false,
+                      }))
+                    }
+                  />
+                  Create new organization
+                </label>
+              </div>
+            ) : (
+              <label>
+                Create new organization
+                <input
+                  type="text"
+                  name="newOrganizationName"
+                  value={organizationOptions.newOrganizationName}
+                  onChange={(e) =>
+                    setOrganizationOptions((prev) => ({
+                      ...prev,
+                      newOrganizationName: e.target.value,
+                    }))
+                  }
+                  placeholder="New Organization Name"
+                />
+              </label>
+            )}
             {errors.organization_name && (
               <div className="text-red-500">
                 {errors.organization_name.join(" ")}

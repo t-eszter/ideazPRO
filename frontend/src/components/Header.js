@@ -17,7 +17,15 @@ function Header() {
   const navigate = useNavigate();
   const { currentUser, logout, organizationName } = useAuth();
 
-  console.log(currentUser);
+  const profilePicElement = (
+    <img
+      src={
+        currentUser?.profilePic || "/images/profile_pics/profile_pic_anon.svg"
+      }
+      alt="Profile"
+      className="block mx-auto my-auto h-10 w-10 rounded-full" // Ensure your img tag includes the necessary classes
+    />
+  );
 
   useEffect(() => {
     const storedUserName = localStorage.getItem("userName");
@@ -65,7 +73,7 @@ function Header() {
   useEffect(() => {
     const handleLoginSuccess = () => {
       const storedUserName = localStorage.getItem("userName");
-      console.log(storedUserName);
+      // console.log(storedUserName);
       setUserName(storedUserName || "Anon");
     };
 
@@ -88,7 +96,7 @@ function Header() {
     try {
       var successful = document.execCommand("copy");
       var msg = successful ? "successful" : "unsuccessful";
-      console.log("Copying text command was " + msg);
+      // console.log("Copying text command was " + msg);
       setIsCopied(true); // Update state to indicate the URL has been copied
     } catch (err) {
       console.error("Oops, unable to copy", err);
@@ -101,9 +109,17 @@ function Header() {
   return (
     <header className="bg-alabaster-100 px-4 py-2 flex justify-between items-center">
       <div className=" flex flex-row gap-4">
-        <Link to="/">
-          <img src={Logo} alt="Logo" className="h-8" />
-        </Link>
+        <div className="flex flex-row gap-4">
+          {currentUser && currentUser.organizationName ? (
+            <Link to={`/${currentUser.organizationName}/`}>
+              <img src={Logo} alt="Logo" className="h-8" />
+            </Link>
+          ) : (
+            <Link to="/">
+              <img src={Logo} alt="Logo" className="h-8" />
+            </Link>
+          )}
+        </div>
         {currentUser && currentUser.organizationName && (
           <div className="organization-name">
             <h2 className="font-kumbh text-3xl">
@@ -149,10 +165,15 @@ function Header() {
           </span>
         </div>
         <div className="h-10 w-10 rounded-full bg-sinbad-400 flex items-center justfy-center">
-          <img
-            src="/images/profile_pics/profile_pic_anon.svg"
-            className="block mx-auto my-auto"
-          />
+          {currentUser ? (
+            <Link to={`/settings/${currentUser.name}`} className="text-white">
+              {profilePicElement}
+            </Link>
+          ) : (
+            <div className="h-10 w-10 rounded-full bg-sinbad-400 flex items-center justify-center">
+              {profilePicElement}
+            </div>
+          )}
         </div>
       </div>
 

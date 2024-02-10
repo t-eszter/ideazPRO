@@ -9,33 +9,43 @@ export function useAuth() {
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [organizationName, setOrganizationName] = useState("");
 
   useEffect(() => {
     const user = localStorage.getItem("userName");
-    const orgName = localStorage.getItem("organizationName"); // Retrieve organization name
-    if (user && orgName) {
-      setCurrentUser({ name: user, organizationName: orgName });
+    const orgName = localStorage.getItem("organizationName");
+    const orgId = localStorage.getItem("organizationId"); // Retrieve organization ID
+    if (user && orgName && orgId) {
+      // Ensure orgId is also considered for currentUser setup
+      setCurrentUser({
+        name: user,
+        organizationName: orgName,
+        organizationId: orgId,
+      });
     }
   }, []);
 
-  const login = (userName, orgName) => {
+  const login = (userName, orgName, orgId) => {
+    // Include orgId as a parameter
     localStorage.setItem("userName", userName);
     localStorage.setItem("organizationName", orgName);
-    setCurrentUser({ name: userName, organizationName: orgName }); // Ensure this correctly updates the context
+    localStorage.setItem("organizationId", orgId); // Store organization ID in local storage
+    setCurrentUser({
+      name: userName,
+      organizationName: orgName,
+      organizationId: orgId,
+    }); // Update currentUser to include organization ID
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
     localStorage.removeItem("organizationName");
+    localStorage.removeItem("organizationId"); // Remove organization ID from local storage
     setCurrentUser(null);
-    setOrganizationName("");
   };
 
   const value = {
     currentUser,
-    organizationName,
     login,
     logout,
   };

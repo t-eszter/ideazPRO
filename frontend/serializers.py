@@ -79,36 +79,37 @@ class UserSerializer(serializers.ModelSerializer):
 
 class PersonSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    organization_name = serializers.CharField(write_only=True, allow_blank=False, max_length=100)
+    organization_name = serializers.CharField(write_only=True, allow_blank=True, required=False, max_length=100)
+    organization_id = serializers.IntegerField(write_only=True, required=False)
 
     class Meta:
         model = Person
-        fields = ['id', 'user', 'firstName', 'lastName', 'regDate', 'profilePic', 'organization', 'role', 'organization_name']
-        read_only_fields = ['id', 'regDate']
+        fields = ['id', 'user', 'firstName', 'lastName', 'profilePic', 'organization', 'role', 'organization_name', 'organization_id']
+        read_only_fields = ['id']
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        organization_name = validated_data.pop('organization_name')
+        user = UserSerializer.create(UserSerializer(), validated_data=user_data)
 
-        # Handle the organization logic
-        organization, created = Organization.objects.get_or_create(name=organization_name)
+        organization_id = validated_data.pop('organization_id', None)
+        organization_name = validated_data.pop('organization_name', None)
+        
+        if organization_id:
+            organization = Organization.objects.get(id=organization_id)
+        elif organization_name:
+            organization, _ = Organization.objects.get_or_create(name=organization_name)
+        else:
+            organization = None  # Or handle as needed
+            
+
+        validated_data['user'] = user
         validated_data['organization'] = organization
 
-        # If the organization is newly created, set the person's role to 'admin'
-        if created:
-            validated_data['role'] = 'admin'
-
-        # Create the User
-        user = UserSerializer.create(UserSerializer(), validated_data=user_data)
-        validated_data['user'] = user
-
-        # Create the Person
         person = Person.objects.create(**validated_data)
-
         return person
 
     def update(self, instance, validated_data):
-        # Add custom update logic if necessary
+        # Custom update logic if necessary
         pass
 
 
