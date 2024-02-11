@@ -42,41 +42,8 @@ class IdeaGroup(models.Model):
     def __str__(self):
         return self.name
 
-# class Person(models.Model):
-#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-#     firstName = models.CharField(max_length=100)
-#     lastName = models.CharField(max_length=100)
-#     username = models.CharField(max_length=100)
-#     email = models.CharField(max_length=255)
-#     password = models.CharField(max_length=128)
-#     regDate = models.DateTimeField(auto_now_add=True)
-#     profilePic = models.ImageField(upload_to='profile_pics/', null=True, blank=True, default='profile_pics/profile_pic_anon.svg')
-#     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
-#     ROLE_CHOICES = [
-#         ('user', 'User'),
-#         ('admin', 'Admin'),
-#         ('guest', 'Guest'),
-#     ]
-#     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='guest')
-
-#     def __str__(self):
-#         return self.username
-
-#     def save(self, *args, **kwargs):
-#         if self.organization_id is None and hasattr(self, 'organization_name'):
-#             # Check if an organization with the provided name already exists
-#             if Organization.objects.filter(name=self.organization_name).exists():
-#                 raise ValidationError(f"Organization with name '{self.organization_name}' already exists.")
-#             else:
-#                 # If no organization exists with that name, create a new one
-#                 organization = Organization.objects.create(name=self.organization_name)
-#                 self.organization = organization
-#         self.password = make_password(self.password)
-#         super(Person, self).save(*args, **kwargs)
-
 class Person(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='person')
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     firstName = models.CharField(max_length=100)
     lastName = models.CharField(max_length=100)
     regDate = models.DateTimeField(default=timezone.now)
@@ -90,7 +57,7 @@ class Person(models.Model):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='guest')
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username} Profile"
 
 
 class Idea(models.Model):
@@ -104,4 +71,3 @@ class Idea(models.Model):
 
     def __str__(self):
         return self.title 
-

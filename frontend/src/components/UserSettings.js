@@ -1,130 +1,106 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { getCookie } from "./csrftoken";
 
 import Header from "./Header";
 
 function UserSettings() {
-  const { username } = useParams(); // If you're using dynamic routing to get the username
-  const { updateProfile, getOrganizationMembers } = useAuth(); // Assuming these functions are implemented in your AuthContext
-  const [currentUser, setCurrentUser] = useState(null);
-  const organizationId = localStorage.getItem("organizationId");
-
+  const { currentUser } = useAuth(); // Use currentUser directly from AuthContext
+  console.log(currentUser);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     profilePic: null,
   });
-
-  useEffect(() => {
-    console.log("Auth Context useEffect running");
-    const user = localStorage.getItem("userName");
-    const orgName = localStorage.getItem("organizationName");
-    const orgId = localStorage.getItem("organizationId");
-    console.log("Retrieved from localStorage:", { user, orgName, orgId });
-    if (user && orgName && orgId) {
-      setCurrentUser({
-        name: user,
-        organizationName: orgName,
-        organizationId: orgId,
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (currentUser && currentUser.organizationId) {
-      loadOrganizationMembers(currentUser.organizationId);
-    }
-  }, [currentUser]);
-
   const [members, setMembers] = useState([]);
 
-  useEffect(() => {
-    // Load user data and organization members on component mount
-    // console.log(currentUser);
-    if (currentUser) {
-      setFormData({
-        firstName: currentUser.firstName || "",
-        lastName: currentUser.lastName || "",
-        email: currentUser.email || "",
-        profilePic: currentUser.profilePic || null,
-      });
+  //   useEffect(() => {
+  //     console.log("Current User:", currentUser);
+  //   }, [currentUser]);
 
-      loadOrganizationMembers();
+  // Function to fetch current user's details and organization members
+  useEffect(() => {
+    if (currentUser?.organizationId) {
+      fetchUserData();
+      fetchOrganizationMembers(currentUser.organizationId);
     }
   }, [currentUser]);
 
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch(`/api/person/${currentUser.name}/`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) throw new Error("Network response was not ok");
+      const data = await response.json();
+      setFormData(data);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    }
+  };
+
+  const fetchOrganizationMembers = async (organizationId) => {
+    try {
+      const response = await fetch(
+        `/api/organizations/${organizationId}/members/`,
+        {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        }
+      );
+      if (!response.ok) throw new Error("Network response was not ok");
+      const { members } = await response.json();
+      setMembers(members);
+    } catch (error) {
+      console.error("Error fetching organization members:", error);
+    }
+  };
+
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: files ? files[0] : value,
-    }));
+    const { name, value } = e.target;
+    if (Object.hasOwn(formData, name)) {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Retrieve CSRF token from cookies
-    const csrfToken = getCookie("csrftoken");
+    console.log("handleSubmit triggered");
+    console.log("Current User ID:", currentUser.userId);
 
-    const formData = new FormData();
-    formData.append("firstName", formData.firstName);
-    formData.append("lastName", formData.lastName);
-    formData.append("email", formData.email);
-    // For files, ensure you're handling them correctly on the backend
+    // Construct a new FormData object for submission
+    const submitData = new FormData();
+
+    // Only append fields that are being updated
+    if (formData.firstName) submitData.append("firstName", formData.firstName);
+    if (formData.lastName) submitData.append("lastName", formData.lastName);
+    if (formData.email) submitData.append("email", formData.email);
+
+    // Handle profile picture as a file
     if (formData.profilePic) {
-      formData.append(
-        "profilePic",
-        formData.profilePic,
-        formData.profilePic.name
-      );
+      submitData.append("profilePic", formData.profilePic);
     }
 
     try {
-      const response = await fetch(`/api/person/update/${userId}`, {
-        method: "POST",
-        body: formData,
+      const response = await fetch(`/api/person/update/${currentUser.userId}`, {
+        method: "POST", // Use POST for the operation
+        body: submitData, // Use submitData which includes only fields to update
         headers: {
-          "X-CSRFToken": csrfToken,
+          // No need to set "Content-Type": "application/json" for FormData
+          "X-CSRFToken": getCookie("csrftoken"),
         },
-        credentials: "include", // Necessary for cookies to be sent with the request
+        credentials: "include", // Ensure cookies are included with the request
       });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      // Handle successful profile update here
+      if (!response.ok) throw new Error("Network response was not ok");
+      // Handle success response here, maybe update local state or UI accordingly
     } catch (error) {
       console.error("Error updating profile:", error);
-    }
-  };
-
-  const loadOrganizationMembers = async (organizationId) => {
-    try {
-      // Ensure the URL matches your Django project's URL structure
-      console.log(organizationId);
-      const response = await fetch(
-        `/api/organizations/${organizationId}/members/`,
-        {
-          method: "GET", // A GET request to fetch data
-          headers: {
-            Accept: "application/json", // Expecting JSON response
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const data = await response.json();
-      setMembers(data.members); // Update state with the fetched members
-    } catch (error) {
-      console.error("Error fetching organization members:", error);
     }
   };
 

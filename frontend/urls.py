@@ -3,7 +3,6 @@ from django.urls import path, re_path
 from dj_rest_auth.views import LoginView, LogoutView
 
 from . import views
-# from .api import IdeaGroupList, GroupDetailView, ideas_for_group, IdeaAPIView, get_csrf_token, create_idea_group, ideas_for_guest, UpdateIdeaView, RegisterView, login_view, organization_members, update_person_details
 from .api import *
 
 urlpatterns = [
@@ -15,6 +14,7 @@ urlpatterns = [
     path('api/idea-groups/<uuid:groupId>/', GroupDetailView.as_view(), name='group-detail'),
     path('api/<str:organization_name>/create_idea_group/', create_idea_group, name='create_idea_group_for_org'), #Create new Idea Group for an org
     path('api/create_idea_group/', create_idea_group, name='create_idea_group_for_guest'), #Create new Idea Group for an org
+    path('api/person/<str:username>/', fetch_person_details, name='fetch_person_details'),
 
     path('api/person/update/<int:user_id>/', update_person_details, name='update_person_details'),
 

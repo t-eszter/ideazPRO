@@ -13,34 +13,41 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const user = localStorage.getItem("userName");
     const orgName = localStorage.getItem("organizationName");
-    const orgId = localStorage.getItem("organizationId"); // Retrieve organization ID
-    if (user && orgName && orgId) {
-      // Ensure orgId is also considered for currentUser setup
+    const orgId = localStorage.getItem("organizationId");
+    const userId = localStorage.getItem("userId"); // Retrieve userId from local storage
+
+    if (user && orgName && orgId && userId) {
+      // Check if userId is also available
       setCurrentUser({
         name: user,
         organizationName: orgName,
         organizationId: orgId,
+        userId, // Set userId in currentUser state
       });
     }
   }, []);
 
-  const login = (userName, orgName, orgId) => {
-    // Include orgId as a parameter
+  const login = (userName, orgName, orgId, userId) => {
+    console.log("Logging in with userId:", userId);
     localStorage.setItem("userName", userName);
     localStorage.setItem("organizationName", orgName);
-    localStorage.setItem("organizationId", orgId); // Store organization ID in local storage
+    localStorage.setItem("organizationId", orgId);
+    localStorage.setItem("userId", userId); // Store userId in local storage
+
     setCurrentUser({
       name: userName,
       organizationName: orgName,
       organizationId: orgId,
-    }); // Update currentUser to include organization ID
+      userId, // Include userId in the currentUser state
+    });
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
     localStorage.removeItem("organizationName");
-    localStorage.removeItem("organizationId"); // Remove organization ID from local storage
+    localStorage.removeItem("organizationId");
+    localStorage.removeItem("userId"); // Remove userId from local storage
     setCurrentUser(null);
   };
 

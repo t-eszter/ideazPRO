@@ -18,6 +18,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.views.decorators.http import require_http_methods
+from django.core.files.storage import default_storage
 
 
 from .models import IdeaGroup, Idea, Person, Organization
@@ -252,7 +253,7 @@ def login_view(request):
         data = json.loads(request.body)
         username = data['username']
         password = data['password']
-        user = authenticate(username=username, password=password)
+        user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
@@ -261,8 +262,7 @@ def login_view(request):
                 # Determine the organization name and ID, default to 'guest' and None if not associated with any
                 organization_name = person.organization.name if person.organization else 'guest'
                 organization_id = str(person.organization.id) if person.organization else None
-
-                print(f"Organization Name: {organization_name}, Organization ID: {organization_id}")
+                user_id = user.id  # Retrieve the user's ID
 
                 token, _ = Token.objects.get_or_create(user=user)
 
@@ -271,6 +271,7 @@ def login_view(request):
                     'organizationName': organization_name,
                     'organizationId': organization_id,  # Include organization ID in the response
                     'userName': user.username,
+                    'userId': user_id,  # Include the user's ID in the response
                 })
             except Person.DoesNotExist:
                 # This branch should theoretically never be reached since users without a Person profile cannot login
@@ -287,8 +288,8 @@ def organization_members(request, organization_id):
         # Retrieve all Person instances related to the organization
         members = organization.members.all().select_related('user')
 
-        for person in Person.objects.all():
-            print(person.firstName, person.organization)
+        # for person in Person.objects.all():
+        #     print(person.firstName, person.organization)
 
         # Create a list to hold member data
         members_data = []
@@ -313,27 +314,56 @@ def organization_members(request, organization_id):
 @require_http_methods(["POST"])
 def update_person_details(request, user_id):
     try:
-        # Assuming the frontend sends the data as a JSON payload
         data = json.loads(request.body)
+        user = User.objects.get(pk=user_id)
+        person = user.person  # Assuming you have 'related_name="person"' in your Person model
 
-        # Fetch the Person instance associated with the user_id
-        person = Person.objects.get(user_id=user_id)
+        # Update User model fields
+        user.email = data.get('email', user.email)
+        if 'password' in data:
+            user.set_password(data['password'])
+        user.save()
 
-        # Update the fields
+        # Update Person model fields
         person.firstName = data.get('firstName', person.firstName)
         person.lastName = data.get('lastName', person.lastName)
-        person.role = data.get('role', person.role)
-
-        # Handle profile picture update if provided
-        if 'profilePic' in request.FILES:
-            profile_pic_file = request.FILES['profilePic']
-            save_path = default_storage.save(f"profile_pics/{profile_pic_file.name}", profile_pic_file)
-            person.profilePic = save_path
-
+        # Handle profile picture and other fields as before
         person.save()
 
-        return JsonResponse({"status": "success", "message": "Person details updated successfully."}, status=200)
-    except Person.DoesNotExist:
-        return JsonResponse({"status": "error", "message": "Person not found."}, status=404)
+        return JsonResponse({"status": "success", "message": "User and Person details updated successfully."})
+    except User.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "User not found."}, status=404)
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+
+
+def fetch_person_details(request, username):
+    if request.method == "GET":
+        # Retrieve the User object based on the username
+        user = get_object_or_404(User, username=username)
+        
+        # Retrieve the associated Person object
+        person = get_object_or_404(Person, user=user)
+        
+        # Construct the data to return
+        person_data = {
+            "username": user.username,
+            "firstName": person.firstName,
+            "email": user.email,
+            "lastName": person.lastName,
+            "regDate": person.regDate.strftime('%Y-%m-%d %H:%M:%S'),
+            "role": person.role,
+            "profilePic": person.profilePic.url if person.profilePic else None,
+            "organizationName": person.organization.name if person.organization else "No Organization",
+            "organizationId": str(person.organization.id) if person.organization else None,
+        }
+        
+        # Return a JsonResponse
+        return JsonResponse(person_data)
+    else:
+        # Method Not Allowed
+        return JsonResponse({"error": "GET request required."}, status=405)
+        
+

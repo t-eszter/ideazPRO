@@ -15,26 +15,31 @@ import { AuthProvider } from "./AuthContext";
 class App extends React.Component {
   render() {
     return (
-      <AuthProvider>
-        <HelmetProvider>
-          <DndProvider backend={HTML5Backend}>
-            <Router>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/settings/:username" element={<UserSettings />} />
-                <Route
-                  path="/:organizationName/:groupSlug"
-                  element={<IdeaGroup />}
-                />
-                <Route path="/:organizationName" element={<IdeaGroup />} />
-                <Route path="/guests/:groupId" element={<IdeaGroup />} />
-              </Routes>
-            </Router>
-          </DndProvider>
-        </HelmetProvider>
-      </AuthProvider>
+      <HelmetProvider>
+        <DndProvider backend={HTML5Backend}>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/settings/:username" element={<UserSettings />} />
+              <Route
+                path="/:organizationName/:groupSlug"
+                element={<IdeaGroup />}
+              />
+              <Route path="/:organizationName" element={<IdeaGroup />} />
+              <Route path="/guests/:groupId" element={<IdeaGroup />} />
+            </Routes>
+          </Router>
+        </DndProvider>
+      </HelmetProvider>
     );
   }
 }
 
-ReactDOM.render(<App />, document.getElementById("root"));
+ReactDOM.render(
+  <React.StrictMode>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  </React.StrictMode>,
+  document.getElementById("root")
+);
