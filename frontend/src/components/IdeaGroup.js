@@ -8,8 +8,25 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import DraggableIdeaCard from "./DraggableIdeaCard";
 import Header from "./Header";
 import CSRFToken, { getCookie } from "./csrftoken";
+import { useAuth } from "./AuthContext";
 
 const IdeaGroup = () => {
+  const { currentUser } = useAuth();
+
+  useEffect(() => {
+    console.log("IdeaGroup component mounted.");
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      // Logic that requires a logged-in user
+      console.log("Logged-in user:", currentUser);
+    } else {
+      // Logic for guests or handling the absence of a logged-in user
+      console.log("No user logged in, proceeding as guest...");
+    }
+  }, [currentUser]);
+
   const [ideaGroups, setIdeaGroups] = useState([]);
   const [activeGroup, setActiveGroup] = useState(null);
   const [ideas, setIdeas] = useState([]);

@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import AllowAny
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_user_model
 from django.views.decorators.csrf import csrf_exempt
 from uuid import UUID
 from django.conf import settings
@@ -19,10 +19,14 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.views.decorators.http import require_http_methods
 from django.core.files.storage import default_storage
-
+from django.contrib.auth import password_validation, update_session_auth_hash
+from rest_framework.permissions import IsAuthenticated
+import uuid
 
 from .models import IdeaGroup, Idea, Person, Organization
 from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer, PersonSerializer
+
+User = get_user_model()
 
 
 def check_profanity(text):
@@ -198,83 +202,98 @@ class UpdateIdeaView(APIView):
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
-        with transaction.atomic():
-            # Extract necessary data from request
-            user_data = request.data.get('user')
-            organization_name = request.data.get('organization_name', None)
-            organization_id = request.data.get('organization_id', None)
-            idea_group_id = request.data.get('idea_group_id')
-            
-            # Validate and create user
-            user = User.objects.create_user(
-                username=user_data['username'],
-                email=user_data['email'],
-                password=user_data['password']
-            )
+        with transaction.atomic():  # Ensure atomicity of the user creation and organization linking
+            try:
+                data = request.data
 
-            # Handle organization logic
-            if organization_name:
-                # User wants to create a new organization and be its admin
-                organization, created = Organization.objects.get_or_create(name=organization_name)
-                role = 'admin'
-            elif organization_id:
-                # User wants to join an existing organization as a user
-                organization = get_object_or_404(Organization, pk=organization_id)
-                role = 'user'
+                # Create the User
+                user = User.objects.create_user(
+                    username=data['username'],
+                    email=data['email'],
+                    password=data['password']
+                )
 
-            # Create the Person instance
-            person = Person.objects.create(
-                user=user,
-                firstName=request.data.get('firstName'),
-                lastName=request.data.get('lastName'),
-                organization=organization,
-                role=role
-            )
+                # Prepare person_data
+                person_data = {
+                    'firstName': data.get('firstName'),
+                    'lastName': data.get('lastName'),
+                    'role': 'guest',  # Default role
+                }
 
-            # If joining an existing organization, no need to update the IdeaGroup's organization
-            # If creating a new organization, and the idea_group_id is provided,
-            # only then associate the IdeaGroup with the new organization
-            if organization and not organization_id and idea_group_id:
-                idea_group = get_object_or_404(IdeaGroup, pk=idea_group_id)
-                idea_group.organization = organization
-                idea_group.save()
+                # Handle organization logic
+                if 'organizationId' in data and data['organizationId']:
+                    organization = Organization.objects.get(id=data['organizationId'])
+                    person_data['organization'] = organization
+                    person_data['role'] = 'user'
+                else:
+                    organization_name = data.get('organization_name', 'Default Organization Name')
+                    organization = Organization.objects.create(name=organization_name)
+                    person_data['organization'] = organization
+                    person_data['role'] = 'admin'
 
-            return Response({
-                "message": "User registered successfully",
-                "userId": user.id,
-                "personId": person.id,
-                "organizationId": organization.id if organization else None,
-                "role": role
-            })
+                # Create the Person
+                person = Person.objects.create(user=user, **person_data)
+
+                # If there's an IdeaGroup ID, update its organization field
+                idea_group_id = data.get('idea_group_id')
+                if idea_group_id:
+                    idea_group = get_object_or_404(IdeaGroup, id=uuid.UUID(idea_group_id))
+                    idea_group.organization = organization
+                    idea_group.save()
+
+                # Create or get a token for the created user
+                token, created = Token.objects.get_or_create(user=user)
+
+                # Automatically log the user in after registration
+                login(request, user)
+
+                return JsonResponse({
+                    'status': 'success',
+                    'userId': user.id,
+                    'personId': person.id,
+                    'organizationId': organization.id,
+                    'token': token.key,
+                    'message': 'User, Person, and Organization created successfully.'
+                })
+
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+
 
 # @csrf_exempt  # Use this decorator cautiously and only if necessary
 def login_view(request):
     if request.method == "POST":
         data = json.loads(request.body)
-        username = data['username']
-        password = data['password']
+        username = data.get('username')
+        password = data.get('password')
         user = authenticate(request, username=username, password=password)
 
-        if user is not None:
+        if user:
             login(request, user)
             try:
+                # Assuming a one-to-one relationship between User and Person
                 person = Person.objects.get(user=user)
-                # Determine the organization name and ID, default to 'guest' and None if not associated with any
-                organization_name = person.organization.name if person.organization else 'guest'
-                organization_id = str(person.organization.id) if person.organization else None
-                user_id = user.id  # Retrieve the user's ID
+                organization_name = 'guest'
+                organization_id = None
+                if person.organization:
+                    organization_name = person.organization.name
+                    organization_id = str(person.organization.id)
 
                 token, _ = Token.objects.get_or_create(user=user)
 
                 return JsonResponse({
                     'key': token.key,
                     'organizationName': organization_name,
-                    'organizationId': organization_id,  # Include organization ID in the response
+                    'organizationId': organization_id,
                     'userName': user.username,
-                    'userId': user_id,  # Include the user's ID in the response
+                    'userId': user.id,  # Use Django User model's ID
+                    'firstName': person.firstName,
+                    'lastName': person.lastName,
+                    'email': user.email  # Email is part of the User model
                 })
             except Person.DoesNotExist:
-                # This branch should theoretically never be reached since users without a Person profile cannot login
                 return JsonResponse({'error': 'Person profile does not exist.'}, status=400)
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=400)
@@ -310,35 +329,6 @@ def organization_members(request, organization_id):
     except ObjectDoesNotExist:
         return JsonResponse({"error": "The requested organization does not exist."}, status=404)
 
-
-@require_http_methods(["POST"])
-def update_person_details(request, user_id):
-    try:
-        data = json.loads(request.body)
-        user = User.objects.get(pk=user_id)
-        person = user.person  # Assuming you have 'related_name="person"' in your Person model
-
-        # Update User model fields
-        user.email = data.get('email', user.email)
-        if 'password' in data:
-            user.set_password(data['password'])
-        user.save()
-
-        # Update Person model fields
-        person.firstName = data.get('firstName', person.firstName)
-        person.lastName = data.get('lastName', person.lastName)
-        # Handle profile picture and other fields as before
-        person.save()
-
-        return JsonResponse({"status": "success", "message": "User and Person details updated successfully."})
-    except User.DoesNotExist:
-        return JsonResponse({"status": "error", "message": "User not found."}, status=404)
-    except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)}, status=500)
-
-
-
-
 def fetch_person_details(request, username):
     if request.method == "GET":
         # Retrieve the User object based on the username
@@ -365,5 +355,80 @@ def fetch_person_details(request, username):
     else:
         # Method Not Allowed
         return JsonResponse({"error": "GET request required."}, status=405)
+
+
+# User setiings
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    user = request.user
+    old_password = request.data.get('old_password')
+    new_password = request.data.get('new_password')
+
+    if not user.check_password(old_password):
+        return JsonResponse({'error': 'Wrong password.'}, status=400)
+
+    try:
+        # Validate the new password
+        password_validation.validate_password(new_password, user)
+        # Set the new password
+        user.set_password(new_password)
+        user.save()
+        # Important: Update the session with the new password
+        update_session_auth_hash(request, user)
+        return JsonResponse({'success': 'Password updated successfully.'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_email(request):
+    user = request.user
+    new_email = request.data.get('new_email')
+    print("Email to update:", new_email)
+    print("Request body:", request.data)
+
+    # Optional: Add additional checks, e.g., format validation or uniqueness check
+    user.email = new_email
+    user.save()
+    return JsonResponse({'success': 'Email updated successfully.'})
+
+@require_http_methods(["POST"])
+def update_person_details(request, user_id):
+    User = get_user_model()
+    try:
+        user = User.objects.get(pk=user_id)
+        person = user.person  # Assuming you have 'related_name="person"' in your Person model
+
+        # print("Received POST data:", request.POST)
+        # print("Received FILES data:", request.FILES)
+
+        # Update User model fields
+        user.email = request.POST.get('email', user.email)
+        if 'password' in request.POST:
+            user.set_password(request.POST['password'])
+        user.save()
+
+        # Update Person model fields
+        person.firstName = request.POST.get('firstName', person.firstName)
+        person.lastName = request.POST.get('lastName', person.lastName)
+
+        # Handle profile picture update if provided
+        if 'profilePic' in request.FILES:
+            profile_pic_file = request.FILES['profilePic']
+            # Save file and set the file path as profilePic value
+            save_path = default_storage.save(f"profile_pics/{profile_pic_file.name}", profile_pic_file)
+            person.profilePic = save_path
+
+        person.save()
+
+        return JsonResponse({"status": "success", "message": "User and Person details updated successfully."})
+    except User.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "User not found."}, status=404)
+    except Person.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Person profile not found."}, status=404)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
         
 

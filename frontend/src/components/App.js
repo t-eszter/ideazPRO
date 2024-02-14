@@ -9,8 +9,17 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import IdeaGroup from "./IdeaGroup";
 import Home from "./Home";
 import UserSettings from "./UserSettings";
+import ProtectedRoute from "./ProtectedRoute"; // Import the modified ProtectedRoute
 
 import { AuthProvider } from "./AuthContext";
+
+import { Outlet } from "react-router-dom";
+
+const ProtectedIdeaGroup = () => (
+  <ProtectedRoute>
+    <IdeaGroup />
+  </ProtectedRoute>
+);
 
 class App extends React.Component {
   render() {
@@ -20,13 +29,31 @@ class App extends React.Component {
           <Router>
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/settings/:username" element={<UserSettings />} />
+              <Route
+                path="/settings/:username"
+                element={
+                  <ProtectedRoute>
+                    <UserSettings />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/:organizationName/:groupSlug"
-                element={<IdeaGroup />}
+                element={<ProtectedIdeaGroup />} // Protected route
               />
-              <Route path="/:organizationName" element={<IdeaGroup />} />
-              <Route path="/guests/:groupId" element={<IdeaGroup />} />
+              <Route
+                path="/:organizationName"
+                element={
+                  <ProtectedRoute>
+                    <Outlet />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<IdeaGroup />} />{" "}
+                {/* Nested route, protected */}
+              </Route>
+              <Route path="/guests/:groupId" element={<IdeaGroup />} />{" "}
+              {/* Accessible to anyone */}
             </Routes>
           </Router>
         </DndProvider>

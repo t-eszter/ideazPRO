@@ -39,21 +39,28 @@ function Login({ isOpen, toggleLogin }) {
 
       const data = await response.json();
 
-      // Check if organizationId is included in the response
-      if (data.organizationName && data.organizationId !== undefined) {
-        login(data.userName, data.organizationName, data.organizationId);
+      // Check if userId is included in the response
+      if (data.organizationName && data.userId !== undefined) {
+        // Adjust this line to include userId
+        login(
+          data.userName,
+          data.organizationName,
+          data.organizationId,
+          data.userId
+        );
         console.log(
           "Login successful for:",
           data.userName,
           data.organizationName,
-          data.organizationId
+          data.organizationId,
+          data.userId // Log userId to confirm it's being received and handled
         );
         toggleLogin(); // Close the login modal
         navigate(`/${data.organizationName}/`); // Navigate to the organization page
       } else {
-        // Handle case where organizationName or organizationId is not provided
+        // Handle case where necessary data is missing
         setLoginError(
-          "Login successful, but redirection failed. Organization info missing."
+          "Login successful, but necessary information is missing."
         );
       }
     } catch (error) {

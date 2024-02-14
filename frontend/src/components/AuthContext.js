@@ -51,11 +51,24 @@ export const AuthProvider = ({ children }) => {
     setCurrentUser(null);
   };
 
-  const value = {
-    currentUser,
-    login,
-    logout,
-  };
+  const [isLoading, setIsLoading] = useState(true);
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  useEffect(() => {
+    // Example: Check local storage or fetch session details
+    const sessionUser = localStorage.getItem("currentUser");
+    if (sessionUser) {
+      setCurrentUser(JSON.parse(sessionUser));
+    }
+    setIsLoading(false);
+  }, []);
+
+  const value = { currentUser, login, logout, isLoading };
+
+  return (
+    <AuthContext.Provider
+      value={{ value, currentUser, login, logout, isLoading }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };

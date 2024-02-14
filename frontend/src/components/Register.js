@@ -85,73 +85,47 @@ function Register({ isOpen, toggleRegister }) {
     joinExisting: true, // Default to joining an existing organization
   });
 
-  // Example: Handler for changing between joining an existing organization or creating a new one
-  const handleOrganizationChoiceChange = (e) => {
-    const isJoiningExisting = e.target.value === "existing";
-    setOrganizationOptions((prev) => ({
-      ...prev,
-      joinExisting: isJoiningExisting,
-    }));
-  };
-
-  // Example: Handler for updating the new organization name
-  const handleNewOrganizationNameChange = (e) => {
-    setOrganizationOptions((prev) => ({
-      ...prev,
-      newOrganizationName: e.target.value,
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({}); // Reset error messages before starting
 
-    // Initialize the request payload with user information
+    // Form the payload according to the backend expectations
     const registrationData = {
-      user: {
-        username: formData.user.username,
-        email: formData.user.email,
-        password: formData.user.password,
-      },
+      username: formData.user.username,
+      email: formData.user.email,
+      password: formData.user.password,
       firstName: formData.firstName,
       lastName: formData.lastName,
-      idea_group_id: groupId, // Assuming the backend expects the idea group's ID to link the user
+      idea_group_id: formData.idea_group_id,
+      // Conditionally add the organization name or ID based on user choice
+      ...(organizationOptions.joinExisting
+        ? { organizationId: formData.existingOrganizationId }
+        : { organization_name: organizationOptions.newOrganizationName }),
+      idea_group_id: formData.idea_group_id,
     };
 
-    // Check if the user opts to create a new organization
-    if (
-      !organizationOptions.joinExisting &&
-      organizationOptions.newOrganizationName
-    ) {
-      registrationData.organization_name =
-        organizationOptions.newOrganizationName;
-    } else if (organizationOptions.joinExisting && organizationDetails) {
-      // If joining an existing organization, use its ID (ensure this logic aligns with your backend's expectation)
-      registrationData.organization_id = organizationDetails.id;
-    }
-
     try {
-      const registerResponse = await fetch("/api/register/", {
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"), // Include CSRF token as needed
+          "X-CSRFToken": getCookie("csrftoken"),
         },
         body: JSON.stringify(registrationData),
       });
 
-      if (!registerResponse.ok) {
-        // Handle registration errors
-        const errorData = await registerResponse.json();
+      if (!response.ok) {
+        const errorData = await response.json();
         setErrors(errorData);
         console.error("Registration failed:", errorData);
-      } else {
-        // Handle successful registration
-        const registerData = await registerResponse.json();
-        console.log("Registration successful:", registerData);
-        setIsRegistered(true);
-        // Perform post-registration actions here, like redirecting the user or clearing the form
+        return;
       }
+
+      // Handle successful registration
+      const registerData = await response.json();
+      console.log("Registration successful:", registerData);
+      setIsRegistered(true);
+      // Optionally, redirect the user or clear the form
     } catch (error) {
       console.error("Registration error:", error);
       setErrors({

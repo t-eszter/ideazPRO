@@ -7,6 +7,7 @@ from .api import *
 
 urlpatterns = [
     #API
+    path('api/register', RegisterView.as_view(), name='register'),
     path('api/<str:organization_name>', IdeaGroupList.as_view(), name='ideagroup-list'), #Org home page
     path('api/<str:organization_name>/<slug:slug>/ideas', ideas_for_group, name='group-ideas'), #All ideas within one idea group
     path('api/<str:organization_name>/<slug:slug>', GroupDetailView.as_view(), name='group-detail'), #One Idea Group view within one org
@@ -16,13 +17,13 @@ urlpatterns = [
     path('api/create_idea_group/', create_idea_group, name='create_idea_group_for_guest'), #Create new Idea Group for an org
     path('api/person/<str:username>/', fetch_person_details, name='fetch_person_details'),
 
-    path('api/person/update/<int:user_id>/', update_person_details, name='update_person_details'),
+    # User settings
+    path('api/person/settings/account/email', change_email, name='update_email'),
+    path('api/person/settings/account/password/<int:user_id>', change_password, name='update_password'),
+    path('api/person/settings/profile/<int:user_id>', update_person_details, name='update_person_details'),
 
     path('api/group/<uuid:id>/', ideas_for_guest, name='guest-user-view'),
     path('api/group/<uuid:idea_id>/like', UpdateIdeaView.as_view(), name='guest-user-view'),
-
-    path('api/register/', RegisterView.as_view(), name='register'),
-
 
     path('api/ideas/', IdeaAPIView.as_view(), name='post_idea'),
 
