@@ -9,6 +9,7 @@ export function useAuth() {
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const user = localStorage.getItem("userName");
@@ -38,8 +39,9 @@ export const AuthProvider = ({ children }) => {
       name: userName,
       organizationName: orgName,
       organizationId: orgId,
-      userId, // Include userId in the currentUser state
+      userId,
     });
+    return `/${orgName}`;
   };
 
   const logout = () => {
@@ -50,8 +52,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("userId"); // Remove userId from local storage
     setCurrentUser(null);
   };
-
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Example: Check local storage or fetch session details

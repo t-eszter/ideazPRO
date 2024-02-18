@@ -1,13 +1,11 @@
 //IdeaGroup.js
 import React, { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import BASE_URL from "./config";
 import NewIdeaForm from "./NewIdeaForm";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
+import { useDrop } from "react-dnd";
 import DraggableIdeaCard from "./DraggableIdeaCard";
 import Header from "./Header";
-import CSRFToken, { getCookie } from "./csrftoken";
+import { getCookie } from "./csrftoken";
 import { useAuth } from "./AuthContext";
 
 const IdeaGroup = () => {
@@ -164,8 +162,6 @@ const IdeaGroup = () => {
   const handleLike = async (ideaId, increment) => {
     try {
       console.log("Async handleLike called with:", ideaId, increment);
-      const csrfToken = getCookie("csrftoken"); // Retrieve the CSRF token
-      // console.log("CSRF Token:", csrfToken); // Log the CSRF token
 
       const formData = new FormData();
       formData.append("increment", increment);
@@ -177,7 +173,7 @@ const IdeaGroup = () => {
       const response = await fetch(`/api/group/${ideaId}/like`, {
         method: "PUT",
         headers: {
-          "X-CSRFToken": csrfToken, // Include CSRF token in headers
+          "X-CSRFToken": getCookie("csrftoken"),
         },
         body: formData,
       });
@@ -195,7 +191,7 @@ const IdeaGroup = () => {
       );
       setIdeas(updatedIdeas);
     } catch (error) {
-      // console.error("Error liking the idea:", error);
+      console.error("Error liking the idea:", error);
     }
   };
 

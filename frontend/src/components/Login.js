@@ -55,8 +55,9 @@ function Login({ isOpen, toggleLogin }) {
           data.organizationId,
           data.userId // Log userId to confirm it's being received and handled
         );
+        console.log("Navigating to:", `/${data.organizationName}`);
+        navigate(`/${data.organizationName}`); // Navigate to the organization page
         toggleLogin(); // Close the login modal
-        navigate(`/${data.organizationName}/`); // Navigate to the organization page
       } else {
         // Handle case where necessary data is missing
         setLoginError(

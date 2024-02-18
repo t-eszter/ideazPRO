@@ -166,10 +166,10 @@ class UpdateIdeaView(APIView):
     def put(self, request, idea_id):
         try:
             # Convert idea_id to UUID
-            uuid_idea_id = UUID(idea_id)
+            # uuid_idea_id = UUID(idea_id)
 
             # Retrieve the idea
-            idea = Idea.objects.get(id=uuid_idea_id)
+            idea = Idea.objects.get(id=idea_id)
 
             # Update likes if 'increment' is provided
             increment = request.data.get("increment")

@@ -1,22 +1,35 @@
 import React from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
-const ProtectedRoute = ({ element: Component }) => {
+const ProtectedRoute = ({ children }) => {
   const { currentUser } = useAuth();
-  const { organizationName } = useParams();
+  const location = useLocation();
+  const params = useParams();
 
-  // Check if user is logged in
-  if (!currentUser) {
-    return <Navigate to="/login" replace />;
-  }
+  // Extracting the first path segment to determine the route context
+  const firstPathSegment = location.pathname.split("/")[1];
+  const isSettingsPage = firstPathSegment === "settings";
 
-  // Check if user belongs to the organization
-  if (currentUser.organization !== organizationName) {
+  // If it's a settings page and the currentUser's name does not match the :username parameter, redirect to home.
+  if (
+    isSettingsPage &&
+    params.username &&
+    currentUser.name !== params.username
+  ) {
+    console.log("Unauthorized access to settings, redirecting...");
     return <Navigate to="/" replace />;
   }
 
-  return <Component />;
+  // If it's not a settings page, check organizationName match for organization-specific routes
+  if (!isSettingsPage && currentUser.organizationName !== firstPathSegment) {
+    console.log(
+      "Unauthorized access to organization-specific page, redirecting..."
+    );
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 };
 
 export default ProtectedRoute;
