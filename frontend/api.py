@@ -432,3 +432,32 @@ def update_person_details(request, user_id):
 
         
 
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+
+def send_invite(request, organization_id):
+    if request.method == "POST":
+        # Assuming the request body is JSON
+        import json
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        email = body['email']
+
+        # Generate your invitation link here. This might involve creating
+        # an invite token or simply crafting a URL with the organization ID.
+        # This example will use a simple URL.
+        invite_link = f"https://ideaz.pro/invite?org={organization_id}"
+
+        # Sending the email
+        send_mail(
+            'You are invited to join our organization',
+            f'Please use the following link to join our organization: {invite_link}',
+            'invite@zuerichadresse.ch',
+            [email],
+            fail_silently=False,
+        )
+
+        return JsonResponse({'status': 'Invitation sent successfully.'}, status=200)
+    else:
+        return JsonResponse({'error': 'Invalid request'}, status=400)

@@ -1883,6 +1883,12 @@ html {
 .mt-10 {
   margin-top: 2.5rem;
 }
+.ml-2 {
+  margin-left: 0.5rem;
+}
+.mt-2 {
+  margin-top: 0.5rem;
+}
 .block {
   display: block;
 }

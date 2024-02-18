@@ -15,13 +15,51 @@ function UserSettings() {
     profilePic: null,
   });
 
+  const [inviteEmail, setInviteEmail] = useState("");
   const [successMessage, setSuccessMessage] = useState({
     email: "",
     password: "",
     profile: "",
+    invite: "",
   });
 
   const [members, setMembers] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (currentUser?.organizationId) {
+      fetchUserData();
+      fetchOrganizationMembers(currentUser.organizationId);
+      // Assuming `isAdmin` is a property of `currentUser`, adjust based on your actual data structure
+      setIsAdmin(currentUser.isAdmin);
+    }
+  }, [currentUser]);
+
+  const sendInvite = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(
+        `/api/organizations/${currentUser.organizationId}/invite`,
+        {
+          method: "POST",
+          body: JSON.stringify({ email: inviteEmail }),
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          credentials: "include",
+        }
+      );
+      if (!response.ok) throw new Error("Network response was not ok");
+      setSuccessMessage((prev) => ({
+        ...prev,
+        invite: "Invitation sent successfully.",
+      }));
+      setInviteEmail(""); // Reset the invite email input after successful send
+    } catch (error) {
+      console.error("Error sending invite:", error);
+    }
+  };
 
   useEffect(() => {
     if (currentUser?.organizationId) {
@@ -39,6 +77,8 @@ function UserSettings() {
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
       setFormData(data);
+      setIsAdmin(data.role === "admin");
+      console.log(data.role);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     }
@@ -159,38 +199,67 @@ function UserSettings() {
     <div>
       <Header />
       <div className="m-8 flex flex-row gap-8">
-        <div
-          id="members-table"
-          className="w-3/4 bg-white shadow-lg rounded-lg p-6"
-        >
-          <h3 className="text-xl font-semibold mb-4">Organization Members</h3>
-          <div className="overflow-x-auto">
-            <table className="table w-full">
-              <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Email</th>
-                  <th>First Name</th>
-                  <th>Last Name</th>
-                  <th>Role</th>
-                  <th>Registration Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {members.map((member, index) => (
-                  <tr key={index}>
-                    <td>{member.username}</td>
-                    <td>{member.email}</td>
-                    <td>{member.firstName}</td>
-                    <td>{member.lastName}</td>
-                    <td>{member.role}</td>
-                    <td>{member.regDate}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {isAdmin && (
+          <div id="left-side" className="w-3/4 flex flex-col gap-8">
+            <div
+              id="invite-table"
+              className=" bg-white shadow-lg rounded-lg p-6"
+            >
+              <h3 className="text-xl font-semibold mb-4">Invite New Member</h3>
+              <form onSubmit={sendInvite} className="flex mt-2">
+                <input
+                  type="email"
+                  name="inviteEmail"
+                  placeholder="Enter email address"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="input input-bordered w-full max-w-xs"
+                />
+                <button type="submit" className="btn btn-primary ml-2">
+                  Send Invite
+                </button>
+              </form>
+              {successMessage.invite && (
+                <div className="text-green-500">{successMessage.invite}</div>
+              )}
+            </div>
+
+            <div
+              id="members-table"
+              className=" bg-white shadow-lg rounded-lg p-6"
+            >
+              <h3 className="text-xl font-semibold mb-4">
+                Organization Members
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="table w-full">
+                  <thead>
+                    <tr>
+                      <th>Username</th>
+                      <th>Email</th>
+                      <th>First Name</th>
+                      <th>Last Name</th>
+                      <th>Role</th>
+                      <th>Registration Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {members.map((member, index) => (
+                      <tr key={index}>
+                        <td>{member.username}</td>
+                        <td>{member.email}</td>
+                        <td>{member.firstName}</td>
+                        <td>{member.lastName}</td>
+                        <td>{member.role}</td>
+                        <td>{member.regDate}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
         <div className="w-1/4 flex flex-col gap-8">
           <div
             id="account-settings"

@@ -30,6 +30,8 @@ urlpatterns = [
     path('auth/login/', login_view, name='custom_rest_login'),
     path('auth/logout/', LogoutView.as_view(), name='rest_logout'),
 
+    path('api/organizations/<int:organization_id>/invite', send_invite, name='send_invite'),
+
     # React
     re_path(r'^(?:.*)/?$', views.index, name='index'),
 

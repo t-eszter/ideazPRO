@@ -18,6 +18,9 @@ from decouple import config
 SECRET_KEY = config('SECRET_KEY')
 DB_SECRET = config('DB_SECRET')
 
+EMAIL_ADDRESS = config('EMAIL_ADDRESS')
+EMAIL_SECRET = config('EMAIL_SECRET')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -184,3 +187,24 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# email settings
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mail.zuerichadresse.ch'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 465
+EMAIL_HOST_USER = EMAIL_ADDRESS
+EMAIL_HOST_PASSWORD = EMAIL_SECRET
+
+# from django.core.mail import send_mail
+
+# send_mail(
+#     'Test Subject',
+#     'This is a test message.',
+#     'invite@zuerichadresse.ch',
+#     ['szentivanej@gmail.com'],
+#     fail_silently=False,
+# )
+
