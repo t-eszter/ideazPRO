@@ -4,9 +4,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import NewIdeaForm from "./NewIdeaForm";
 import { useDrop } from "react-dnd";
 import DraggableIdeaCard from "./DraggableIdeaCard";
-import Header from "./Header";
-import { getCookie } from "./csrftoken";
-import { useAuth } from "./AuthContext";
+import Header from "../components/Header";
+import { getCookie } from "../Authentication/csrftoken";
+import { useAuth } from "../Authentication/AuthContext";
 
 const IdeaGroup = () => {
   const { currentUser } = useAuth();
@@ -191,7 +191,7 @@ const IdeaGroup = () => {
       );
       setIdeas(updatedIdeas);
     } catch (error) {
-      console.error("Error liking the idea:", error);
+      // console.error("Error liking the idea:", error);
     }
   };
 

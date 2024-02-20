@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import Logo from "./ideaz_logo.svg";
+import Logo from "../ideaz_logo.svg";
 import { IoClose } from "react-icons/io5";
 import { IoShareSocialOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import Register from "./Register";
 import Login from "./Login";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../Authentication/AuthContext";
 
 function Header() {
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import CSRFToken, { getCookie } from "./csrftoken";
+import CSRFToken, { getCookie } from "../Authentication/csrftoken";
 import { IoClose } from "react-icons/io5";
 
 const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {

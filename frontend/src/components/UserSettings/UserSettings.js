@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "./AuthContext";
-import { getCookie } from "./csrftoken";
+import { useAuth } from "../Authentication/AuthContext";
+import { getCookie } from "../Authentication/csrftoken";
+import NewIdeaGroupForm from "./NewIdeaGroupForm";
+import IdeaGroupEditModal from "./IdeaGroupEditModal";
 
-import Header from "./Header";
+import Header from "../components/Header";
 
 function UserSettings() {
   const { currentUser } = useAuth();
+  const [showAddGroupForm, setShowAddGroupForm] = useState(false);
   //   console.log(currentUser);
   const [formData, setFormData] = useState({
     email: "",
@@ -25,6 +28,36 @@ function UserSettings() {
 
   const [members, setMembers] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [ideaGroups, setIdeaGroups] = useState([]);
+
+  //Search and pagination of tables
+  const [searchQueryIdeaGroups, setSearchQueryIdeaGroups] = useState("");
+  const [currentPageIdeaGroups, setCurrentPageIdeaGroups] = useState(1);
+  const [ideaGroupsPerPage] = useState(5); // Adjust as needed
+
+  const [searchQueryMembers, setSearchQueryMembers] = useState("");
+  const [currentPageMembers, setCurrentPageMembers] = useState(1);
+  const [membersPerPage] = useState(5); // Adjust as needed
+
+  const [selectedIdeaGroup, setSelectedIdeaGroup] = useState(null);
+
+  const indexOfLastIdeaGroup = currentPageIdeaGroups * ideaGroupsPerPage;
+  const indexOfFirstIdeaGroup = indexOfLastIdeaGroup - ideaGroupsPerPage;
+  const currentIdeaGroups = ideaGroups
+    .filter((group) =>
+      group.name.toLowerCase().includes(searchQueryIdeaGroups.toLowerCase())
+    )
+    .slice(indexOfFirstIdeaGroup, indexOfLastIdeaGroup);
+
+  const indexOfLastMember = currentPageMembers * membersPerPage;
+  const indexOfFirstMember = indexOfLastMember - membersPerPage;
+  const currentMembers = members
+    .filter((member) =>
+      member.username.toLowerCase().includes(searchQueryMembers.toLowerCase())
+    )
+    .slice(indexOfFirstMember, indexOfLastMember);
+
+  //
 
   useEffect(() => {
     if (currentUser?.organizationId) {
@@ -61,11 +94,40 @@ function UserSettings() {
     }
   };
 
-  useEffect(() => {
-    if (currentUser?.organizationId) {
-      fetchUserData();
-      fetchOrganizationMembers(currentUser.organizationId);
+  const handleEditGroup = (group) => {
+    setSelectedIdeaGroup(group);
+    setShowEditGroupModal(true); // You'll need to add this state to track the modal visibility
+  };
+
+  const fetchIdeaGroups = async () => {
+    // Ensure currentUser and its properties are defined before making the API call
+    if (currentUser?.organizationName) {
+      // Encode the organizationName to ensure the URL is correctly formatted
+      const organizationNameEncoded = encodeURIComponent(
+        currentUser.organizationName
+      );
+      const url = `/api/organizations/${organizationNameEncoded}/ideagroups`;
+      try {
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+        });
+        if (!response.ok) {
+          throw new Error("Failed to fetch idea groups");
+        }
+        const data = await response.json();
+        setIdeaGroups(data);
+      } catch (error) {
+        console.error("Error fetching idea groups:", error);
+      }
     }
+  };
+
+  useEffect(() => {
+    fetchIdeaGroups();
   }, [currentUser]);
 
   const fetchUserData = async () => {
@@ -202,9 +264,102 @@ function UserSettings() {
         {isAdmin && (
           <div id="left-side" className="w-3/4 flex flex-col gap-8">
             <div
-              id="invite-table"
-              className=" bg-white shadow-lg rounded-lg p-6"
+              id="ideaGroups-table"
+              className=" bg-white shadow-lg rounded-lg p-6 flex flex-col"
             >
+              <div className="flex justify-between">
+                <h3 className="text-xl font-semibold mb-4">Idea Groups</h3>
+                <input
+                  type="text"
+                  placeholder="Search Idea Groups..."
+                  value={searchQueryIdeaGroups}
+                  onChange={(e) => setSearchQueryIdeaGroups(e.target.value)}
+                  className="input input-sm input-bordered w-full max-w-xs"
+                />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="table w-full">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Description</th>
+                      <th>Status</th>
+                      <th>Edit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentIdeaGroups.map((group) => (
+                      <tr key={group.id}>
+                        <td>{group.name}</td>
+                        <td>{group.description}</td>
+                        <td>{group.status}</td>
+                        <td>
+                          <button
+                            className="btn btn-xs btn-secondary"
+                            onClick={() => handleEditGroup(group)}
+                          >
+                            Edit
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex justify-between mt-4">
+                <button
+                  className="btn btn-primary btn-sm self-end"
+                  onClick={() => setShowAddGroupForm(true)}
+                >
+                  Add New IdeaGroup
+                </button>
+                {showAddGroupForm && (
+                  <NewIdeaGroupForm
+                    onClose={() => setShowAddGroupForm(false)}
+                    onAdd={fetchIdeaGroups}
+                  />
+                )}
+                <div className="join">
+                  <button
+                    className="join-item btn btn-sm"
+                    onClick={() =>
+                      setCurrentPageIdeaGroups((prevPage) =>
+                        Math.max(prevPage - 1, 1)
+                      )
+                    }
+                  >
+                    Previous
+                  </button>
+                  {Array.from(
+                    {
+                      length: Math.ceil(ideaGroups.length / ideaGroupsPerPage),
+                    },
+                    (_, i) => (
+                      <button
+                        className="join-item btn btn-sm"
+                        key={i}
+                        onClick={() => setCurrentPageIdeaGroups(i + 1)}
+                      >
+                        {i + 1}
+                      </button>
+                    )
+                  )}
+                  <button
+                    className="join-item btn btn-sm"
+                    onClick={() =>
+                      setCurrentPageIdeaGroups((prevPage) =>
+                        Math.min(
+                          prevPage + 1,
+                          Math.ceil(ideaGroups.length / ideaGroupsPerPage)
+                        )
+                      )
+                    }
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+              {/* 
               <h3 className="text-xl font-semibold mb-4">Invite New Member</h3>
               <form onSubmit={sendInvite} className="flex mt-2">
                 <input
@@ -221,16 +376,25 @@ function UserSettings() {
               </form>
               {successMessage.invite && (
                 <div className="text-green-500">{successMessage.invite}</div>
-              )}
+              )}*/}
             </div>
-
             <div
               id="members-table"
               className=" bg-white shadow-lg rounded-lg p-6"
             >
-              <h3 className="text-xl font-semibold mb-4">
-                Organization Members
-              </h3>
+              <div className="flex justify-between">
+                <h3 className="text-xl font-semibold mb-4">
+                  Organization Members
+                </h3>
+
+                <input
+                  type="text"
+                  placeholder="Search Organizations Members..."
+                  value={searchQueryMembers}
+                  onChange={(e) => setSearchQueryMembers(e.target.value)}
+                  className="input input-sm input-bordered w-full max-w-xs"
+                />
+              </div>
               <div className="overflow-x-auto">
                 <table className="table w-full">
                   <thead>
@@ -244,8 +408,8 @@ function UserSettings() {
                     </tr>
                   </thead>
                   <tbody>
-                    {members.map((member, index) => (
-                      <tr key={index}>
+                    {currentMembers.map((member) => (
+                      <tr key={member.id}>
                         <td>{member.username}</td>
                         <td>{member.email}</td>
                         <td>{member.firstName}</td>

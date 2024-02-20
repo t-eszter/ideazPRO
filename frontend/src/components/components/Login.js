@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { getCookie } from "./csrftoken";
+import { getCookie } from "../Authentication/csrftoken";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../Authentication/AuthContext";
 
 function Login({ isOpen, toggleLogin }) {
   const { login } = useAuth();

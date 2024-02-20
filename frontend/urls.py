@@ -7,6 +7,10 @@ from .api import *
 
 urlpatterns = [
     #API
+    # IdeaGroups for organization admins
+    path('api/organizations/<str:organization_name>/ideagroups', IdeaGroupList.as_view(), name='ideagroups-list'),
+    path('api/ideagroups', IdeaGroupCreateView.as_view(), name='ideagroup-create'),
+
     path('api/register', RegisterView.as_view(), name='register'),
     path('api/<str:organization_name>', IdeaGroupList.as_view(), name='ideagroup-list'), #Org home page
     path('api/<str:organization_name>/<slug:slug>/ideas', ideas_for_group, name='group-ideas'), #All ideas within one idea group
@@ -31,6 +35,8 @@ urlpatterns = [
     path('auth/logout/', LogoutView.as_view(), name='rest_logout'),
 
     path('api/organizations/<int:organization_id>/invite', send_invite, name='send_invite'),
+
+
 
     # React
     re_path(r'^(?:.*)/?$', views.index, name='index'),

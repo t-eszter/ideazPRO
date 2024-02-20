@@ -38,6 +38,7 @@ class IdeaGroup(models.Model):
         related_name='ideagroups',
         default=None
     )
+    comment = models.CharField(max_length=250, null=True)
 
     def __str__(self):
         return self.name

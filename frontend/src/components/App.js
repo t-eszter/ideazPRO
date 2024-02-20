@@ -1,18 +1,17 @@
 // App.js
 import React from "react";
-import ReactDOM from "react-dom";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { createRoot } from "react-dom/client";
 
-import IdeaGroup from "./IdeaGroup";
+import IdeaGroup from "./IdeaGroup/IdeaGroup";
 import Home from "./Home";
-import UserSettings from "./UserSettings";
-import ProtectedRoute from "./ProtectedRoute"; // Import the modified ProtectedRoute
+import UserSettings from "./UserSettings/UserSettings";
+import ProtectedRoute from "./Authentication/ProtectedRoute";
 
-import { AuthProvider } from "./AuthContext";
+import { AuthProvider } from "./Authentication/AuthContext";
 
 import { Outlet } from "react-router-dom";
 

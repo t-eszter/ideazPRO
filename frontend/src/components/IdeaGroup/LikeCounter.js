@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import CSRFToken from "./csrftoken";
+import CSRFToken from "../Authentication/csrftoken";
 
 const LikeCounter = ({ idea, onLike }) => {
   const [userVote, setUserVote] = useState(null); // null, 1 (liked), -1 (disliked)

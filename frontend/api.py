@@ -7,7 +7,7 @@ from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, CreateAPIView
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate, login, get_user_model
 from django.views.decorators.csrf import csrf_exempt
@@ -42,6 +42,18 @@ class IdeaGroupList(generics.ListAPIView):
     def get_queryset(self):
         organization_name = self.kwargs.get('organization_name')
         return IdeaGroup.objects.filter(organization__name=organization_name)
+
+
+class IdeaGroupCreateView(CreateAPIView):
+    queryset = IdeaGroup.objects.all()
+    serializer_class = IdeaGroupSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Retrieve the Person instance associated with the authenticated user
+        person = get_object_or_404(Person, user=self.request.user)
+        # Use the organization from the Person instance to set the organization foreign key
+        serializer.save(organization=person.organization)
 
 # api.py
 # class GroupDetailView(RetrieveAPIView):

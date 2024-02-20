@@ -192,11 +192,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # email settings
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mail.zuerichadresse.ch'
+EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
 EMAIL_USE_TLS = True
-EMAIL_PORT = 465
-EMAIL_HOST_USER = EMAIL_ADDRESS
-EMAIL_HOST_PASSWORD = EMAIL_SECRET
+EMAIL_PORT = 2525
+EMAIL_HOST_USER = 'dacfecbf875da0'
+EMAIL_HOST_PASSWORD = 'ffeff4109f4b5f'
 
 # from django.core.mail import send_mail
 

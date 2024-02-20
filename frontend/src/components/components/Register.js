@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { getCookie } from "./csrftoken";
+import { getCookie } from "../Authentication/csrftoken";
 import Login from "./Login";
 
 function Register({ isOpen, toggleRegister }) {
