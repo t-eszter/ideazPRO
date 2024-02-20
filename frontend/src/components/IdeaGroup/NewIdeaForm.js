@@ -64,7 +64,7 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
   };
 
   return (
-    <div className="absolute bottom-40 right-4 w-1/4 h-[540px] bg-white p-4 rounded drop-shadow-lg">
+    <div className="absolute bottom-40 right-4 w-1/4 h-[460px] bg-white p-4 rounded drop-shadow-lg">
       <button
         onClick={handleClose}
         className="absolute top-0 right-0 p-2 text-xl"
@@ -109,7 +109,7 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
           <div className="text-red-500 text-sm">{descriptionError}</div>
         )}{" "}
         {/* Error message */}
-        <label className="form-control">
+        {/* <label className="form-control">
           <div className="label">
             <span className="label-text">Posting to</span>
           </div>
@@ -124,7 +124,7 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
               </option>
             ))}
           </select>
-        </label>
+        </label> */}
         <div className="form-control">
           <label className="label cursor-pointer w-40">
             <input

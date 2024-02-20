@@ -475,3 +475,25 @@ class IdeaGroupUpdateView(RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         # Optional: Add any custom update logic here
         serializer.save()
+
+
+class VoteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, idea_id):
+        user = request.user
+        idea = get_object_or_404(Idea, pk=idea_id)
+        vote_type = request.data.get('vote_type')
+
+        if vote_type not in ['upvote', 'downvote']:
+            return Response({"error": "Invalid vote type."}, status=400)
+
+        vote, created = Vote.objects.get_or_create(user=user, idea=idea, defaults={'vote_type': vote_type})
+
+        if not created:
+            # Vote exists, update it if the type has changed
+            if vote.vote_type != vote_type:
+                vote.vote_type = vote_type
+                vote.save()
+
+        return Response({"success": "Vote registered."})

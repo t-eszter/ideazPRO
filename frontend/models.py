@@ -67,10 +67,18 @@ class Idea(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255)
     description = models.TextField()
-    likes = models.IntegerField(default=0)
     postedDate = models.DateTimeField(auto_now_add=True)
     group = models.ForeignKey(IdeaGroup, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True, related_name='ideas')
 
     def __str__(self):
         return self.title 
+
+class Vote(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='votes')
+    idea = models.ForeignKey('Idea', on_delete=models.CASCADE, related_name='votes')
+    vote_type = models.CharField(max_length=10, choices=[('upvote', 'Upvote'), ('downvote', 'Downvote')])
+
+    class Meta:
+        unique_together = ('user', 'idea')
+

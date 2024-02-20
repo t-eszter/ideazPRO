@@ -229,13 +229,17 @@ const IdeaGroup = () => {
 
         {/* NewIdeaForm */}
         <div className="fixed bottom-4 right-4 z-40">
-          <button
-            className="flex items-center justify-center w-16 h-16 pt-2.5 text-5xl bg-flamingo-500 text-white p-4 rounded-full"
-            onClick={() => setShowNewIdeaForm(true)}
-          >
-            +
-          </button>
-          <p className="text-flamingo-500">New Idea</p>
+          {activeGroup && activeGroup.status !== "closed" && (
+            <button
+              className="flex items-center justify-center w-16 h-16 pt-2.5 text-5xl bg-flamingo-500 text-white p-4 rounded-full"
+              onClick={() => setShowNewIdeaForm(true)}
+            >
+              +
+            </button>
+          )}
+          {activeGroup && activeGroup.status !== "closed" && (
+            <p className="text-flamingo-500">New Idea</p>
+          )}
         </div>
 
         {showNewIdeaForm && activeGroup && (
@@ -250,6 +254,7 @@ const IdeaGroup = () => {
         <ul className="flex justify-left gap-8 py-4 px-8 sticky bottom-0 z-30 bg-alabaster-100">
           {ideaGroups.map((group) => {
             // Check if it's GuestUserMode
+
             if (isGuestUserMode) {
               return (
                 <div
@@ -260,6 +265,7 @@ const IdeaGroup = () => {
                 </div>
               );
             } else {
+              const isClosed = group.status === "closed";
               return (
                 <Link
                   to={`/${organizationName}/${group.slug}/`}
@@ -268,7 +274,9 @@ const IdeaGroup = () => {
                     group.id === activeGroup?.id
                       ? "text-white bg-lochmara-900 hover:bg-cerulean-700"
                       : "text-lochmara-900 bg-white border-lochmara-900 border-2 border-solid hover:bg-lochmara-50"
-                  } rounded-lg px-6 py-2 m-1 transition duration-300 ease-in-out`}
+                  } rounded-lg px-6 py-2 m-1 transition duration-300 ease-in-out ${
+                    group.status === "closed" ? "line-through" : ""
+                  }`}
                   onClick={() => handleGroupClick(group)}
                 >
                   {group.name}

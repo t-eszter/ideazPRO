@@ -2154,6 +2154,15 @@ html {
 .h-24 {
   height: 6rem;
 }
+.h-\[500px\] {
+  height: 500px;
+}
+.h-\[480px\] {
+  height: 480px;
+}
+.h-\[460px\] {
+  height: 460px;
+}
 .min-h-screen {
   min-height: 100vh;
 }
@@ -2550,6 +2559,9 @@ html {
 .text-indigo-500 {
   --tw-text-opacity: 1;
   color: rgb(99 102 241 / var(--tw-text-opacity));
+}
+.line-through {
+  text-decoration-line: line-through;
 }
 .opacity-50 {
   opacity: 0.5;
