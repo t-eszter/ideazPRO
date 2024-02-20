@@ -94,11 +94,6 @@ function UserSettings() {
     }
   };
 
-  const handleEditGroup = (group) => {
-    setSelectedIdeaGroup(group);
-    setShowEditGroupModal(true); // You'll need to add this state to track the modal visibility
-  };
-
   const fetchIdeaGroups = async () => {
     // Ensure currentUser and its properties are defined before making the API call
     if (currentUser?.organizationName) {
@@ -257,6 +252,12 @@ function UserSettings() {
     }
   };
 
+  const [showEditGroupModal, setShowEditGroupModal] = useState(false);
+  const handleEditGroup = (group) => {
+    setSelectedIdeaGroup(group);
+    setShowEditGroupModal(true);
+  };
+
   return (
     <div>
       <Header />
@@ -300,6 +301,16 @@ function UserSettings() {
                           >
                             Edit
                           </button>
+                          {showEditGroupModal && selectedIdeaGroup && (
+                            <IdeaGroupEditModal
+                              group={selectedIdeaGroup}
+                              onClose={() => setShowEditGroupModal(false)}
+                              onEdit={() => {
+                                fetchIdeaGroups();
+                                setShowEditGroupModal(false);
+                              }}
+                            />
+                          )}
                         </td>
                       </tr>
                     ))}
