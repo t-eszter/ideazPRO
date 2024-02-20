@@ -8,8 +8,8 @@ from django.contrib.auth.models import User
 class IdeaGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = IdeaGroup
-        fields = ['id', 'name', 'description', 'status', 'slug', 'organization']
-        read_only_fields = ('slug', 'organization')
+        fields = ['id', 'name', 'description', 'status', 'slug', 'organization', 'comment', 'created', 'last_updated']
+        read_only_fields = ('slug', 'organization', 'created', 'last_updated')
 
         def perform_create(self, serializer):
             user_organization = self.request.user.organization

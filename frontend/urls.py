@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/person/settings/account/email', change_email, name='update_email'),
     path('api/person/settings/account/password/<int:user_id>', change_password, name='update_password'),
     path('api/person/settings/profile/<int:user_id>', update_person_details, name='update_person_details'),
+    path('api/ideagroups/update/<uuid:pk>', IdeaGroupUpdateView.as_view(), name='ideagroup-update'),
 
     path('api/group/<uuid:id>/', ideas_for_guest, name='guest-user-view'),
     path('api/group/<uuid:idea_id>/like', UpdateIdeaView.as_view(), name='guest-user-view'),

@@ -7,7 +7,7 @@ from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveAPIView, CreateAPIView
+from rest_framework.generics import RetrieveAPIView, CreateAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate, login, get_user_model
 from django.views.decorators.csrf import csrf_exempt
@@ -55,14 +55,6 @@ class IdeaGroupCreateView(CreateAPIView):
         # Use the organization from the Person instance to set the organization foreign key
         serializer.save(organization=person.organization)
 
-# api.py
-# class GroupDetailView(RetrieveAPIView):
-#     serializer_class = IdeaGroupSerializer
-#     lookup_field = 'slug'
-
-#     def get_queryset(self):
-#         organization_name = self.kwargs.get('organization_name')
-#         return IdeaGroup.objects.filter(organization__name=organization_name)
 
 class GroupDetailView(APIView):
     serializer_class = IdeaGroupSerializer
@@ -473,3 +465,13 @@ def send_invite(request, organization_id):
         return JsonResponse({'status': 'Invitation sent successfully.'}, status=200)
     else:
         return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+class IdeaGroupUpdateView(RetrieveUpdateAPIView):
+    queryset = IdeaGroup.objects.all()
+    serializer_class = IdeaGroupSerializer
+    permission_classes = [IsAuthenticated]  # Customize as needed
+
+    def perform_update(self, serializer):
+        # Optional: Add any custom update logic here
+        serializer.save()

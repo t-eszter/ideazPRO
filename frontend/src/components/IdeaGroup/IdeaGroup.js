@@ -90,42 +90,47 @@ const IdeaGroup = () => {
         url = `/api/${organizationName}`;
       } else if (isGuestUserMode) {
         url = `/api/group/${groupId}/`;
-        // console.log(url);
       } else {
-        // console.error("Invalid URL parameters");
         return;
       }
 
       try {
         const response = await fetch(url);
         const data = await response.json();
-        // console.log("Response Data:", data);
 
         if (isOrganizationMode) {
-          setIdeaGroups(data);
+          // Filter idea groups to only include those with 'active' or 'closed' status
+          const filteredIdeaGroups = data.filter(
+            (group) => group.status === "active" || group.status === "closed"
+          );
 
-          // Set active group based on slug or first group
-          if (groupSlug) {
-            const activeGroupFromSlug = data.find(
-              (group) => group.slug === groupSlug
-            );
-            setActiveGroup(activeGroupFromSlug || data[0]);
-          } else {
-            setActiveGroup(data[0]);
-          }
+          setIdeaGroups(filteredIdeaGroups);
+
+          // Set active group based on slug or first group in the filtered list
+          const activeGroupFromSlug = filteredIdeaGroups.find(
+            (group) => group.slug === groupSlug
+          );
+          setActiveGroup(activeGroupFromSlug || filteredIdeaGroups[0]);
         } else if (isGuestUserMode) {
-          setActiveGroup(data.group); // Set active group using data about the group
-          setIdeaGroups([data.group]); // Optionally set ideaGroups to an array containing only this group
-          setIdeas(data.ideas); // Set ideas using data about the ideas
-          // console.log(data);
+          // Assuming you only deal with one group in guest user mode
+          // No need to filter since you're dealing with a single group
+          setActiveGroup(data.group);
+          setIdeaGroups([data.group]);
+          setIdeas(data.ideas);
         }
       } catch (error) {
-        // console.error("Error fetching idea groups:", error);
+        console.error("Error fetching idea groups:", error);
       }
     };
 
     fetchIdeaGroups();
-  }, [organizationName, groupId, groupSlug]);
+  }, [
+    organizationName,
+    groupId,
+    groupSlug,
+    isOrganizationMode,
+    isGuestUserMode,
+  ]);
 
   useEffect(() => {
     const fetchIdeas = async () => {

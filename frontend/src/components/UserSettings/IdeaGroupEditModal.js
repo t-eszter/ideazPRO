@@ -10,10 +10,10 @@ function IdeaGroupEditModal({ group, onClose, onEdit }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Example API endpoint - adjust URL as needed
-    const url = `/api/ideagroups/${group.id}/update`;
+    const url = `/api/ideagroups/update/${group.id}`;
     try {
       const response = await fetch(url, {
-        method: "PATCH", // Or "PUT", depending on your backend
+        method: "PUT", // Or "PUT", depending on your backend
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": getCookie("csrftoken"),

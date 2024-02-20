@@ -39,6 +39,8 @@ class IdeaGroup(models.Model):
         default=None
     )
     comment = models.CharField(max_length=250, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name

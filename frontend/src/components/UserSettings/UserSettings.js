@@ -285,6 +285,9 @@ function UserSettings() {
                       <th>Name</th>
                       <th>Description</th>
                       <th>Status</th>
+                      <th>Comment</th>
+                      <th>Created At</th> {/* New Header */}
+                      <th>Last Updated</th> {/* New Header */}
                       <th>Edit</th>
                     </tr>
                   </thead>
@@ -294,6 +297,13 @@ function UserSettings() {
                         <td>{group.name}</td>
                         <td>{group.description}</td>
                         <td>{group.status}</td>
+                        <td>{group.comment}</td>
+                        <td>{new Date(group.created).toLocaleString()}</td>{" "}
+                        {/* Display Created */}
+                        <td>
+                          {new Date(group.last_updated).toLocaleString()}
+                        </td>{" "}
+                        {/* Display Last Updated */}
                         <td>
                           <button
                             className="btn btn-xs btn-secondary"
@@ -304,11 +314,11 @@ function UserSettings() {
                           {showEditGroupModal && selectedIdeaGroup && (
                             <IdeaGroupEditModal
                               group={selectedIdeaGroup}
-                              onClose={() => setShowEditGroupModal(false)}
                               onEdit={() => {
                                 fetchIdeaGroups();
                                 setShowEditGroupModal(false);
                               }}
+                              onClose={() => setShowEditGroupModal(false)}
                             />
                           )}
                         </td>
