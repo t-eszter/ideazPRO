@@ -76,9 +76,12 @@ class Idea(models.Model):
 
 class Vote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='votes')
-    idea = models.ForeignKey('Idea', on_delete=models.CASCADE, related_name='votes')
+    idea = models.ForeignKey(Idea, on_delete=models.CASCADE, related_name='votes')
     vote_type = models.CharField(max_length=10, choices=[('upvote', 'Upvote'), ('downvote', 'Downvote')])
 
     class Meta:
         unique_together = ('user', 'idea')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.vote_type} - Idea {self.idea.id}"
 

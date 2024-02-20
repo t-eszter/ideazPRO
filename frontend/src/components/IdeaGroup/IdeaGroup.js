@@ -164,41 +164,38 @@ const IdeaGroup = () => {
     navigate(`/${organizationName}/${group.slug}/`);
   };
 
-  const handleLike = async (ideaId, increment) => {
-    try {
-      console.log("Async handleLike called with:", ideaId, increment);
+  // const handleVote = async (ideaId, newVoteType) => {
+  //   const ideaIndex = ideas.findIndex((idea) => idea.id === ideaId);
+  //   if (ideaIndex === -1) return; // Idea not found
 
-      const formData = new FormData();
-      formData.append("increment", increment);
+  //   const currentVoteType = ideas[ideaIndex].currentUserVote;
 
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
+  //   // If the new vote is the same as the current vote, consider it a vote removal
+  //   const isRemovingVote = newVoteType === currentVoteType;
+  //   const voteTypeToSend = isRemovingVote ? null : newVoteType;
 
-      const response = await fetch(`/api/group/${ideaId}/like`, {
-        method: "PUT",
-        headers: {
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: formData,
-      });
-      // Error handling
-      if (!response.ok) {
-        throw new Error("Failed to like the idea");
-      }
+  //   try {
+  //     const response = await fetch(`/api/ideas/vote/${ideaId}`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "X-CSRFToken": getCookie("csrftoken"),
+  //       },
+  //       body: JSON.stringify({ voteType: voteTypeToSend }),
+  //     });
+  //     if (!response.ok) throw new Error("Failed to update vote");
 
-      // Parsing the response
-      const updatedIdea = await response.json();
+  //     const updatedIdea = await response.json();
 
-      // Update the idea's likes in the local state
-      const updatedIdeas = ideas.map(
-        (idea) => (idea.id === ideaId ? updatedIdea : idea) // Use the updated idea from the response
-      );
-      setIdeas(updatedIdeas);
-    } catch (error) {
-      // console.error("Error liking the idea:", error);
-    }
-  };
+  //     // Update the local state with the new vote
+  //     const updatedIdeas = ideas.map((idea) =>
+  //       idea.id === updatedIdea.id ? { ...idea, ...updatedIdea } : idea
+  //     );
+  //     setIdeas(updatedIdeas);
+  //   } catch (error) {
+  //     console.error("Error updating vote:", error);
+  //   }
+  // };
 
   return (
     <div className="h-screen">
@@ -216,12 +213,13 @@ const IdeaGroup = () => {
                 style={{ breakInside: "avoid" }}
               >
                 <DraggableIdeaCard
+                  // key={idea.id}
                   idea={idea}
                   position={
                     positions[idea.id] || { x: 0, y: 0, isMoved: false }
                   }
                   onMove={handleMove}
-                  onLike={(ideaId, increment) => handleLike(ideaId, increment)}
+                  onLike={(ideaId, increment) => handleVote(ideaId, increment)}
                 />
               </div>
             ))}

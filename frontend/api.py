@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import uuid
 
 from django.http import JsonResponse
 from rest_framework import generics, status
@@ -21,9 +22,9 @@ from django.views.decorators.http import require_http_methods
 from django.core.files.storage import default_storage
 from django.contrib.auth import password_validation, update_session_auth_hash
 from rest_framework.permissions import IsAuthenticated
-import uuid
+from django.db.models import Count, Case, When, IntegerField
 
-from .models import IdeaGroup, Idea, Person, Organization
+from .models import IdeaGroup, Idea, Person, Organization, Vote
 from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer, PersonSerializer
 
 User = get_user_model()
@@ -477,23 +478,41 @@ class IdeaGroupUpdateView(RetrieveUpdateAPIView):
         serializer.save()
 
 
-class VoteView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, idea_id):
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def handle_vote(request, idea_id):
+    if request.method == 'POST':
         user = request.user
-        idea = get_object_or_404(Idea, pk=idea_id)
-        vote_type = request.data.get('vote_type')
+        vote_type = request.data.get('voteType')
 
-        if vote_type not in ['upvote', 'downvote']:
-            return Response({"error": "Invalid vote type."}, status=400)
+        # Find existing vote by the user for the idea
+        vote, created = Vote.objects.get_or_create(user=user, idea_id=idea_id, defaults={'vote_type': vote_type})
 
-        vote, created = Vote.objects.get_or_create(user=user, idea=idea, defaults={'vote_type': vote_type})
+        if not created and vote.vote_type != vote_type:
+            # If vote exists but the type is different, update it
+            vote.vote_type = vote_type
+            vote.save()
+        elif not created and vote.vote_type == vote_type:
+            # If vote exists and the type is the same, remove the vote
+            vote.delete()
 
-        if not created:
-            # Vote exists, update it if the type has changed
-            if vote.vote_type != vote_type:
-                vote.vote_type = vote_type
-                vote.save()
+    # Fetch the total votes for the idea
+    idea_votes = Idea.objects.annotate(
+        upvotes=Count('votes', filter=Q(votes__vote_type='upvote')),
+        downvotes=Count('votes', filter=Q(votes__vote_type='downvote')),
+    ).get(pk=idea_id)
+    
+    total_votes = idea_votes.upvotes - idea_votes.downvotes
 
-        return Response({"success": "Vote registered."})
+    # Check the current user's vote
+    user_vote = None
+    if request.user.is_authenticated:
+        user_vote_qs = Vote.objects.filter(user=request.user, idea_id=idea_id)
+        if user_vote_qs.exists():
+            user_vote = user_vote_qs.first().vote_type
+
+    # Return the vote counts and the current user's vote
+    return Response({
+        'total_votes': total_votes,
+        'user_vote': user_vote
+    })

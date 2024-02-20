@@ -1,46 +1,67 @@
-import React, { useState } from "react";
-import CSRFToken from "../Authentication/csrftoken";
+import React, { useEffect, useState } from "react";
+import { getCookie } from "../Authentication/csrftoken";
 
-const LikeCounter = ({ idea, onLike }) => {
-  const [userVote, setUserVote] = useState(null); // null, 1 (liked), -1 (disliked)
+const LikeCounter = ({ ideaId }) => {
+  const [voteCount, setVoteCount] = useState(0);
+  const [userVote, setUserVote] = useState(null);
 
-  const handleLike = (e, vote) => {
-    e.preventDefault(); // Prevent default form submission
-
-    // User is changing their vote or resetting it if they click the same button again
-    const newVote = userVote === vote ? 0 : vote;
-
-    onLike(idea.id, newVote);
-    setUserVote(newVote);
+  // Function to fetch current votes for an idea
+  const fetchIdeaVotes = async () => {
+    try {
+      const response = await fetch(`/api/ideas/vote/${ideaId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch votes");
+      const data = await response.json();
+      setVoteCount(data.total_votes);
+      setUserVote(data.user_vote);
+    } catch (error) {
+      console.error("Error fetching votes:", error);
+    }
   };
 
+  // Function to submit a vote for an idea
+  const onLike = async (voteType) => {
+    try {
+      const response = await fetch(`/api/ideas/vote/${ideaId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify({ voteType }), // voteType: 'upvote', 'downvote', or null to remove vote
+      });
+      if (!response.ok) throw new Error("Failed to update vote");
+      const updatedData = await response.json();
+      setVoteCount(updatedData.total_votes);
+      setUserVote(updatedData.user_vote);
+    } catch (error) {
+      console.error("Error updating vote:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchIdeaVotes();
+  }, [ideaId]);
+
   return (
-    <div className="bg-white drop-shadow-card flex flex-col items-center">
-      <form onSubmit={(e) => handleLike(e, -1)}>
-        <CSRFToken />
-        <button
-          className={`mx-2 p-2 ${
-            userVote === -1 ? "text-red-500" : "text-gray-500"
-          }`}
-          type="submit"
-          disabled={userVote === 1}
-        >
-          👎
-        </button>
-      </form>
-      <span>{idea.likes}</span>
-      <form onSubmit={(e) => handleLike(e, 1)}>
-        <CSRFToken />
-        <button
-          className={`mx-2 p-2 ${
-            userVote === 1 ? "text-green-500" : "text-gray-500"
-          }`}
-          type="submit"
-          disabled={userVote === -1}
-        >
-          👍
-        </button>
-      </form>
+    <div>
+      <button
+        disabled={userVote === "upvote"}
+        onClick={() => onLike(userVote === "upvote" ? null : "upvote")}
+      >
+        👍
+      </button>
+      <span>{voteCount}</span>
+      <button
+        disabled={userVote === "downvote"}
+        onClick={() => onLike(userVote === "downvote" ? null : "downvote")}
+      >
+        👎
+      </button>
     </div>
   );
 };

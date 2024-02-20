@@ -28,7 +28,7 @@ urlpatterns = [
     path('api/ideagroups/update/<uuid:pk>', IdeaGroupUpdateView.as_view(), name='ideagroup-update'),
 
     path('api/group/<uuid:id>/', ideas_for_guest, name='guest-user-view'),
-    path('api/group/<uuid:idea_id>/like', UpdateIdeaView.as_view(), name='guest-user-view'),
+    path('api/ideas/vote/<uuid:idea_id>', handle_vote, name='handle-vote'),
 
     path('api/ideas/', IdeaAPIView.as_view(), name='post_idea'),
 

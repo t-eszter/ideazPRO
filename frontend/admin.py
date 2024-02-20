@@ -2,7 +2,7 @@ from django.contrib import admin
 from .forms import IdeaGroupForm
 
 # Register your models here.
-from .models import IdeaGroup, Idea, Person, Organization
+from .models import IdeaGroup, Idea, Person, Organization, Vote
 
 class IdeaGroupAdmin(admin.ModelAdmin):
     form = IdeaGroupForm 
@@ -14,7 +14,7 @@ class IdeaGroupAdmin(admin.ModelAdmin):
     display_organization.short_description = 'Organization'
 
 class IdeaAdmin(admin.ModelAdmin):
-    list_display = ('title', 'person', 'display_organization', 'postedDate')
+    list_display = ('id', 'title', 'person', 'display_organization', 'postedDate')
     
     def display_organization(self, obj):
         # Accessing the organization through the related IdeaGroup
@@ -23,7 +23,15 @@ class IdeaAdmin(admin.ModelAdmin):
         return "No Organization"
     display_organization.short_description = 'Organization'
 
+class VoteAdmin(admin.ModelAdmin):
+    list_display = ('user', 'idea', 'vote_type', 'display_idea_title')  # Customize as needed
+    
+    def display_idea_title(self, obj):
+        return obj.idea.title
+    display_idea_title.short_description = 'Idea Title'
+
 admin.site.register(IdeaGroup, IdeaGroupAdmin)
 admin.site.register(Idea, IdeaAdmin)
 admin.site.register(Person)
 admin.site.register(Organization)
+admin.site.register(Vote, VoteAdmin)
