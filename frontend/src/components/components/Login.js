@@ -46,14 +46,16 @@ function Login({ isOpen, toggleLogin }) {
           data.userName,
           data.organizationName,
           data.organizationId,
-          data.userId
+          data.userId,
+          data.personid
         );
         console.log(
           "Login successful for:",
           data.userName,
           data.organizationName,
           data.organizationId,
-          data.userId // Log userId to confirm it's being received and handled
+          data.userId,
+          data.personid // Log userId to confirm it's being received and handled
         );
         console.log("Navigating to:", `/${data.organizationName}`);
         navigate(`/${data.organizationName}`); // Navigate to the organization page

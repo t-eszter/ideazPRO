@@ -40,9 +40,8 @@ const IdeaGroup = () => {
   const [showNewIdeaForm, setShowNewIdeaForm] = useState(false);
 
   const handleNewIdeaAdded = (newIdea) => {
-    if (newIdea.group === activeGroup.id) {
-      setIdeas([...ideas, newIdea]);
-    }
+    // Update the ideas state with the new idea
+    setIdeas((prevIdeas) => [...prevIdeas, newIdea]);
     setShowNewIdeaForm(false);
   };
 
@@ -164,39 +163,6 @@ const IdeaGroup = () => {
     navigate(`/${organizationName}/${group.slug}/`);
   };
 
-  // const handleVote = async (ideaId, newVoteType) => {
-  //   const ideaIndex = ideas.findIndex((idea) => idea.id === ideaId);
-  //   if (ideaIndex === -1) return; // Idea not found
-
-  //   const currentVoteType = ideas[ideaIndex].currentUserVote;
-
-  //   // If the new vote is the same as the current vote, consider it a vote removal
-  //   const isRemovingVote = newVoteType === currentVoteType;
-  //   const voteTypeToSend = isRemovingVote ? null : newVoteType;
-
-  //   try {
-  //     const response = await fetch(`/api/ideas/vote/${ideaId}`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         "X-CSRFToken": getCookie("csrftoken"),
-  //       },
-  //       body: JSON.stringify({ voteType: voteTypeToSend }),
-  //     });
-  //     if (!response.ok) throw new Error("Failed to update vote");
-
-  //     const updatedIdea = await response.json();
-
-  //     // Update the local state with the new vote
-  //     const updatedIdeas = ideas.map((idea) =>
-  //       idea.id === updatedIdea.id ? { ...idea, ...updatedIdea } : idea
-  //     );
-  //     setIdeas(updatedIdeas);
-  //   } catch (error) {
-  //     console.error("Error updating vote:", error);
-  //   }
-  // };
-
   return (
     <div className="h-screen">
       <Header />
@@ -204,7 +170,7 @@ const IdeaGroup = () => {
         ref={dropRef}
         className="h-screen flex flex-col justify-between relative bg-alabaster-100"
       >
-        <div className="columns-4 gap-8 p-12" style={{ columnGap: "1rem" }}>
+        <div className="columns-4 gap-4 p-12">
           {Array.isArray(ideas) &&
             ideas.map((idea) => (
               <div
@@ -219,7 +185,7 @@ const IdeaGroup = () => {
                     positions[idea.id] || { x: 0, y: 0, isMoved: false }
                   }
                   onMove={handleMove}
-                  onLike={(ideaId, increment) => handleVote(ideaId, increment)}
+                  // onLike={(ideaId, increment) => handleVote(ideaId, increment)}
                 />
               </div>
             ))}

@@ -48,7 +48,7 @@ const LikeCounter = ({ ideaId }) => {
   }, [ideaId]);
 
   return (
-    <div>
+    <div className="bg-white flex flex-col w-8 drop-shadow-card">
       <button
         disabled={userVote === "upvote"}
         onClick={() => onLike(userVote === "upvote" ? null : "upvote")}

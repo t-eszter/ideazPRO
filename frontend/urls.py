@@ -30,7 +30,7 @@ urlpatterns = [
     path('api/group/<uuid:id>/', ideas_for_guest, name='guest-user-view'),
     path('api/ideas/vote/<uuid:idea_id>', handle_vote, name='handle-vote'),
 
-    path('api/ideas/', IdeaAPIView.as_view(), name='post_idea'),
+    path('api/ideas/', create_idea, name='post_idea'),
 
     path('auth/login/', login_view, name='custom_rest_login'),
     path('auth/logout/', LogoutView.as_view(), name='rest_logout'),

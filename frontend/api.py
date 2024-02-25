@@ -4,6 +4,7 @@ import subprocess
 import uuid
 
 from django.http import JsonResponse
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -22,7 +23,9 @@ from django.views.decorators.http import require_http_methods
 from django.core.files.storage import default_storage
 from django.contrib.auth import password_validation, update_session_auth_hash
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Count, Case, When, IntegerField
+from django.db.models import Count, Case, When, IntegerField, Q
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from django.views.decorators.http import require_POST
 
 from .models import IdeaGroup, Idea, Person, Organization, Vote
 from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer, PersonSerializer
@@ -107,39 +110,24 @@ def create_idea_group(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class IdeaAPIView(APIView):
-    permission_classes = [AllowAny]
+@require_POST
+def create_idea(request):
+    try:
+        data = json.loads(request.body)
+        person_id = data.get('person', None)
+        person = get_object_or_404(Person, id=person_id) if person_id else None
+        group = get_object_or_404(IdeaGroup, pk=data['group'])
 
-    def post(self, request, *args, **kwargs):
-        data = request.data.copy()  # create mutable copy of request data
+        idea = Idea.objects.create(
+            title=data['title'],
+            description=data['description'],
+            group=group,
+            person=person
+        )
+        return JsonResponse({'message': 'Idea created successfully', 'id': idea.id}, status=201)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
-        #Person
-        # handle case where person is "null"
-        if data.get('person') == 'null':
-            data['person'] = None
-
-        #IdeaGroup
-        group_id = data.get('group')
-        if not group_id:
-            return Response({'error': 'Group ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            # validate if the group exists
-            IdeaGroup.objects.get(id=group_id)
-        except IdeaGroup.DoesNotExist:
-            return Response({'error': 'Group not found'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Profanity Check
-        description = data.get('description', '')
-        if check_profanity(description):
-            return Response({'error': 'Your idea description contains profanity. Please be respectful and rephrase your message.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        #Idea
-        serializer = IdeaSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @permission_classes((AllowAny,))
@@ -296,7 +284,8 @@ def login_view(request):
                     'userId': user.id,  # Use Django User model's ID
                     'firstName': person.firstName,
                     'lastName': person.lastName,
-                    'email': user.email  # Email is part of the User model
+                    'email': user.email,
+                    'personid': person.id,
                 })
             except Person.DoesNotExist:
                 return JsonResponse({'error': 'Person profile does not exist.'}, status=400)

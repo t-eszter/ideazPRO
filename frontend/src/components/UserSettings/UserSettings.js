@@ -70,12 +70,20 @@ function UserSettings() {
 
   const sendInvite = async (e) => {
     e.preventDefault();
+
+    // Example email content. You might want to set this dynamically or gather it from user input
+    const emailContent =
+      "You have been invited to join our organization. Please click the link to accept the invitation.";
+
     try {
       const response = await fetch(
         `/api/organizations/${currentUser.organizationId}/invite`,
         {
           method: "POST",
-          body: JSON.stringify({ email: inviteEmail }),
+          body: JSON.stringify({
+            email: inviteEmail,
+            emailContent: emailContent, // Including the email content in the request
+          }),
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": getCookie("csrftoken"),
@@ -88,7 +96,7 @@ function UserSettings() {
         ...prev,
         invite: "Invitation sent successfully.",
       }));
-      setInviteEmail(""); // Reset the invite email input after successful send
+      setInviteEmail("");
     } catch (error) {
       console.error("Error sending invite:", error);
     }
@@ -380,7 +388,7 @@ function UserSettings() {
                   </button>
                 </div>
               </div>
-              {/* 
+
               <h3 className="text-xl font-semibold mb-4">Invite New Member</h3>
               <form onSubmit={sendInvite} className="flex mt-2">
                 <input
@@ -397,7 +405,7 @@ function UserSettings() {
               </form>
               {successMessage.invite && (
                 <div className="text-green-500">{successMessage.invite}</div>
-              )}*/}
+              )}
             </div>
             <div
               id="members-table"

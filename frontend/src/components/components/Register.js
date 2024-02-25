@@ -18,6 +18,7 @@ function Register({ isOpen, toggleRegister }) {
 
   const [organizationDetails, setOrganizationDetails] = useState(null);
   const { groupId } = useParams();
+  const [organizationNameError, setOrganizationNameError] = useState("");
 
   useEffect(() => {
     if (groupId) {
@@ -64,13 +65,28 @@ function Register({ isOpen, toggleRegister }) {
   }, [groupId]);
 
   const handleChange = (e) => {
-    if (e.target.name in formData.user) {
+    const { name, value } = e.target;
+
+    if (name === "newOrganizationName") {
+      // Check if the value contains spaces
+      if (/\s/.test(value)) {
+        setOrganizationNameError("Organization name cannot contain spaces.");
+      } else {
+        setOrganizationNameError(""); // Clear error message if corrected
+      }
+
+      // Update organization name regardless of error to allow correction
+      setOrganizationOptions((prev) => ({
+        ...prev,
+        newOrganizationName: value,
+      }));
+    } else if (name in formData.user) {
       setFormData({
         ...formData,
-        user: { ...formData.user, [e.target.name]: e.target.value },
+        user: { ...formData.user, [name]: value },
       });
     } else {
-      setFormData({ ...formData, [e.target.name]: e.target.value });
+      setFormData({ ...formData, [name]: value });
     }
   };
 
@@ -116,7 +132,15 @@ function Register({ isOpen, toggleRegister }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        setErrors(errorData);
+        if (errorData.message && errorData.message.includes("already exists")) {
+          // Update the errors state to reflect the username error
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            username: "Username already exists.",
+          }));
+        } else {
+          setErrors(errorData);
+        }
         console.error("Registration failed:", errorData);
         return;
       }
@@ -187,12 +211,15 @@ function Register({ isOpen, toggleRegister }) {
           </button>
           <form onSubmit={handleSubmit}>
             <h2 className="text-center text-2xl mb-4">Register</h2>
+
+            {/* Idea Group ID - Hidden Input */}
             <input
               type="hidden"
               name="idea_group_id"
-              value={formData.idea_group_id} // Ensure this is set based on your app's logic
+              value={formData.idea_group_id}
             />
 
+            {/* Organization Choices */}
             {organizationDetails ? (
               <div>
                 <label>
@@ -225,35 +252,35 @@ function Register({ isOpen, toggleRegister }) {
                   />
                   Create new organization
                 </label>
+                {organizationNameError && (
+                  <div className="text-red-500">{organizationNameError}</div>
+                )}
               </div>
             ) : (
-              <label>
-                Create new organization
-                <input
-                  type="text"
-                  name="newOrganizationName"
-                  value={organizationOptions.newOrganizationName}
-                  onChange={(e) =>
-                    setOrganizationOptions((prev) => ({
-                      ...prev,
-                      newOrganizationName: e.target.value,
-                    }))
-                  }
-                  placeholder="New Organization Name"
-                />
-              </label>
-            )}
-            {errors.organization_name && (
-              <div className="text-red-500">
-                {errors.organization_name.join(" ")}
+              <div>
+                <label>
+                  Create new organization
+                  <input
+                    type="text"
+                    name="newOrganizationName"
+                    value={organizationOptions.newOrganizationName}
+                    onChange={handleChange}
+                    placeholder="New Organization Name"
+                  />
+                </label>
+                {organizationNameError && (
+                  <div className="text-red-500">{organizationNameError}</div>
+                )}
               </div>
             )}
+
+            {/* User Information Inputs */}
             <input
               type="text"
               name="firstName"
               value={formData.firstName}
-              onChange={handleChange}
               placeholder="First Name"
+              onChange={handleChange}
               className="block w-full p-2 mb-4"
             />
             <input
@@ -267,15 +294,18 @@ function Register({ isOpen, toggleRegister }) {
             <input
               type="text"
               name="username"
-              value={formData.username}
+              value={formData.user.username}
               onChange={handleChange}
               placeholder="Username"
               className="block w-full p-2 mb-4"
             />
+            {errors.username && (
+              <div className="text-red-500">{errors.username}</div>
+            )}
             <input
               type="email"
               name="email"
-              value={formData.email}
+              value={formData.user.email}
               onChange={handleChange}
               placeholder="Email"
               className="block w-full p-2 mb-4"
@@ -283,11 +313,13 @@ function Register({ isOpen, toggleRegister }) {
             <input
               type="password"
               name="password"
-              value={formData.password}
+              value={formData.user.password}
               onChange={handleChange}
               placeholder="Password"
               className="block w-full p-2 mb-4"
             />
+
+            {/* Submit Button */}
             <button type="submit" className="w-full p-2 bg-blue-500 text-white">
               Register
             </button>
@@ -296,6 +328,7 @@ function Register({ isOpen, toggleRegister }) {
       </div>
     </div>
   );
+  AQ;
 }
 
 export default Register;

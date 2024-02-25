@@ -44,31 +44,32 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
   };
 
   return (
-    <div
-      ref={dragRef}
-      className="flip-card-wrapper rounded  w-72 flex flex-row justify-left "
-      style={cardStyle}
-    >
-      <div className="flip-card h-fit">
-        <div className="flip-card-inner h-fit p-6">
-          <div className="flip-card-front h-fit">
-            <h3 className="text-sm font-semibold text-gray-700">
-              {idea.title}
-            </h3>
-            <p className="text-gray-600 text-sm">{idea.description}</p>
-          </div>
-          <div className="flip-card-back h-fit flex flex-col">
-            <span className="text-sm text-gray-500">
-              Posted by: <br /> {idea.user || "Anonymous"}
-            </span>
-            <span className="text-sm text-gray-500">
-              Posted on: <br /> {formatDate(idea.postedDate)}
-            </span>
+    <div ref={dragRef} className="flex flex-row">
+      <div
+        className="flip-card-wrapper rounded  w-72 flex flex-row justify-left z-0"
+        style={cardStyle}
+      >
+        <div className="flip-card h-fit">
+          <div className="flip-card-inner h-fit p-6">
+            <div className="flip-card-front h-fit">
+              <h3 className="text-sm font-semibold text-gray-700">
+                {idea.title}
+              </h3>
+              <p className="text-gray-600 text-sm">{idea.description}</p>
+            </div>
+            <div className="flip-card-back h-fit flex flex-col">
+              <span className="text-sm text-gray-500">
+                Posted by: <br /> {idea.posted_by}
+              </span>
+              <span className="text-sm text-gray-500">
+                Posted on: <br /> {formatDate(idea.postedDate)}
+              </span>
+            </div>
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-between">
-        <LikeCounter idea={idea} onLike={onLike} />
+      <div className="flex items-center justify-between text-center z-30">
+        <LikeCounter ideaId={idea.id} onLike={onLike} />
       </div>
     </div>
   );

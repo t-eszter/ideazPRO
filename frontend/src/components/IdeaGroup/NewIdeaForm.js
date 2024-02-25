@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import CSRFToken, { getCookie } from "../Authentication/csrftoken";
 import { IoClose } from "react-icons/io5";
+import { useAuth } from "../Authentication/AuthContext";
 
 const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
   const [ideaTitle, setIdeaTitle] = useState("");
   const [ideaDescription, setIdeaDescription] = useState("");
   const [descriptionError, setDescriptionError] = useState("");
-  const postAnonymously = true;
+  const [isAnonymous, setIsAnonymous] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(activeGroup.id);
+  const { currentUser } = useAuth();
 
   const handleClose = () => {
     onClose();
@@ -19,45 +21,56 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
 
   const handleIdeaDescriptionChange = (e) => {
     if (descriptionError) setDescriptionError("");
-    if (e.target.value.length <= 240) {
-      setIdeaDescription(e.target.value);
-    }
+    setIdeaDescription(e.target.value);
   };
 
   const handleGroupChange = (e) => {
     setSelectedGroup(e.target.value);
   };
 
+  const toggleAnonymous = () => {
+    setIsAnonymous(!isAnonymous);
+  };
   const handlePostIdea = async (event) => {
     event.preventDefault();
 
-    const formData = new FormData();
-    formData.append("title", ideaTitle);
-    formData.append("description", ideaDescription);
-    formData.append("group", selectedGroup);
-    formData.append("person", null);
-    formData.append("csrfmiddlewaretoken", getCookie("csrftoken"));
+    const data = JSON.stringify({
+      title: ideaTitle,
+      description: ideaDescription,
+      group: selectedGroup,
+      person:
+        !isAnonymous && currentUser && currentUser.personId
+          ? currentUser.personId
+          : null,
+    });
 
     try {
+      console.log("Current User:", currentUser);
+      console.log("Posting with personId:", currentUser.personId);
+      console.log("Posting with userId:", currentUser.userId);
       const response = await fetch(`/api/ideas/`, {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: data,
       });
 
       if (!response.ok) {
         const data = await response.json();
         if (data.error) {
           setDescriptionError(data.error);
-          console.log("does not work");
           return;
         }
-        throw new Error("Response not OK");
+        throw new Error("Failed to post idea");
       }
 
       const newIdea = await response.json();
       onNewIdeaAdded(newIdea);
       setIdeaTitle("");
       setIdeaDescription("");
+      handleClose();
     } catch (error) {
       console.error("Error posting idea:", error);
     }
@@ -107,34 +120,17 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
         </label>
         {descriptionError && (
           <div className="text-red-500 text-sm">{descriptionError}</div>
-        )}{" "}
-        {/* Error message */}
-        {/* <label className="form-control">
-          <div className="label">
-            <span className="label-text">Posting to</span>
-          </div>
-          <select
-            className="select select-bordered w-full mb-2"
-            value={selectedGroup}
-            onChange={handleGroupChange}
-          >
-            {ideaGroups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
-              </option>
-            ))}
-          </select>
-        </label> */}
+        )}
         <div className="form-control">
-          <label className="label cursor-pointer w-40">
+          <label className="label cursor-pointer">
             <input
               type="checkbox"
               id="postAnonymously"
-              checked={postAnonymously}
+              checked={isAnonymous}
+              onChange={toggleAnonymous}
               className="checkbox"
-              disabled
             />
-            <span className="label-text" htmlFor="postAnonymously">
+            <span className="label-text w-full pl-2" htmlFor="postAnonymously">
               Post Anonymously
             </span>
           </label>

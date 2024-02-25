@@ -14,11 +14,12 @@ class IdeaGroupSerializer(serializers.ModelSerializer):
         def perform_create(self, serializer):
             user_organization = self.request.user.organization
             serializer.save(organization=user_organization)
-
+        
 
 class IdeaSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=IdeaGroup.objects.all())
     organization = serializers.SerializerMethodField()
+    posted_by = serializers.SerializerMethodField()
 
     class Meta:
         model = Idea
@@ -28,6 +29,12 @@ class IdeaSerializer(serializers.ModelSerializer):
         if obj.group.organization is not None:
             return obj.group.organization.name
         return None 
+
+    def get_posted_by(self, obj):
+        # Assuming 'person' field in Idea model and 'user' field in Person model
+        if obj.person and obj.person.user:
+            return obj.person.user.username
+        return "Anonymous"
 
 # class PersonSerializer(serializers.ModelSerializer):
 #     organization_name = serializers.CharField(write_only=True, allow_blank=False, max_length=100)

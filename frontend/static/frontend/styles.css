@@ -2030,6 +2030,9 @@ html {
 .z-50 {
   z-index: 50;
 }
+.z-0 {
+  z-index: 0;
+}
 .float-right {
   float: right;
 }
@@ -2196,6 +2199,12 @@ html {
 .w-11\/12 {
   width: 91.666667%;
 }
+.w-8 {
+  width: 2rem;
+}
+.w-4 {
+  width: 1rem;
+}
 .max-w-xs {
   max-width: 20rem;
 }
@@ -2271,6 +2280,9 @@ html {
 }
 .self-end {
   align-self: flex-end;
+}
+.self-center {
+  align-self: center;
 }
 .overflow-x-auto {
   overflow-x: auto;
@@ -2460,6 +2472,9 @@ html {
 }
 .pr-8 {
   padding-right: 2rem;
+}
+.pl-2 {
+  padding-left: 0.5rem;
 }
 .text-left {
   text-align: left;

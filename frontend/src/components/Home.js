@@ -59,7 +59,7 @@ function Home() {
       <h3 className="text-4xl font-bold">
         What topic would you like to brainstorm about?
       </h3>
-      <form onSubmit={handleSubmit} className="w-full max-w-xs">
+      <form onSubmit={handleSubmit} className="w-full max-w-xs flex flex-col">
         <CSRFToken />
         <label className="form-control w-full max-w-xs">
           <input
@@ -72,7 +72,7 @@ function Home() {
           />
         </label>
         <button
-          className="btn btn-accent text-white focus:outline-lochmara-500 focus:outlne-2 "
+          className="btn btn-accent text-white focus:outline-lochmara-500 focus:outlne-2 self-center"
           type="submit"
         >
           Create idea board
@@ -81,9 +81,9 @@ function Home() {
       <p>
         If you already have an account, you can
         <a href="#" onClick={toggleLoginModal}>
-          Log in
+          &nbsp;log in&nbsp;
         </a>
-        here
+        here.
       </p>
       {/* Login Modal */}
       {isLoginOpen && (
