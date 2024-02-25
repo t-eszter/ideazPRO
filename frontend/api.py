@@ -505,3 +505,22 @@ def handle_vote(request, idea_id):
         'total_votes': total_votes,
         'user_vote': user_vote
     })
+
+
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
+def send_invite(request, organizationId):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            to_emails = data.get('email')
+            subject = "You're Invited!"
+            content = data.get('emailContent')
+            
+            send_invite(to_emails=to_emails, subject=subject, content=content)
+            return JsonResponse({"message": "Invitation sent successfully."}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    else:
+        return JsonResponse({"error": "Method not allowed"}, status=405)

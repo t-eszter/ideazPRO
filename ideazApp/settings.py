@@ -21,6 +21,8 @@ DB_SECRET = config('DB_SECRET')
 EMAIL_ADDRESS = config('EMAIL_ADDRESS')
 EMAIL_SECRET = config('EMAIL_SECRET')
 
+SENDGRID_API_KEY = config('SENDGRID_API_KEY')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
