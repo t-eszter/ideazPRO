@@ -19,6 +19,8 @@ function Login({ isOpen, toggleLogin }) {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
 
+  var cookie = getCookie("csrftoken");
+  console.log("Cookie: " + cookie);
   // Inside your Login component
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission

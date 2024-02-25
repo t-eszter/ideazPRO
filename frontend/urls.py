@@ -8,6 +8,7 @@ from .api import *
 urlpatterns = [
     #API
     # IdeaGroups for organization admins
+    path('api/organizations/invite/<int:organization_id>', send_invite, name='send_invite'),
     path('api/organizations/<str:organization_name>/ideagroups', IdeaGroupList.as_view(), name='ideagroups-list'),
     path('api/ideagroups', IdeaGroupCreateView.as_view(), name='ideagroup-create'),
 
@@ -35,7 +36,7 @@ urlpatterns = [
     path('auth/login/', login_view, name='custom_rest_login'),
     path('auth/logout/', LogoutView.as_view(), name='rest_logout'),
 
-    path('api/organizations/<int:organization_id>/invite', send_invite, name='send_invite'),
+
 
 
 

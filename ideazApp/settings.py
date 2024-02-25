@@ -190,15 +190,35 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {  # This configures root logger to handle logs from any logger.
+            'handlers': ['console'],
+            'level': 'INFO',  # Adjust as needed
+            'propagate': True,
+        },
+    },
+}
+
+
+
+
 
 # email settings
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'es74.siteground.eu'
-EMAIL_USE_TLS = True
-EMAIL_PORT = 465
-EMAIL_HOST_USER = EMAIL_ADDRESS
-EMAIL_HOST_PASSWORD = EMAIL_SECRET
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'es74.siteground.eu'
+# EMAIL_USE_TLS = True
+# EMAIL_PORT = 465
+# EMAIL_HOST_USER = EMAIL_ADDRESS
+# EMAIL_HOST_PASSWORD = EMAIL_SECRET
 
 # from django.core.mail import send_mail
 

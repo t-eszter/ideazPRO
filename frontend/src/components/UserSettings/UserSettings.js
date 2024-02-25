@@ -77,7 +77,7 @@ function UserSettings() {
 
     try {
       const response = await fetch(
-        `/api/organizations/${currentUser.organizationId}/invite`,
+        `/api/organizations/invite/${currentUser.organizationId}`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -99,6 +99,7 @@ function UserSettings() {
       setInviteEmail("");
     } catch (error) {
       console.error("Error sending invite:", error);
+      alert("Failed to send invite: " + error.message); // Adding this can help debug without needing the console.
     }
   };
 
@@ -273,6 +274,28 @@ function UserSettings() {
         {isAdmin && (
           <div id="left-side" className="w-3/4 flex flex-col gap-8">
             <div
+              id="invite"
+              className=" bg-white shadow-lg rounded-lg p-6 flex flex-col"
+            >
+              <h3 className="text-xl font-semibold mb-4">Invite New Member</h3>
+              <form onSubmit={sendInvite} className="flex mt-2">
+                <input
+                  type="email"
+                  name="inviteEmail"
+                  placeholder="Enter email address"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="input input-bordered w-full max-w-xs"
+                />
+                <button type="submit" className="btn btn-primary ml-2">
+                  Send Invite
+                </button>
+              </form>
+              {successMessage.invite && (
+                <div className="text-green-500">{successMessage.invite}</div>
+              )}
+            </div>
+            <div
               id="ideaGroups-table"
               className=" bg-white shadow-lg rounded-lg p-6 flex flex-col"
             >
@@ -388,24 +411,6 @@ function UserSettings() {
                   </button>
                 </div>
               </div>
-
-              <h3 className="text-xl font-semibold mb-4">Invite New Member</h3>
-              <form onSubmit={sendInvite} className="flex mt-2">
-                <input
-                  type="email"
-                  name="inviteEmail"
-                  placeholder="Enter email address"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  className="input input-bordered w-full max-w-xs"
-                />
-                <button type="submit" className="btn btn-primary ml-2">
-                  Send Invite
-                </button>
-              </form>
-              {successMessage.invite && (
-                <div className="text-green-500">{successMessage.invite}</div>
-              )}
             </div>
             <div
               id="members-table"

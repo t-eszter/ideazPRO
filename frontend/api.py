@@ -26,11 +26,20 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count, Case, When, IntegerField, Q
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET
 
 from .models import IdeaGroup, Idea, Person, Organization, Vote
 from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer, PersonSerializer
 
 User = get_user_model()
+
+@require_GET
+@ensure_csrf_cookie
+@permission_classes((AllowAny,))
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    return HttpResponse("CSRF cookie set")
 
 
 def check_profanity(text):
@@ -128,12 +137,6 @@ def create_idea(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
-
-
-@permission_classes((AllowAny,))
-def get_csrf_token(request):
-    csrf_token = get_token(request)
-    return JsonResponse({'csrfToken': csrf_token})
 
 @api_view(['GET'])
 def ideas_for_guest(request, id):
@@ -509,18 +512,33 @@ def handle_vote(request, idea_id):
 
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+import logging
 
 def send_invite(request, organizationId):
+    print("Received invite request") 
+    logger = logging.getLogger(__name__)
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            to_emails = data.get('email')
+            to_email = data.get('email')  # Assuming this is a single email address
             subject = "You're Invited!"
             content = data.get('emailContent')
             
-            send_invite(to_emails=to_emails, subject=subject, content=content)
+            # Simplified function to send email
+            message = Mail(
+                from_email='invite@ideaz.pro',
+                to_emails=to_email,
+                subject=subject,
+                html_content=content
+            )
+            sg = SendGridAPIClient(os.getenv('SENDGRID_API_KEY'))
+            response = sg.send(message)
+            logger.info(response.status_code, response.body, response.headers)
+            
             return JsonResponse({"message": "Invitation sent successfully."}, status=200)
+
         except Exception as e:
+            logger.error(f"Error sending invite: {str(e)}")
             return JsonResponse({"error": str(e)}, status=500)
     else:
         return JsonResponse({"error": "Method not allowed"}, status=405)
