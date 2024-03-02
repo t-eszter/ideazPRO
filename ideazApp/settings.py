@@ -43,7 +43,7 @@ ALLOWED_HOSTS = [
     "*",  # Allow all host headers
 ]
 
-CORS_ALLOW_HEADERS = "access-control-allow-origin"
+
 
 # CSRF_TRUSTED_ORIGINS = [
 #     "*",
@@ -199,15 +199,13 @@ LOGGING = {
         },
     },
     'loggers': {
-        '': {  # This configures root logger to handle logs from any logger.
+        '': {
             'handlers': ['console'],
-            'level': 'INFO',  # Adjust as needed
+            'level': 'INFO',
             'propagate': True,
         },
     },
 }
-
-
 
 
 

@@ -40,8 +40,7 @@ const IdeaGroup = () => {
   const [showNewIdeaForm, setShowNewIdeaForm] = useState(false);
 
   const handleNewIdeaAdded = (newIdea) => {
-    // Update the ideas state with the new idea
-    setIdeas((prevIdeas) => [...prevIdeas, newIdea]);
+    // setIdeas((prevIdeas) => [...prevIdeas, newIdea]);
     setShowNewIdeaForm(false);
   };
 
@@ -131,28 +130,31 @@ const IdeaGroup = () => {
     isGuestUserMode,
   ]);
 
-  useEffect(() => {
-    const fetchIdeas = async () => {
-      if (activeGroup) {
-        let url;
-        if (isOrganizationMode) {
-          url = `/api/${organizationName}/${activeGroup.slug}/ideas`;
-        } else if (isGuestUserMode) {
-          url = `/api/group/${activeGroup.id}/`;
-        } else {
-          // console.error("Invalid mode for fetching ideas");
-          return;
-        }
+  const fetchIdeas = async () => {
+    if (!activeGroup) return;
 
-        try {
-          const response = await fetch(url);
-          const data = await response.json();
-          setIdeas(data.ideas);
-        } catch (error) {
-          // console.error("Error fetching ideas:", error);
-        }
-      }
-    };
+    let url = `/api/${organizationName}/${activeGroup.slug}/ideas`;
+    if (isGuestUserMode) {
+      url = `/api/group/${activeGroup.id}/`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+      });
+      if (!response.ok) throw new Error("Network response was not ok");
+      const data = await response.json();
+      setIdeas(data.ideas);
+    } catch (error) {
+      console.error("Error fetching ideas:", error);
+    }
+  };
+
+  useEffect(() => {
     if (activeGroup) {
       fetchIdeas();
     }
@@ -210,6 +212,7 @@ const IdeaGroup = () => {
           <NewIdeaForm
             ideaGroups={ideaGroups}
             activeGroup={activeGroup}
+            fetchIdeas={fetchIdeas}
             onNewIdeaAdded={handleNewIdeaAdded}
             onClose={handleCloseForm}
           />

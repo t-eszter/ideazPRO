@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { getCookie } from "../Authentication/csrftoken";
 import Login from "./Login";
+
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
 
 function Register({ isOpen, toggleRegister }) {
   const [formData, setFormData] = useState({
@@ -17,52 +21,66 @@ function Register({ isOpen, toggleRegister }) {
   });
 
   const [organizationDetails, setOrganizationDetails] = useState(null);
-  const { groupId } = useParams();
   const [organizationNameError, setOrganizationNameError] = useState("");
 
+  const query = useQuery();
+  const params = useParams();
+
+  // Correctly extract orgId and groupId based on the context (query or route parameter)
+  const orgId = query.get("orgId"); // Attempt to get orgId from query parameters
+  const groupId = params.groupId || query.get("groupId");
+
+  console.log("Register component mounted.");
+  console.log("Org ID:", orgId, "Group ID:", groupId);
+
   useEffect(() => {
-    if (groupId) {
+    // Fetching organization details based on orgId
+    if (orgId) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        existingOrganizationId: orgId,
+      }));
+      fetch(`/api/invite/orgs/${orgId}`)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .catch((error) =>
+          console.error("Failed to fetch organization details:", error)
+        );
+    }
+
+    // Fetching group details based on groupId
+    if (groupId && !orgId) {
+      // Ensure that orgId takes precedence if both are provided
       setFormData((prevFormData) => ({
         ...prevFormData,
         idea_group_id: groupId,
       }));
-    }
-    const checkLoginStatus = () => {
-      // Example: Check if a user token exists and is valid
-      const token = localStorage.getItem("userToken");
-      if (token) {
-        // Assume the token is valid for this example
-        setIsLoggedIn(true);
-        // Set user information if available
-        setUser({ name: "User Name" }); // Replace with actual user data
-      }
-    };
-    checkLoginStatus();
-  }, [groupId]);
 
-  useEffect(() => {
-    if (groupId) {
       fetch(`/api/idea-groups/${groupId}/`)
         .then((response) => response.json())
         .then((data) => {
-          // Assuming the API returns the organization as part of the IdeaGroup details
-          // and that it includes an organization object with at least an id or name when present
           setOrganizationDetails(data.organization);
-          // Adjust organization options based on whether an organization is present
-          setOrganizationOptions((prev) => ({
-            ...prev,
-            existingOrganizationId: data.organization
-              ? data.organization.id
-              : null,
-            newOrganizationName: "",
-            joinExisting: !!data.organization,
-          }));
+          // Additional logic here for setting organization options based on the fetched data
         })
         .catch((error) =>
           console.error("Failed to fetch IdeaGroup details:", error)
         );
     }
-  }, [groupId]);
+
+    // Check login status could be included here or in a separate useEffect based on your preference
+    const checkLoginStatus = () => {
+      const token = localStorage.getItem("userToken");
+      if (token) {
+        setIsLoggedIn(true);
+        setUser({ name: "User Name" }); // Mocked user information
+      }
+    };
+    checkLoginStatus();
+  }, [orgId, groupId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -328,7 +346,6 @@ function Register({ isOpen, toggleRegister }) {
       </div>
     </div>
   );
-  AQ;
 }
 
 export default Register;

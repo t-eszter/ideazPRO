@@ -38,6 +38,38 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
     });
   };
 
+  const renderTextWithLinks = (text) => {
+    // This regex matches URLs
+    const urlRegex =
+      /(\bhttps?:\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
+
+    // Split text into parts by URL
+    const parts = text.split(urlRegex);
+
+    // Log parts to see how the text is being split
+    console.log(parts);
+
+    return parts.map((part, index) => {
+      if (urlRegex.test(part)) {
+        // Render part as a link
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            link
+          </a>
+        );
+      } else {
+        // Render part as plain text
+        return part;
+      }
+    });
+  };
+
   const cardStyle = {
     opacity: isDragging ? 0.5 : 1,
     transform: `translate(${position.x}px, ${position.y}px)`,
@@ -46,23 +78,34 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
   return (
     <div ref={dragRef} className="flex flex-row">
       <div
-        className="flip-card-wrapper rounded  w-72 flex flex-row justify-left z-0"
+        className="flip-card-wrapper rounded  w-64 flex flex-row justify-left z-0"
         style={cardStyle}
       >
         <div className="flip-card h-fit">
-          <div className="flip-card-inner h-fit p-6">
+          <div className="flip-card-inner h-fit p-5">
             <div className="flip-card-front h-fit">
-              <h3 className="text-sm font-semibold text-gray-700">
+              <h3 className="text-m font-semibold text-gray-700 pb-2">
                 {idea.title}
               </h3>
-              <p className="text-gray-600 text-sm">{idea.description}</p>
+              <p className="text-gray-600 text-sm leading-5">
+                {renderTextWithLinks(idea.description)}
+                {/* {idea.description} */}
+              </p>
             </div>
             <div className="flip-card-back h-fit flex flex-col">
               <span className="text-sm text-gray-500">
-                Posted by: <br /> {idea.posted_by}
+                Posted by:
+                <br />
+                <span className="font-semibold text-black">
+                  {idea.posted_by}
+                </span>
               </span>
-              <span className="text-sm text-gray-500">
-                Posted on: <br /> {formatDate(idea.postedDate)}
+              <span className="text-sm text-gray-500 pt-2">
+                Posted on:
+                <br />
+                <span className="font-semibold text-black">
+                  {formatDate(idea.postedDate)}
+                </span>
               </span>
             </div>
           </div>

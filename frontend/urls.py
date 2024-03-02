@@ -6,9 +6,16 @@ from . import views
 from .api import *
 
 urlpatterns = [
+    #CSRF token
+    path('get-csrf-token/', get_csrf_token, name='get-csrf-token'),
+
     #API
+    # accept invite
+    path('/api/invite/orgs/<uuid:organization_id>', RegisterFromInvite.as_view(), name='organization-detail'),
+    path('api/invite/<uuid:organization_id>', send_invite, name='send_invite'),
+    # path('invite/<uuid:organization_id>/accept', RegisterFromInvite.as_view(), name='register-from-invite'),
+
     # IdeaGroups for organization admins
-    path('api/organizations/invite/<int:organization_id>', send_invite, name='send_invite'),
     path('api/organizations/<str:organization_name>/ideagroups', IdeaGroupList.as_view(), name='ideagroups-list'),
     path('api/ideagroups', IdeaGroupCreateView.as_view(), name='ideagroup-create'),
 
@@ -36,13 +43,8 @@ urlpatterns = [
     path('auth/login/', login_view, name='custom_rest_login'),
     path('auth/logout/', LogoutView.as_view(), name='rest_logout'),
 
-
-
-
-
     # React
     re_path(r'^(?:.*)/?$', views.index, name='index'),
 
-    #CSRF token
-    path('get-csrf-token/', get_csrf_token, name='get-csrf-token'),
+
 ]

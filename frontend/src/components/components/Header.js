@@ -17,6 +17,12 @@ function Header() {
   const navigate = useNavigate();
   const { currentUser, logout, organizationName } = useAuth();
 
+  useEffect(() => {
+    if (currentUser) {
+      setUserName(currentUser.name || "Anon");
+    }
+  }, [currentUser]);
+
   const profilePicElement = (
     <img
       src={
@@ -129,13 +135,15 @@ function Header() {
         )}
       </div>
       <div className="flex flex-row gap-8 items-center">
-        <button
-          onClick={toggleModal}
-          className="btn-share flex flex-row items-center gap-2"
-        >
-          <IoShareSocialOutline />
-          Share
-        </button>
+        {!currentUser && (
+          <button
+            onClick={toggleModal}
+            className="btn-share flex flex-row items-center gap-2"
+          >
+            <IoShareSocialOutline />
+            Share
+          </button>
+        )}
         <div className="w-1/11 flex flex-col">
           <span>Hello, {currentUser ? currentUser.name : "Anon"}!</span>
           {/* Assuming currentUser has a name property */}

@@ -3,7 +3,13 @@ import CSRFToken, { getCookie } from "../Authentication/csrftoken";
 import { IoClose } from "react-icons/io5";
 import { useAuth } from "../Authentication/AuthContext";
 
-const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
+const NewIdeaForm = ({
+  ideaGroups,
+  activeGroup,
+  onNewIdeaAdded,
+  onClose,
+  fetchIdeas,
+}) => {
   const [ideaTitle, setIdeaTitle] = useState("");
   const [ideaDescription, setIdeaDescription] = useState("");
   const [descriptionError, setDescriptionError] = useState("");
@@ -45,9 +51,9 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
     });
 
     try {
-      console.log("Current User:", currentUser);
-      console.log("Posting with personId:", currentUser.personId);
-      console.log("Posting with userId:", currentUser.userId);
+      // console.log("Current User:", currentUser);
+      // console.log("Posting with personId:", currentUser.personId);
+      // console.log("Posting with userId:", currentUser.userId);
       const response = await fetch(`/api/ideas/`, {
         method: "POST",
         headers: {
@@ -67,6 +73,7 @@ const NewIdeaForm = ({ ideaGroups, activeGroup, onNewIdeaAdded, onClose }) => {
       }
 
       const newIdea = await response.json();
+      await fetchIdeas();
       onNewIdeaAdded(newIdea);
       setIdeaTitle("");
       setIdeaDescription("");

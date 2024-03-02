@@ -18,9 +18,6 @@ function Login({ isOpen, toggleLogin }) {
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
-
-  var cookie = getCookie("csrftoken");
-  console.log("Cookie: " + cookie);
   // Inside your Login component
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission
@@ -33,6 +30,7 @@ function Login({ isOpen, toggleLogin }) {
           "X-CSRFToken": getCookie("csrftoken"),
         },
         body: JSON.stringify(credentials),
+        credentials: "include",
       });
 
       if (!response.ok) {

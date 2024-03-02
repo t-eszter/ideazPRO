@@ -30,8 +30,12 @@ class VoteAdmin(admin.ModelAdmin):
         return obj.idea.title
     display_idea_title.short_description = 'Idea Title'
 
+
+class OrganizationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name') 
+
 admin.site.register(IdeaGroup, IdeaGroupAdmin)
 admin.site.register(Idea, IdeaAdmin)
 admin.site.register(Person)
-admin.site.register(Organization)
+admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Vote, VoteAdmin)

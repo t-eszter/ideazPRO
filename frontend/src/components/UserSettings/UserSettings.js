@@ -71,18 +71,23 @@ function UserSettings() {
   const sendInvite = async (e) => {
     e.preventDefault();
 
-    // Example email content. You might want to set this dynamically or gather it from user input
-    const emailContent =
-      "You have been invited to join our organization. Please click the link to accept the invitation.";
+    const organizationUrl = `https://ideaz.pro/register?orgId=${currentUser.organizationId}`;
+
+    const emailContent = `
+  <p>You have been invited to join our organization. Please click the link below to accept the invitation:</p>
+  <a href="${organizationUrl}">Accept Invitation</a>
+  <p>If you cannot click the link, copy and paste the following URL into your browser:</p>
+  <p>${organizationUrl}</p>
+`;
 
     try {
       const response = await fetch(
-        `/api/organizations/invite/${currentUser.organizationId}`,
+        `/api/invite/${currentUser.organizationId}`,
         {
           method: "POST",
           body: JSON.stringify({
             email: inviteEmail,
-            emailContent: emailContent, // Including the email content in the request
+            emailContent: emailContent,
           }),
           headers: {
             "Content-Type": "application/json",

@@ -28,6 +28,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET
+from django.http import HttpResponse
 
 from .models import IdeaGroup, Idea, Person, Organization, Vote
 from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer, PersonSerializer
@@ -36,9 +37,7 @@ User = get_user_model()
 
 @require_GET
 @ensure_csrf_cookie
-@permission_classes((AllowAny,))
 def get_csrf_token(request):
-    csrf_token = get_token(request)
     return HttpResponse("CSRF cookie set")
 
 
@@ -429,35 +428,35 @@ def update_person_details(request, user_id):
 
         
 
-from django.core.mail import send_mail
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
+# from django.core.mail import send_mail
+# from django.utils.http import urlsafe_base64_encode
+# from django.utils.encoding import force_bytes
 
-def send_invite(request, organization_id):
-    if request.method == "POST":
-        # Assuming the request body is JSON
-        import json
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+# def send_invite(request, organization_id):
+#     if request.method == "POST":
+#         # Assuming the request body is JSON
+#         import json
+#         body_unicode = request.body.decode('utf-8')
+#         body = json.loads(body_unicode)
+#         email = body['email']
 
-        # Generate your invitation link here. This might involve creating
-        # an invite token or simply crafting a URL with the organization ID.
-        # This example will use a simple URL.
-        invite_link = f"https://ideaz.pro/invite?org={organization_id}"
+#         # Generate your invitation link here. This might involve creating
+#         # an invite token or simply crafting a URL with the organization ID.
+#         # This example will use a simple URL.
+#         invite_link = f"https://ideaz.pro/invite?org={organization_id}"
 
-        # Sending the email
-        send_mail(
-            'You are invited to join our organization',
-            f'Please use the following link to join our organization: {invite_link}',
-            'invite@zuerichadresse.ch',
-            [email],
-            fail_silently=False,
-        )
+#         # Sending the email
+#         send_mail(
+#             'You are invited to join our organization',
+#             f'Please use the following link to join our organization: {invite_link}',
+#             'invite@zuerichadresse.ch',
+#             [email],
+#             fail_silently=False,
+#         )
 
-        return JsonResponse({'status': 'Invitation sent successfully.'}, status=200)
-    else:
-        return JsonResponse({'error': 'Invalid request'}, status=400)
+#         return JsonResponse({'status': 'Invitation sent successfully.'}, status=200)
+#     else:
+#         return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 class IdeaGroupUpdateView(RetrieveUpdateAPIView):
@@ -512,15 +511,14 @@ def handle_vote(request, idea_id):
 
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-import logging
 
-def send_invite(request, organizationId):
-    print("Received invite request") 
-    logger = logging.getLogger(__name__)
+def send_invite(request, organization_id):
+    print('hello')
     if request.method == "POST":
+        print('hello')
         try:
             data = json.loads(request.body)
-            to_email = data.get('email')  # Assuming this is a single email address
+            to_email = data.get('email')
             subject = "You're Invited!"
             content = data.get('emailContent')
             
@@ -533,12 +531,21 @@ def send_invite(request, organizationId):
             )
             sg = SendGridAPIClient(os.getenv('SENDGRID_API_KEY'))
             response = sg.send(message)
-            logger.info(response.status_code, response.body, response.headers)
+            # logger.info(response.status_code, response.body, response.headers)
             
             return JsonResponse({"message": "Invitation sent successfully."}, status=200)
 
         except Exception as e:
-            logger.error(f"Error sending invite: {str(e)}")
+            # logger.error(f"Error sending invite: {str(e)}")
             return JsonResponse({"error": str(e)}, status=500)
     else:
         return JsonResponse({"error": "Method not allowed"}, status=405)
+
+class RegisterFromInvite(APIView):
+    def get(self, request, organization_id):
+        try:
+            organization = Organization.objects.get(pk=organization_id)
+            serializer = OrganizationSerializer(organization)
+            return Response(serializer.data)
+        except Organization.DoesNotExist:
+            return Response({'error': 'Organization not found'}, status=status.HTTP_404_NOT_FOUND)
