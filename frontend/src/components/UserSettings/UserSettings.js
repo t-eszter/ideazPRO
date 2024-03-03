@@ -57,7 +57,10 @@ function UserSettings() {
     )
     .slice(indexOfFirstMember, indexOfLastMember);
 
-  //
+  const handleProfilePicUpdate = (newProfilePicUrl) => {
+    // Assume newProfilePicUrl is the URL you got back from your server after uploading the new picture
+    updateProfilePic(newProfilePicUrl);
+  };
 
   useEffect(() => {
     if (currentUser?.organizationId) {
@@ -262,16 +265,12 @@ function UserSettings() {
 
       if (!response.ok) throw new Error("Network response was not ok");
 
-      // Correctly parsing the JSON response here
       const data = await response.json();
-
-      // Assuming your backend returns the URL of the profile picture in the response
+      // Assuming your backend returns the URL of the updated profile picture in the response
       // under a key like 'profilePicUrl'
       if (data.profilePicUrl) {
-        const { updateProfilePic } = useAuth();
-        updateProfilePic(data.profilePicUrl);
+        handleProfilePicUpdate(data.profilePicUrl);
       }
-      if (!response.ok) throw new Error("Network response was not ok");
       // Handle success...
     } catch (error) {
       console.error("Error updating profile:", error);

@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     if (currentUser) {
       const updatedUser = { ...currentUser, profilePic: profilePicUrl };
       localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-      setCurrentUser(updatedUser); // Update the currentUser state
+      setCurrentUser(updatedUser); // This will trigger a re-render of subscribed components
     }
   };
 
@@ -57,11 +57,5 @@ export const AuthProvider = ({ children }) => {
 
   const value = { currentUser, login, logout, isLoading, updateProfilePic };
 
-  return (
-    <AuthContext.Provider
-      value={{ value, currentUser, login, logout, isLoading }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

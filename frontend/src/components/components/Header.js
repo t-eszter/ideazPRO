@@ -112,15 +112,25 @@ function Header() {
           </span>
         </div>
         <div className="h-10 w-10 rounded-full bg-sinbad-400 flex items-center justify-center">
-          <img
-            src={
-              currentUser && currentUser.profilePic
-                ? currentUser.profilePic
-                : defaultProfilePic
-            }
-            alt="Profile"
-            className="h-10 w-10 rounded-full"
-          />
+          {currentUser ? (
+            <Link to={`/settings/${currentUser.name}`}>
+              <img
+                src={
+                  currentUser.profilePic
+                    ? currentUser.profilePic
+                    : defaultProfilePic
+                }
+                alt="Profile"
+                className="h-10 w-10 rounded-full"
+              />
+            </Link>
+          ) : (
+            <img
+              src={defaultProfilePic}
+              alt="Profile"
+              className="h-10 w-10 rounded-full"
+            />
+          )}
         </div>
       </div>
 
