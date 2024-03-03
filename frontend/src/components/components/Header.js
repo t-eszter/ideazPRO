@@ -17,21 +17,30 @@ function Header() {
   const navigate = useNavigate();
   const { currentUser, logout, organizationName } = useAuth();
 
+  const toggleLoginModal = () => {
+    setIsLoginOpen(!isLoginOpen);
+  };
+
   useEffect(() => {
     if (currentUser) {
       setUserName(currentUser.name || "Anon");
     }
   }, [currentUser]);
 
-  const profilePicElement = (
-    <img
-      src={
-        currentUser?.profilePic || "/images/profile_pics/profile_pic_anon.svg"
-      }
-      alt="Profile"
-      className="block mx-auto my-auto h-10 w-10 rounded-full" // Ensure your img tag includes the necessary classes
-    />
-  );
+  const profilePicElement =
+    currentUser && currentUser.profilePic ? (
+      <img
+        src={currentUser.profilePic}
+        alt="Profile"
+        className="block mx-auto my-auto h-10 w-10 rounded-full"
+      />
+    ) : (
+      <img
+        src="/images/profile_pics/profile_pic_anon.svg"
+        alt="Default Profile"
+        className="block mx-auto my-auto h-10 w-10 rounded-full"
+      />
+    );
 
   useEffect(() => {
     const storedUserName = localStorage.getItem("userName");
@@ -163,11 +172,14 @@ function Header() {
                   toggleRegister={toggleRegister}
                 />
 
-                <a href="#" onClick={toggleLogin}>
+                <a href="#" onClick={() => toggleLoginModal(true)}>
                   Login
                 </a>
                 {/* The Login component and its modal toggle logic */}
-                <Login isOpen={isLoginOpen} toggleLogin={toggleLogin} />
+                <Login
+                  isOpenProp={isLoginOpen}
+                  toggleLogin={toggleLoginModal}
+                />
               </>
             )}
           </span>

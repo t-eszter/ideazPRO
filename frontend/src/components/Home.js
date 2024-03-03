@@ -80,14 +80,14 @@ function Home() {
       </form>
       <p>
         If you already have an account, you can
-        <a href="#" onClick={toggleLoginModal}>
+        <a href="#" onClick={() => toggleLoginModal(true)}>
           &nbsp;log in&nbsp;
         </a>
         here.
       </p>
       {/* Login Modal */}
       {isLoginOpen && (
-        <Login isOpen={isLoginOpen} toggleLogin={toggleLoginModal} />
+        <Login isOpenProp={isLoginOpen} toggleLogin={toggleLoginModal} />
       )}
     </div>
   );

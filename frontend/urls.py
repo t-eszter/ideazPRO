@@ -11,13 +11,16 @@ urlpatterns = [
 
     #API
     # accept invite
-    path('/api/invite/orgs/<uuid:organization_id>', RegisterFromInvite.as_view(), name='organization-detail'),
+    path('api/invite/orgs/<uuid:organization_id>', RegisterFromInvite.as_view(), name='organization-detail'),
     path('api/invite/<uuid:organization_id>', send_invite, name='send_invite'),
     # path('invite/<uuid:organization_id>/accept', RegisterFromInvite.as_view(), name='register-from-invite'),
 
     # IdeaGroups for organization admins
     path('api/organizations/<str:organization_name>/ideagroups', IdeaGroupList.as_view(), name='ideagroups-list'),
     path('api/ideagroups', IdeaGroupCreateView.as_view(), name='ideagroup-create'),
+    
+    # update member's role for admins
+    path('api/members/<int:member_id>/update-role', update_member_role, name='update-role'),
 
     path('api/register', RegisterView.as_view(), name='register'),
     path('api/<str:organization_name>', IdeaGroupList.as_view(), name='ideagroup-list'), #Org home page

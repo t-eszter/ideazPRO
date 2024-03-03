@@ -10,6 +10,7 @@ import Home from "./Home";
 import UserSettings from "./UserSettings/UserSettings";
 import ProtectedRoute from "./Authentication/ProtectedRoute";
 import Register from "./components/Register";
+import Login from "./components/Login";
 
 import { AuthProvider } from "./Authentication/AuthContext";
 
@@ -35,6 +36,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
             <Route
               path="/settings/:username"
               element={

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { getCookie } from "../Authentication/csrftoken";
 import Login from "./Login";
 
@@ -7,7 +7,20 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-function Register({ isOpen, toggleRegister }) {
+function Register({ toggleRegister }) {
+  const query = useQuery();
+  const params = useParams();
+
+  // Define orgId and groupId here to use later
+  const orgId = query.get("orgId");
+  const groupId = params.groupId;
+
+  // Now we can safely use orgId and groupId to determine initialModalOpenState
+  const initialModalOpenState = !!orgId || !!groupId;
+  const [isOpen, setIsOpen] = useState(initialModalOpenState);
+
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     user: {
       username: "",
@@ -23,29 +36,25 @@ function Register({ isOpen, toggleRegister }) {
   const [organizationDetails, setOrganizationDetails] = useState(null);
   const [organizationNameError, setOrganizationNameError] = useState("");
 
-  const query = useQuery();
-  const params = useParams();
-
   // Correctly extract orgId and groupId based on the context (query or route parameter)
-  const orgId = query.get("orgId"); // Attempt to get orgId from query parameters
-  const groupId = params.groupId || query.get("groupId");
 
   console.log("Register component mounted.");
   console.log("Org ID:", orgId, "Group ID:", groupId);
 
   useEffect(() => {
+    setIsOpen(initialModalOpenState);
     // Fetching organization details based on orgId
     if (orgId) {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        existingOrganizationId: orgId,
-      }));
       fetch(`/api/invite/orgs/${orgId}`)
         .then((response) => {
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
           return response.json();
+        })
+        .then((data) => {
+          setOrganizationDetails(data); // Set the organization details here
+          // No need to adjust organizationOptions if we're only showing a message
         })
         .catch((error) =>
           console.error("Failed to fetch organization details:", error)
@@ -123,20 +132,26 @@ function Register({ isOpen, toggleRegister }) {
     e.preventDefault();
     setErrors({}); // Reset error messages before starting
 
-    // Form the payload according to the backend expectations
+    // Initialize the registration payload
     const registrationData = {
       username: formData.user.username,
       email: formData.user.email,
       password: formData.user.password,
       firstName: formData.firstName,
       lastName: formData.lastName,
-      idea_group_id: formData.idea_group_id,
-      // Conditionally add the organization name or ID based on user choice
-      ...(organizationOptions.joinExisting
-        ? { organizationId: formData.existingOrganizationId }
-        : { organization_name: organizationOptions.newOrganizationName }),
+      // The idea_group_id might not be necessary or should be handled separately based on your logic
       idea_group_id: formData.idea_group_id,
     };
+
+    // Conditionally add organization details based on the registration context
+    if (orgId && organizationDetails) {
+      // If registering through an invite link with orgId, attach the user to this organization
+      registrationData.organizationId = orgId; // Ensure backend expects 'organizationId' not 'organization_name'
+    } else if (!orgId && organizationOptions.newOrganizationName) {
+      // If creating a new organization (i.e., no orgId is present but a new organization name is provided)
+      registrationData.organization_name =
+        organizationOptions.newOrganizationName;
+    }
 
     try {
       const response = await fetch("/api/register", {
@@ -149,16 +164,9 @@ function Register({ isOpen, toggleRegister }) {
       });
 
       if (!response.ok) {
+        // Handle errors, such as username already exists
         const errorData = await response.json();
-        if (errorData.message && errorData.message.includes("already exists")) {
-          // Update the errors state to reflect the username error
-          setErrors((prevErrors) => ({
-            ...prevErrors,
-            username: "Username already exists.",
-          }));
-        } else {
-          setErrors(errorData);
-        }
+        setErrors(errorData);
         console.error("Registration failed:", errorData);
         return;
       }
@@ -201,6 +209,17 @@ function Register({ isOpen, toggleRegister }) {
     );
   }
 
+  useEffect(() => {
+    if (isRegistered) {
+      const timer = setTimeout(() => {
+        // Redirect to the login page after 4 seconds
+        navigate("/login?fromRegister=true"); // Use navigate for redirection in react-router-dom v6+
+      }, 4000);
+
+      return () => clearTimeout(timer); // Cleanup the timer if the component unmounts
+    }
+  }, [isRegistered, navigate]);
+
   if (isRegistered) {
     // Display the Login component or a success message after registration
     return (
@@ -211,9 +230,10 @@ function Register({ isOpen, toggleRegister }) {
               X
             </button>
             <h2 className="text-center text-2xl mb-4">
-              Registration successful, now you can log in
+              Registration successful, now you can log in.
+              <br />
+              Redirecting to login...
             </h2>
-            <Login />
           </div>
         </div>
       </div>
@@ -229,16 +249,17 @@ function Register({ isOpen, toggleRegister }) {
           </button>
           <form onSubmit={handleSubmit}>
             <h2 className="text-center text-2xl mb-4">Register</h2>
-
             {/* Idea Group ID - Hidden Input */}
             <input
               type="hidden"
               name="idea_group_id"
               value={formData.idea_group_id}
             />
-
-            {/* Organization Choices */}
-            {organizationDetails ? (
+            {orgId && organizationDetails ? (
+              // If orgId is present, show joining specific organization without giving an option
+              <p>Joining {organizationDetails.name}</p>
+            ) : groupId && organizationDetails ? (
+              // If groupId is present, allow the user to choose between joining the existing group's organization or creating a new one
               <div>
                 <label>
                   <input
@@ -273,8 +294,18 @@ function Register({ isOpen, toggleRegister }) {
                 {organizationNameError && (
                   <div className="text-red-500">{organizationNameError}</div>
                 )}
+                {organizationOptions.joinExisting ? null : (
+                  <input
+                    type="text"
+                    name="newOrganizationName"
+                    value={organizationOptions.newOrganizationName}
+                    onChange={handleChange}
+                    placeholder="New Organization Name"
+                  />
+                )}
               </div>
             ) : (
+              // If neither orgId nor groupId is present, provide the option to create a new organization
               <div>
                 <label>
                   Create new organization
@@ -291,7 +322,6 @@ function Register({ isOpen, toggleRegister }) {
                 )}
               </div>
             )}
-
             {/* User Information Inputs */}
             <input
               type="text"
@@ -336,7 +366,6 @@ function Register({ isOpen, toggleRegister }) {
               placeholder="Password"
               className="block w-full p-2 mb-4"
             />
-
             {/* Submit Button */}
             <button type="submit" className="w-full p-2 bg-blue-500 text-white">
               Register

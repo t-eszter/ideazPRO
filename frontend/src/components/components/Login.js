@@ -1,19 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { getCookie } from "../Authentication/csrftoken";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Authentication/AuthContext";
+import { useLocation } from "react-router-dom";
 
-function Login({ isOpen, toggleLogin }) {
+function Login({ isOpenProp, toggleLogin }) {
   const { login } = useAuth();
-
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
   const [credentials, setCredentials] = useState({
     username: "",
     password: "",
   });
   const [loginError, setLoginError] = useState("");
-  const navigate = useNavigate();
 
-  if (!isOpen) return null;
+  // Synchronize internal isOpen state with external isOpenProp
+  useEffect(() => {
+    setIsOpen(isOpenProp);
+  }, [isOpenProp]);
+
+  // Automatically open the modal based on query parameters (e.g., ?login=true)
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const shouldOpen = searchParams.get("login");
+
+    if (shouldOpen) {
+      setIsOpen(true);
+    }
+  }, [location.search]);
 
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -71,6 +86,8 @@ function Login({ isOpen, toggleLogin }) {
       setLoginError(error.message || "Login failed. Please try again.");
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">

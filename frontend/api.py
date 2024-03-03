@@ -31,7 +31,7 @@ from django.views.decorators.http import require_GET
 from django.http import HttpResponse
 
 from .models import IdeaGroup, Idea, Person, Organization, Vote
-from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer, PersonSerializer
+from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer, PersonSerializer, OrganizationSerializer
 
 User = get_user_model()
 
@@ -549,3 +549,18 @@ class RegisterFromInvite(APIView):
             return Response(serializer.data)
         except Organization.DoesNotExist:
             return Response({'error': 'Organization not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@require_POST
+def update_member_role(request, member_id):
+    try:
+        data = json.loads(request.body)
+        new_role = data.get('role')
+        member = Person.objects.get(pk=member_id)
+        member.role = new_role
+        member.save()
+        return JsonResponse({'status': 'success', 'message': 'Role updated successfully'})
+    except Person.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Member not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

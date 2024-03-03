@@ -272,6 +272,25 @@ function UserSettings() {
     setShowEditGroupModal(true);
   };
 
+  const handleRoleChange = async (memberId, newRole) => {
+    try {
+      const response = await fetch(`/api/members/${memberId}/update-role`, {
+        method: "POST",
+        body: JSON.stringify({ role: newRole }),
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+      });
+      if (!response.ok) throw new Error("Failed to update member role");
+      // Handle success - Optionally refresh members list or show success message
+      console.log(`Role updated for member ${memberId}`);
+      fetchOrganizationMembers(currentUser.organizationId); // Refresh members list
+    } catch (error) {
+      console.error("Error updating member role:", error);
+    }
+  };
+
   return (
     <div>
       <Header />
@@ -453,7 +472,19 @@ function UserSettings() {
                         <td>{member.email}</td>
                         <td>{member.firstName}</td>
                         <td>{member.lastName}</td>
-                        <td>{member.role}</td>
+                        <td>
+                          <select
+                            value={member.role}
+                            onChange={(e) =>
+                              handleRoleChange(member.id, e.target.value)
+                            }
+                            className="select select-bordered w-full max-w-xs"
+                          >
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                            <option value="guest">Guest</option>
+                          </select>
+                        </td>
                         <td>{member.regDate}</td>
                       </tr>
                     ))}
