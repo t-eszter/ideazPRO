@@ -70,7 +70,13 @@ function Header() {
     <header className="bg-alabaster-100 px-4 py-2 flex justify-between items-center">
       <div className=" flex flex-row gap-4">
         <div className="flex flex-row gap-4">
-          <Link to="/">
+          <Link
+            to={
+              currentUser?.organizationName
+                ? `/${currentUser.organizationName}`
+                : "/"
+            }
+          >
             <img src={Logo} alt="Logo" className="h-8" />
           </Link>
         </div>
