@@ -7,6 +7,7 @@ import IdeaGroupEditModal from "./IdeaGroupEditModal";
 import Header from "../components/Header";
 
 function UserSettings() {
+  // console.log("UserSettings component rendered");
   const { currentUser, updateProfilePic } = useAuth();
   const [showAddGroupForm, setShowAddGroupForm] = useState(false);
   //   console.log(currentUser);
@@ -40,6 +41,8 @@ function UserSettings() {
   const [membersPerPage] = useState(5); // Adjust as needed
 
   const [selectedIdeaGroup, setSelectedIdeaGroup] = useState(null);
+
+  const [profilePicSuccessMessage, setProfilePicSuccessMessage] = useState("");
 
   const indexOfLastIdeaGroup = currentPageIdeaGroups * ideaGroupsPerPage;
   const indexOfFirstIdeaGroup = indexOfLastIdeaGroup - ideaGroupsPerPage;
@@ -152,7 +155,7 @@ function UserSettings() {
       const data = await response.json();
       setFormData(data);
       setIsAdmin(data.role === "admin");
-      console.log(data.role);
+      // console.log(data.role);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     }
@@ -266,10 +269,16 @@ function UserSettings() {
       if (!response.ok) throw new Error("Network response was not ok");
 
       const data = await response.json();
+      console.log(data);
       // Assuming your backend returns the URL of the updated profile picture in the response
       // under a key like 'profilePicUrl'
       if (data.profilePicUrl) {
+        console.log("hi");
+        console.log(data);
         handleProfilePicUpdate(data.profilePicUrl);
+        setProfilePicSuccessMessage("Profile picture updated successfully!");
+        console.log("New profile picture URL:", data.profilePicUrl);
+        console.log("Profile picture update message set");
       }
       // Handle success...
     } catch (error) {
@@ -599,6 +608,11 @@ function UserSettings() {
                 Update user profile
               </button>
             </form>
+            {profilePicSuccessMessage && (
+              <div className="mt-4 text-green-500">
+                {profilePicSuccessMessage}
+              </div>
+            )}
           </div>
         </div>
       </div>

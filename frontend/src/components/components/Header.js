@@ -17,6 +17,16 @@ function Header() {
   const { currentUser, logout } = useAuth();
   const defaultProfilePic = "/images/profile_pics/profile_pic_anon.svg";
 
+  // useEffect(() => {
+  //   console.log("Current user on mount/update:", currentUser);
+  //   if (currentUser) {
+  //     console.log(
+  //       "Current user's profile picture URL:",
+  //       currentUser.profilePic
+  //     );
+  //   }
+  // }, [currentUser]);
+
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);
   };
@@ -25,15 +35,15 @@ function Header() {
     setIsRegisterOpen(!isRegisterOpen); // Corrected to properly toggle isRegisterOpen
   };
 
-  useEffect(() => {
-    if (currentUser) {
-      console.log(currentUser.profilePic);
-    }
-  }, [currentUser]);
+  // useEffect(() => {
+  //   if (currentUser) {
+  //     console.log(currentUser.profilePic);
+  //   }
+  // }, [currentUser]);
 
   useEffect(() => {
     const storedUserName = localStorage.getItem("userName");
-    console.log("Org name:::" + localStorage.getItem("organizationName"));
+    // console.log("Org name:::" + localStorage.getItem("organizationName"));
   }, []);
 
   const handleLogout = async () => {
@@ -121,12 +131,13 @@ function Header() {
           {currentUser ? (
             <Link to={`/settings/${currentUser.name}`}>
               <img
-                src={
+                src={`${
                   currentUser.profilePic
-                    ? currentUser.profilePic
+                    ? currentUser.profilePic + "?v=" + new Date().getTime()
                     : defaultProfilePic
-                }
+                }`}
                 alt="Profile"
+                key={currentUser.profilePic}
                 className="h-10 w-10 rounded-full"
               />
             </Link>

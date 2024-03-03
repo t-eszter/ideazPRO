@@ -29,6 +29,9 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET
 from django.http import HttpResponse
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.conf import settings
 
 from .models import IdeaGroup, Idea, Person, Organization, Vote
 from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer, PersonSerializer, OrganizationSerializer
@@ -406,9 +409,6 @@ def update_person_details(request, user_id):
         user = User.objects.get(pk=user_id)
         person = user.person  # Assuming you have 'related_name="person"' in your Person model
 
-        # print("Received POST data:", request.POST)
-        # print("Received FILES data:", request.FILES)
-
         # Update User model fields
         user.email = request.POST.get('email', user.email)
         if 'password' in request.POST:
@@ -420,21 +420,30 @@ def update_person_details(request, user_id):
         person.lastName = request.POST.get('lastName', person.lastName)
 
         # Handle profile picture update if provided
+        profile_pic_url = None  # Initialize variable to hold the profile picture URL
         if 'profilePic' in request.FILES:
             profile_pic_file = request.FILES['profilePic']
             # Save file and set the file path as profilePic value
             save_path = default_storage.save(f"profile_pics/{profile_pic_file.name}", profile_pic_file)
             person.profilePic = save_path
+            # Assuming you're using Django's default storage system
+            profile_pic_url = default_storage.url(save_path)
 
         person.save()
 
-        return JsonResponse({"status": "success", "message": "User and Person details updated successfully."})
+        # Include the profilePicUrl in the response if available
+        response_data = {"status": "success", "message": "User and Person details updated successfully."}
+        if profile_pic_url:
+            response_data['profilePicUrl'] = profile_pic_url
+
+        return JsonResponse(response_data)
     except User.DoesNotExist:
         return JsonResponse({"status": "error", "message": "User not found."}, status=404)
     except Person.DoesNotExist:
         return JsonResponse({"status": "error", "message": "Person profile not found."}, status=404)
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
 
         
 
