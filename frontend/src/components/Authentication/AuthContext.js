@@ -19,16 +19,26 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(false);
   }, []);
 
-  const login = (userName, orgName, orgId, userId, personId) => {
+  const updateProfilePic = (profilePicUrl) => {
+    if (currentUser) {
+      const updatedUser = { ...currentUser, profilePic: profilePicUrl };
+      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+      setCurrentUser(updatedUser); // Update the currentUser state
+    }
+  };
+
+  const login = (userName, orgName, orgId, userId, personId, profilePic) => {
     const user = {
       name: userName,
+      profilePic: profilePic,
       organizationName: orgName,
       organizationId: orgId,
       userId,
       personId,
     };
 
-    console.log("Logging in user with personId:", personId);
+    console.log(profilePic),
+      console.log("Logging in user with personId:", personId);
 
     localStorage.setItem("currentUser", JSON.stringify(user));
     setCurrentUser(user);
@@ -45,7 +55,7 @@ export const AuthProvider = ({ children }) => {
     setCurrentUser(null);
   };
 
-  const value = { currentUser, login, logout, isLoading };
+  const value = { currentUser, login, logout, isLoading, updateProfilePic };
 
   return (
     <AuthContext.Provider

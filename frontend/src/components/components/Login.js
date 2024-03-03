@@ -21,11 +21,12 @@ function Login({ isOpenProp, toggleLogin }) {
   }, [isOpenProp]);
 
   // Automatically open the modal based on query parameters (e.g., ?login=true)
+
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const shouldOpen = searchParams.get("login");
+    const fromRegister = searchParams.get("fromRegister");
 
-    if (shouldOpen) {
+    if (fromRegister) {
       setIsOpen(true);
     }
   }, [location.search]);
@@ -62,7 +63,8 @@ function Login({ isOpenProp, toggleLogin }) {
           data.organizationName,
           data.organizationId,
           data.userId,
-          data.personid
+          data.personid,
+          data.profilePic
         );
         console.log(
           "Login successful for:",
@@ -70,7 +72,8 @@ function Login({ isOpenProp, toggleLogin }) {
           data.organizationName,
           data.organizationId,
           data.userId,
-          data.personid // Log userId to confirm it's being received and handled
+          data.personid,
+          data.profilePic
         );
         console.log("Navigating to:", `/${data.organizationName}`);
         navigate(`/${data.organizationName}`); // Navigate to the organization page
@@ -87,7 +90,7 @@ function Login({ isOpenProp, toggleLogin }) {
     }
   };
 
-  if (!isOpen) return null;
+  // if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">

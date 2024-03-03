@@ -11,20 +11,6 @@ import { useAuth } from "../Authentication/AuthContext";
 const IdeaGroup = () => {
   const { currentUser } = useAuth();
 
-  useEffect(() => {
-    console.log("IdeaGroup component mounted.");
-  }, []);
-
-  useEffect(() => {
-    if (currentUser) {
-      // Logic that requires a logged-in user
-      console.log("Logged-in user:", currentUser);
-    } else {
-      // Logic for guests or handling the absence of a logged-in user
-      console.log("No user logged in, proceeding as guest...");
-    }
-  }, [currentUser]);
-
   const [ideaGroups, setIdeaGroups] = useState([]);
   const [activeGroup, setActiveGroup] = useState(null);
   const [ideas, setIdeas] = useState([]);
@@ -33,7 +19,6 @@ const IdeaGroup = () => {
 
   // Determine the mode based on the URL parameters
   const isGuestUserMode = groupId !== undefined;
-  // console.log("Is Guest User Mode:", isGuestUserMode, "Group ID:", groupId);
   const isOrganizationMode = organizationName !== undefined && !isGuestUserMode;
 
   // NewIdeaForm

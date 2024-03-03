@@ -47,7 +47,7 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
     const parts = text.split(urlRegex);
 
     // Log parts to see how the text is being split
-    console.log(parts);
+    // console.log(parts);
 
     return parts.map((part, index) => {
       if (urlRegex.test(part)) {

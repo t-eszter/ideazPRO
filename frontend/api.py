@@ -275,6 +275,15 @@ def login_view(request):
                 if person.organization:
                     organization_name = person.organization.name
                     organization_id = str(person.organization.id)
+                
+                if person.profilePic and hasattr(person.profilePic, 'url'):
+                    profile_pic_url = request.build_absolute_uri(person.profilePic.url)
+                else:
+                    # Handle the default profile picture as a static file
+                    # Adjust the path as necessary based on where you store your static files
+                    profile_pic_url = request.build_absolute_uri(settings.STATIC_URL + 'images/profile_pics/profile_pic_anon.svg')
+                
+                print("Profile Pic URL:", profile_pic_url)
 
                 token, _ = Token.objects.get_or_create(user=user)
 
@@ -288,6 +297,7 @@ def login_view(request):
                     'lastName': person.lastName,
                     'email': user.email,
                     'personid': person.id,
+                    'profilePic': profile_pic_url,
                 })
             except Person.DoesNotExist:
                 return JsonResponse({'error': 'Person profile does not exist.'}, status=400)
