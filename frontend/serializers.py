@@ -95,7 +95,7 @@ class PersonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Person
-        fields = ['id', 'user', 'firstName', 'lastName', 'profilePic', 'organization', 'role', 'organization_name', 'organization_id']
+        fields = ['id', 'user', 'firstName', 'lastName', 'profilePic', 'organization', 'role', 'organization_name', 'organization_id', 'profilePic']
         read_only_fields = ['id']
 
     def create(self, validated_data):

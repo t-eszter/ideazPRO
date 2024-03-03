@@ -15,6 +15,7 @@ function Header() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
+  const defaultProfilePic = "/images/profile_pics/profile_pic_anon.svg";
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);
@@ -113,8 +114,9 @@ function Header() {
         <div className="h-10 w-10 rounded-full bg-sinbad-400 flex items-center justify-center">
           <img
             src={
-              currentUser?.profilePic ||
-              "/images/profile_pics/profile_pic_anon.svg"
+              currentUser && currentUser.profilePic
+                ? currentUser.profilePic
+                : defaultProfilePic
             }
             alt="Profile"
             className="h-10 w-10 rounded-full"
