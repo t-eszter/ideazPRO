@@ -32,6 +32,7 @@ from django.http import HttpResponse
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 
 from .models import IdeaGroup, Idea, Person, Organization, Vote
 from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer, PersonSerializer, OrganizationSerializer
