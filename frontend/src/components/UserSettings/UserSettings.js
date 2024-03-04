@@ -64,6 +64,7 @@ function UserSettings() {
   const handleProfilePicUpdate = (newProfilePicUrl) => {
     // Assume newProfilePicUrl is the URL you got back from your server after uploading the new picture
     updateProfilePic(newProfilePicUrl);
+    console.log("Received full URL for profile pic:", newProfilePicUrl);
   };
 
   useEffect(() => {

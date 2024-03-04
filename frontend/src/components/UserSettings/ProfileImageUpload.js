@@ -1,10 +1,6 @@
 import React, { useState } from "react";
-import { Cloudinary } from "@cloudinary/url-gen";
 
-// Initialize the Cloudinary instance with your cloud name
-const cld = new Cloudinary({ cloud: { cloudName: "hghmmn6w5" } });
-
-const ProfileImageUpload = () => {
+const ProfileImageUpload = ({ onUploadSuccess }) => {
   const [image, setImage] = useState("");
 
   const uploadImage = async (e) => {
@@ -17,7 +13,8 @@ const ProfileImageUpload = () => {
     formData.append("upload_preset", "nufl9tma");
 
     try {
-      const uploadUrl = `https://api.cloudinary.com/v1_1/${cld.cloud.cloudName}/image/upload`;
+      // Directly use your cloud name here
+      const uploadUrl = `https://api.cloudinary.com/v1_1/hghmmn6w5/image/upload`;
       const response = await fetch(uploadUrl, {
         method: "POST",
         body: formData,
@@ -27,9 +24,10 @@ const ProfileImageUpload = () => {
       const data = await response.json();
 
       setImage(data.secure_url);
-      // Call the callback prop
-      props.onUploadSuccess(data.secure_url);
-      // Optionally, send the image URL to your backend here if you need to associate it with a user profile
+      // Make sure to check if onUploadSuccess is provided and is a function
+      if (onUploadSuccess && typeof onUploadSuccess === "function") {
+        onUploadSuccess(data.secure_url);
+      }
     } catch (error) {
       console.error("Error uploading image:", error);
     }

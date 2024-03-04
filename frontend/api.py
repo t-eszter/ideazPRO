@@ -280,13 +280,13 @@ def login_view(request):
                     organization_name = person.organization.name
                     organization_id = str(person.organization.id)
                 
-                if person.profilePic and hasattr(person.profilePic, 'url'):
-                    profile_pic_url = request.build_absolute_uri(person.profilePic.url)
+                if person.profilePic:
+                    profile_pic_url = person.profilePic
                 else:
                     # Handle the default profile picture as a static file
                     # Adjust the path as necessary based on where you store your static files
                     profile_pic_url = request.build_absolute_uri(settings.STATIC_URL + 'images/profile_pics/profile_pic_anon.svg')
-                
+
                 print("Profile Pic URL:", profile_pic_url)
 
                 token, _ = Token.objects.get_or_create(user=user)
@@ -331,7 +331,7 @@ def organization_members(request, organization_id):
                 "lastName": member.lastName,
                 "regDate": member.regDate.strftime('%Y-%m-%d %H:%M:%S'),  # Format datetime
                 "role": member.role,
-                "profilePic": request.build_absolute_uri(member.profilePic.url) if member.profilePic else None,
+                "profilePic": member.profilePic if member.profilePic else None,
             })
 
         # Return a JsonResponse
@@ -355,7 +355,7 @@ def fetch_person_details(request, username):
             "lastName": person.lastName,
             "regDate": person.regDate.strftime('%Y-%m-%d %H:%M:%S'),
             "role": person.role,
-            "profilePic": person.profilePic.url if person.profilePic else None,
+            "profilePic": person.profilePic if person.profilePic else None,
             "organizationName": person.organization.name if person.organization else "No Organization",
             "organizationId": str(person.organization.id) if person.organization else None,
         }
