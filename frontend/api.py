@@ -402,7 +402,6 @@ def change_email(request):
     user.save()
     return JsonResponse({'success': 'Email updated successfully.'})
 
-@require_http_methods(["POST"])
 def update_person_details(request, user_id):
     User = get_user_model()
     try:
@@ -419,28 +418,22 @@ def update_person_details(request, user_id):
         person.firstName = request.POST.get('firstName', person.firstName)
         person.lastName = request.POST.get('lastName', person.lastName)
 
-        # Handle profile picture update if provided
-        profile_pic_url = None  # Initialize variable to hold the profile picture URL
-        if 'profilePic' in request.FILES:
-            profile_pic_file = request.FILES['profilePic']
-            # Save file and set the file path as profilePic value
-            save_path = default_storage.save(f"profile_pics/{profile_pic_file.name}", profile_pic_file)
-            person.profilePic = save_path
-            # Assuming you're using Django's default storage system
-            profile_pic_url = default_storage.url(save_path)
+        # Handle profile picture URL update if provided
+        profile_pic_url = request.POST.get('profilePicUrl')  # Get the profile picture URL from the request
+        if profile_pic_url:
+            person.profilePic = profile_pic_url  # Assuming 'profilePic' field in Person model is a CharField to store the URL
 
         person.save()
 
-        # Include the profilePicUrl in the response if available
-        response_data = {"status": "success", "message": "User and Person details updated successfully."}
-        if profile_pic_url:
-            response_data['profilePicUrl'] = profile_pic_url
+        response_data = {
+            "status": "success",
+            "message": "User and Person details updated successfully.",
+            "profilePicUrl": person.profilePic  # Include the profilePicUrl in the response
+        }
 
         return JsonResponse(response_data)
     except User.DoesNotExist:
         return JsonResponse({"status": "error", "message": "User not found."}, status=404)
-    except Person.DoesNotExist:
-        return JsonResponse({"status": "error", "message": "Person profile not found."}, status=404)
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 

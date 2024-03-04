@@ -50,14 +50,14 @@ class Person(models.Model):
     firstName = models.CharField(max_length=100)
     lastName = models.CharField(max_length=100)
     regDate = models.DateTimeField(default=timezone.now)
-    profilePic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+    profilePic = models.CharField(max_length=255, null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     ROLE_CHOICES = [
         ('user', 'User'),
         ('admin', 'Admin'),
         ('guest', 'Guest'),
     ]
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='guest')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')  # Assuming default should be 'user'
 
     def __str__(self):
         return f"{self.user.username} Profile"

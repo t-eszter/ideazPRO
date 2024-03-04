@@ -133,8 +133,9 @@ function Header() {
               <img
                 src={`${
                   currentUser.profilePic
-                    ? currentUser.profilePic + "?v=" + new Date().getTime()
-                    : defaultProfilePic
+                    ? currentUser.profilePic
+                    : // + "?v=" + new Date().getTime()
+                      defaultProfilePic
                 }`}
                 alt="Profile"
                 key={currentUser.profilePic}

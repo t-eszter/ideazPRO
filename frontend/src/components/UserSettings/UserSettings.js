@@ -3,6 +3,7 @@ import { useAuth } from "../Authentication/AuthContext";
 import { getCookie } from "../Authentication/csrftoken";
 import NewIdeaGroupForm from "./NewIdeaGroupForm";
 import IdeaGroupEditModal from "./IdeaGroupEditModal";
+import ProfileImageUpload from "./ProfileImageUpload";
 
 import Header from "../components/Header";
 
@@ -596,11 +597,8 @@ function UserSettings() {
 
               <label className="block">
                 <span className="text-gray-700">Profile Picture</span>
-                <input
-                  type="file"
-                  name="profilePic"
-                  onChange={handleChange}
-                  className="mt-1 block w-full"
+                <ProfileImageUpload
+                  onUploadSuccess={(url) => handleProfilePicUpdate(url)}
                 />
               </label>
 
