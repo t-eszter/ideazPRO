@@ -70,11 +70,13 @@ const App = () => {
 };
 
 const container = document.getElementById("root");
-const root = createRoot(container);
-root.render(
-  <React.StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-  </React.StrictMode>
-);
+if (container) {
+  const root = createRoot(container); // Ensure this is after the DOM content is guaranteed to be loaded.
+  root.render(
+    <React.StrictMode>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </React.StrictMode>
+  );
+}

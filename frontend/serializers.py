@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, IdeaGroup, Idea, Organization
+from .models import Person, IdeaGroup, Idea, Organization, Comment
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
@@ -134,3 +134,12 @@ class IdeaUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Idea
         fields = ['id', 'likes', 'title', 'description']
+
+class CommentSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username')
+    profilePic = serializers.CharField(source='user.person.profilePic')
+    commentTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'comment', 'commentTime', 'username', 'profilePic')

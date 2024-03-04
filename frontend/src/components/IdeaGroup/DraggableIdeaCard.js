@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDrag } from "react-dnd";
 import LikeCounter from "./LikeCounter";
+import Comments from "./Comments";
+import Modal from "../components/Modal";
 
 const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
   const [{ isDragging }, dragRef] = useDrag(() => ({
@@ -16,6 +18,12 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
       }
     },
   }));
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -107,7 +115,17 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
                   {formatDate(idea.postedDate)}
                 </span>
               </span>
+              <a
+                href="#"
+                onClick={toggleModal}
+                className="text-blue-600 hover:underline cursor-pointer"
+              >
+                Comments
+              </a>
             </div>
+            <Modal isOpen={isModalOpen} onClose={toggleModal}>
+              <Comments ideaId={idea.id} />
+            </Modal>
           </div>
         </div>
       </div>

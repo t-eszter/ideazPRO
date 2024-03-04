@@ -85,3 +85,16 @@ class Vote(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.vote_type} - Idea {self.idea.id}"
 
+class Comment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
+    idea = models.ForeignKey(Idea, on_delete=models.CASCADE, related_name='comments')
+    comment = models.TextField()
+    commentTime = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = ('user', 'idea')  # Remove or keep based on your requirements
+
+    def __str__(self):
+        return self.comment
+

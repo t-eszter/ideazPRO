@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/ideagroups', IdeaGroupCreateView.as_view(), name='ideagroup-create'),
     
     # update member's role for admins
+    path('api/comments/<uuid:idea_id>', CommentsList.as_view(), name='comments-list'),
     path('api/members/<int:member_id>/update-role', update_member_role, name='update-role'),
 
     path('api/register', RegisterView.as_view(), name='register'),

@@ -34,8 +34,8 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import IdeaGroup, Idea, Person, Organization, Vote
-from .serializers import IdeaGroupSerializer, IdeaSerializer, IdeaUpdateSerializer, PersonSerializer, OrganizationSerializer
+from .models import *
+from .serializers import *
 
 User = get_user_model()
 
@@ -577,3 +577,10 @@ def update_member_role(request, member_id):
         return JsonResponse({'status': 'error', 'message': 'Member not found'}, status=404)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+class CommentsList(APIView):
+    def get(self, request, idea_id, *args, **kwargs):
+        comments = Comment.objects.filter(idea_id=idea_id).select_related('user', 'user__person').all()
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
