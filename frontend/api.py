@@ -584,3 +584,18 @@ class CommentsList(APIView):
         comments = Comment.objects.filter(idea_id=idea_id).select_related('user', 'user__person').all()
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
+
+class CommentCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, idea_id):
+        try:
+            idea = Idea.objects.get(id=idea_id)
+        except Idea.DoesNotExist:
+            return Response({'error': 'Idea not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = CommentSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save(idea=idea)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

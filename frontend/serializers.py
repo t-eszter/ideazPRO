@@ -136,10 +136,12 @@ class IdeaUpdateSerializer(serializers.ModelSerializer):
         fields = ['id', 'likes', 'title', 'description']
 
 class CommentSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='user.username')
-    profilePic = serializers.CharField(source='user.person.profilePic')
-    commentTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
-
     class Meta:
         model = Comment
-        fields = ('id', 'comment', 'commentTime', 'username', 'profilePic')
+        fields = ['id', 'comment', 'idea', 'user', 'commentTime']  # Adjust fields as necessary
+        read_only_fields = ('id', 'user', 'commentTime')  # Prevent manual setting of these fields
+
+    def create(self, validated_data):
+        # Assuming the request user is set automatically from the view
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)

@@ -92,9 +92,6 @@ class Comment(models.Model):
     comment = models.TextField()
     commentTime = models.DateTimeField(default=timezone.now)
 
-    class Meta:
-        unique_together = ('user', 'idea')  # Remove or keep based on your requirements
-
     def __str__(self):
         return self.comment
 

@@ -20,8 +20,12 @@ urlpatterns = [
     path('api/ideagroups', IdeaGroupCreateView.as_view(), name='ideagroup-create'),
     
     # update member's role for admins
-    path('api/comments/<uuid:idea_id>', CommentsList.as_view(), name='comments-list'),
+
     path('api/members/<int:member_id>/update-role', update_member_role, name='update-role'),
+
+    #comments
+    path('api/comments/<uuid:idea_id>', CommentsList.as_view(), name='comments-list'),
+    path('api/comments/new/<uuid:idea_id>', CommentCreateView.as_view(), name='comments-list'), 
 
     path('api/register', RegisterView.as_view(), name='register'),
     path('api/<str:organization_name>', IdeaGroupList.as_view(), name='ideagroup-list'), #Org home page
@@ -32,6 +36,8 @@ urlpatterns = [
     path('api/<str:organization_name>/create_idea_group/', create_idea_group, name='create_idea_group_for_org'), #Create new Idea Group for an org
     path('api/create_idea_group/', create_idea_group, name='create_idea_group_for_guest'), #Create new Idea Group for an org
     path('api/person/<str:username>/', fetch_person_details, name='fetch_person_details'),
+    
+ 
 
     # User settings
     path('api/person/settings/account/email', change_email, name='update_email'),
@@ -46,6 +52,8 @@ urlpatterns = [
 
     path('auth/login/', login_view, name='custom_rest_login'),
     path('auth/logout/', LogoutView.as_view(), name='rest_logout'),
+
+
 
     # React
     re_path(r'^(?:.*)/?$', views.index, name='index'),
