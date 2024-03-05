@@ -8,8 +8,9 @@ import ProfileImageUpload from "./ProfileImageUpload";
 import Header from "../components/Header";
 
 function UserSettings() {
+  const { currentUser, updateCurrentUser } = useAuth();
+
   // console.log("UserSettings component rendered");
-  const { currentUser, updateProfilePic } = useAuth();
   const [showAddGroupForm, setShowAddGroupForm] = useState(false);
   //   console.log(currentUser);
   const [formData, setFormData] = useState({
@@ -43,6 +44,7 @@ function UserSettings() {
 
   const [selectedIdeaGroup, setSelectedIdeaGroup] = useState(null);
 
+  const [profilePicUrl, setProfilePicUrl] = useState("");
   const [profilePicSuccessMessage, setProfilePicSuccessMessage] = useState("");
 
   const indexOfLastIdeaGroup = currentPageIdeaGroups * ideaGroupsPerPage;
@@ -60,12 +62,6 @@ function UserSettings() {
       member.username.toLowerCase().includes(searchQueryMembers.toLowerCase())
     )
     .slice(indexOfFirstMember, indexOfLastMember);
-
-  const handleProfilePicUpdate = (newProfilePicUrl) => {
-    // Assume newProfilePicUrl is the URL you got back from your server after uploading the new picture
-    updateProfilePic(newProfilePicUrl);
-    console.log("Received full URL for profile pic:", newProfilePicUrl);
-  };
 
   useEffect(() => {
     if (currentUser?.organizationId) {
@@ -235,54 +231,45 @@ function UserSettings() {
     }
   };
 
+  const handleProfilePicUpdate = (url) => {
+    console.log("Received Cloudinary URL:", url); // This should log the Cloudinary URL
+    setProfilePicUrl(url); // Update the state with the new profile picture URL
+  };
+
   const handleSubmitProfile = async (e) => {
     e.preventDefault();
 
-    const submitData = new FormData();
-    if (formData.firstName) submitData.append("firstName", formData.firstName);
-    if (formData.lastName) submitData.append("lastName", formData.lastName);
-    if (formData.profilePic)
-      submitData.append("profilePic", formData.profilePic);
+    console.log("Submitting with profilePicUrl:", profilePicUrl); // Debug log
 
-    console.log(
-      "Submitting to URL:",
-      `/api/person/settings/profile/${currentUser.userId}`
-    );
-    console.log("Data being sent:", formData);
+    const updatedFormData = {
+      ...formData,
+      profilePic: profilePicUrl, // Ensure this matches the backend expectation
+    };
 
-    for (let [key, value] of submitData.entries()) {
-      console.log(key, value);
-    }
+    // console.log("Updated form data:", JSON.stringify(updatedFormData, null, 2));
 
     try {
       const response = await fetch(
         `/api/person/settings/profile/${currentUser.userId}`,
         {
           method: "POST",
-          body: submitData,
+          body: JSON.stringify(updatedFormData),
           headers: {
+            "Content-Type": "application/json",
             "X-CSRFToken": getCookie("csrftoken"),
-            // Do not set "Content-Type": "application/json" here
           },
           credentials: "include",
         }
       );
 
-      if (!response.ok) throw new Error("Network response was not ok");
-
+      if (!response.ok) throw new Error("Failed to update profile");
       const data = await response.json();
-      console.log(data);
-      // Assuming your backend returns the URL of the updated profile picture in the response
-      // under a key like 'profilePicUrl'
-      if (data.profilePicUrl) {
-        console.log("hi");
-        console.log(data);
-        handleProfilePicUpdate(data.profilePicUrl);
-        setProfilePicSuccessMessage("Profile picture updated successfully!");
-        console.log("New profile picture URL:", data.profilePicUrl);
-        console.log("Profile picture update message set");
+      console.log("Profile updated successfully:", data);
+      if (data.profilePic) {
+        // Assuming the response includes the updated profile picture URL
+        updateCurrentUser({ ...currentUser, profilePic: data.profilePic });
+        setProfilePicSuccessMessage("Profile updated successfully!");
       }
-      // Handle success...
     } catch (error) {
       console.error("Error updating profile:", error);
     }
@@ -598,9 +585,7 @@ function UserSettings() {
 
               <label className="block">
                 <span className="text-gray-700">Profile Picture</span>
-                <ProfileImageUpload
-                  onUploadSuccess={(url) => handleProfilePicUpdate(url)}
-                />
+                <ProfileImageUpload onUploadSuccess={handleProfilePicUpdate} />
               </label>
 
               <button type="submit" className="btn btn-primary">

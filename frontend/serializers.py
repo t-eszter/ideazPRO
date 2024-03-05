@@ -76,9 +76,11 @@ class IdeaSerializer(serializers.ModelSerializer):
 #             return person
 
 class UserSerializer(serializers.ModelSerializer):
+    profilePic = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'email', 'password', 'profilePic']
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -86,6 +88,13 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data.get('password'))
         return super().create(validated_data)
+
+    def get_profilePic(self, user):
+            person = getattr(user, 'person', None)
+            if person:
+                print("Profile Pic URL:", person.profilePic if person else "No profile pic")
+                return person.profilePic
+            return None 
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -136,10 +145,13 @@ class IdeaUpdateSerializer(serializers.ModelSerializer):
         fields = ['id', 'likes', 'title', 'description']
 
 class CommentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)  # This now includes profilePic via the UserSerializer
+
     class Meta:
         model = Comment
-        fields = ['id', 'comment', 'idea', 'user', 'commentTime']  # Adjust fields as necessary
-        read_only_fields = ('id', 'user', 'commentTime')  # Prevent manual setting of these fields
+        fields = ['id', 'comment', 'idea', 'user', 'commentTime']  # No need for a separate 'person' field
+        read_only_fields = ('id', 'user', 'commentTime')
+
 
     def create(self, validated_data):
         # Assuming the request user is set automatically from the view

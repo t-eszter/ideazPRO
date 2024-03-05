@@ -124,7 +124,7 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
               </a>
             </div>
             <Modal isOpen={isModalOpen} onClose={toggleModal}>
-              <Comments ideaId={idea.id} />
+              <Comments ideaId={idea.id} title={idea.title} />
             </Modal>
           </div>
         </div>

@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import uuid
+import logging
 
 from django.http import JsonResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
@@ -33,6 +34,8 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+
+logger = logging.getLogger(__name__)
 
 from .models import *
 from .serializers import *
@@ -403,73 +406,47 @@ def change_email(request):
     user.save()
     return JsonResponse({'success': 'Email updated successfully.'})
 
+
+@require_http_methods(["POST"])  # Ensuring that this view only accepts POST requests.
 def update_person_details(request, user_id):
     User = get_user_model()
     try:
+        # Attempt to parse the JSON payload from the request body
+        data = json.loads(request.body)
         user = User.objects.get(pk=user_id)
-        person = user.person  # Assuming you have 'related_name="person"' in your Person model
+        person = user.person  # Access the related Person object
 
-        # Update User model fields
-        user.email = request.POST.get('email', user.email)
-        if 'password' in request.POST:
-            user.set_password(request.POST['password'])
+        # Update User model fields if needed
+        user.email = data.get('email', user.email)
+        if 'password' in data:
+            user.set_password(data['password'])
         user.save()
 
-        # Update Person model fields
-        person.firstName = request.POST.get('firstName', person.firstName)
-        person.lastName = request.POST.get('lastName', person.lastName)
-
-        # Handle profile picture URL update if provided
-        profile_pic_url = request.POST.get('profilePicUrl')  # Get the profile picture URL from the request
-        if profile_pic_url:
-            person.profilePic = profile_pic_url  # Assuming 'profilePic' field in Person model is a CharField to store the URL
-
+        # Update Person model fields with data from the request
+        person.firstName = data.get('firstName', person.firstName)
+        person.lastName = data.get('lastName', person.lastName)
+        
+        # Update the profile picture if provided
+        profile_pic = data.get('profilePic')
+        if profile_pic:
+            person.profilePic = profile_pic
         person.save()
 
+        # Prepare the response data
         response_data = {
             "status": "success",
             "message": "User and Person details updated successfully.",
-            "profilePicUrl": person.profilePic  # Include the profilePicUrl in the response
+            "profilePic": person.profilePic  # Confirm the update
         }
 
         return JsonResponse(response_data)
+
     except User.DoesNotExist:
         return JsonResponse({"status": "error", "message": "User not found."}, status=404)
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
-        
-
-# from django.core.mail import send_mail
-# from django.utils.http import urlsafe_base64_encode
-# from django.utils.encoding import force_bytes
-
-# def send_invite(request, organization_id):
-#     if request.method == "POST":
-#         # Assuming the request body is JSON
-#         import json
-#         body_unicode = request.body.decode('utf-8')
-#         body = json.loads(body_unicode)
-#         email = body['email']
-
-#         # Generate your invitation link here. This might involve creating
-#         # an invite token or simply crafting a URL with the organization ID.
-#         # This example will use a simple URL.
-#         invite_link = f"https://ideaz.pro/invite?org={organization_id}"
-
-#         # Sending the email
-#         send_mail(
-#             'You are invited to join our organization',
-#             f'Please use the following link to join our organization: {invite_link}',
-#             'invite@zuerichadresse.ch',
-#             [email],
-#             fail_silently=False,
-#         )
-
-#         return JsonResponse({'status': 'Invitation sent successfully.'}, status=200)
-#     else:
-#         return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 class IdeaGroupUpdateView(RetrieveUpdateAPIView):
@@ -596,6 +573,5 @@ class CommentCreateView(APIView):
 
         serializer = CommentSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save(idea=idea)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            comment = serializer.save(idea=idea)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
