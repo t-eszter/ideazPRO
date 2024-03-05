@@ -34,6 +34,7 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count, Q
 
 logger = logging.getLogger(__name__)
 
@@ -575,3 +576,43 @@ class CommentCreateView(APIView):
         if serializer.is_valid():
             comment = serializer.save(idea=idea)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+def hall_of_fame_view(request, organization_id):
+    # Get the organization object
+    organization = get_object_or_404(Organization, pk=organization_id)
+
+    # Initialize a list to store top users data
+    top_users_data = []
+
+    # Get all persons in the organization
+    persons = Person.objects.filter(organization=organization)
+
+    for person in persons:
+        # Calculate points for ideas (5 points each)
+        ideas_points = Idea.objects.filter(
+            person=person,
+            group__organization=organization
+        ).count() * 5
+
+        # Calculate points for votes (1 point each for upvotes)
+        votes_points = Vote.objects.filter(
+            idea__person=person,
+            vote_type='upvote',
+            idea__group__organization=organization
+        ).count()
+
+        # Total points
+        total_points = ideas_points + votes_points
+
+        # Append the data to the list
+        top_users_data.append({
+            'name': person.user.username,
+            'points': total_points
+        })
+
+    # Sort the list by points in descending order and get the top 10
+    top_users_data.sort(key=lambda x: x['points'], reverse=True)
+    top_ten_users = top_users_data[:10]
+
+    return JsonResponse({'topUsers': top_ten_users})

@@ -27,6 +27,9 @@ urlpatterns = [
     path('api/comments/<uuid:idea_id>', CommentsList.as_view(), name='comments-list'),
     path('api/comments/new/<uuid:idea_id>', CommentCreateView.as_view(), name='comments-list'), 
 
+    #Hall of Fame view
+    path('api/hall-of-fame/<uuid:organization_id>', hall_of_fame_view, name='hall_of_fame'),
+
     path('api/register', RegisterView.as_view(), name='register'),
     path('api/<str:organization_name>', IdeaGroupList.as_view(), name='ideagroup-list'), #Org home page
     path('api/<str:organization_name>/<slug:slug>/ideas', ideas_for_group, name='group-ideas'), #All ideas within one idea group
@@ -37,8 +40,6 @@ urlpatterns = [
     path('api/create_idea_group/', create_idea_group, name='create_idea_group_for_guest'), #Create new Idea Group for an org
     path('api/person/<str:username>/', fetch_person_details, name='fetch_person_details'),
     
- 
-
     # User settings
     path('api/person/settings/account/email', change_email, name='update_email'),
     path('api/person/settings/account/password/<int:user_id>', change_password, name='update_password'),

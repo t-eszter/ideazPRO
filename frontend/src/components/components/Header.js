@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
 import Logo from "../ideaz_logo.svg";
-import { IoClose } from "react-icons/io5";
-import { IoShareSocialOutline } from "react-icons/io5";
+import {
+  IoClose,
+  IoTrophyOutline,
+  IoShareSocialOutline,
+} from "react-icons/io5";
 import { Link } from "react-router-dom";
 import Register from "./Register";
 import Login from "./Login";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Authentication/AuthContext";
+import HallOfFameModal from "./HallOfFame";
 
 function Header() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,10 +20,13 @@ function Header() {
   const navigate = useNavigate();
   const defaultProfilePic = "/images/profile_pics/profile_pic_anon.svg";
   const { currentUser, updateCurrentUser, logout } = useAuth();
+  const [isHallOfFameOpen, setIsHallOfFameOpen] = useState(false);
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);
   };
+
+  const toggleHallOfFameModal = () => setIsHallOfFameOpen(!isHallOfFameOpen);
 
   const toggleRegisterModal = () => {
     setIsRegisterOpen(!isRegisterOpen); // Corrected to properly toggle isRegisterOpen
@@ -83,6 +90,15 @@ function Header() {
         )}
       </div>
       <div className="flex flex-row gap-8 items-center">
+        {currentUser && (
+          <button
+            onClick={toggleHallOfFameModal}
+            className="btn-hall-of-fame flex flex-row items-center gap-2"
+          >
+            <IoTrophyOutline />
+            Hall of Fame
+          </button>
+        )}
         {!currentUser && (
           <button
             onClick={toggleModal}
@@ -174,6 +190,9 @@ function Header() {
 
       {isRegisterOpen && <Register toggleRegister={toggleRegisterModal} />}
       {isLoginOpen && <Login toggleLogin={toggleLoginModal} />}
+      {isHallOfFameOpen && (
+        <HallOfFameModal toggleModal={toggleHallOfFameModal} />
+      )}
     </header>
   );
 }
