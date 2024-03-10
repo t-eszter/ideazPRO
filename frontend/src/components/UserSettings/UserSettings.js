@@ -71,7 +71,7 @@ function UserSettings() {
   const sendInvite = async (e) => {
     e.preventDefault();
 
-    const organizationUrl = `https://ideaz.pro/register?orgId=${currentUser.organizationId}`;
+    const organizationUrl = `https://www.ideaz.pro/register?orgId=${currentUser.organizationId}`;
 
     const emailContent = `
   <p>You have been invited to join our organization. Please click the link below to accept the invitation:</p>
