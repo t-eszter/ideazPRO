@@ -10,9 +10,7 @@ import Header from "../components/Header";
 function UserSettings() {
   const { currentUser, updateCurrentUser } = useAuth();
 
-  // console.log("UserSettings component rendered");
   const [showAddGroupForm, setShowAddGroupForm] = useState(false);
-  //   console.log(currentUser);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -33,14 +31,13 @@ function UserSettings() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [ideaGroups, setIdeaGroups] = useState([]);
 
-  //Search and pagination of tables
   const [searchQueryIdeaGroups, setSearchQueryIdeaGroups] = useState("");
   const [currentPageIdeaGroups, setCurrentPageIdeaGroups] = useState(1);
-  const [ideaGroupsPerPage] = useState(5); // Adjust as needed
+  const [ideaGroupsPerPage] = useState(5);
 
   const [searchQueryMembers, setSearchQueryMembers] = useState("");
   const [currentPageMembers, setCurrentPageMembers] = useState(1);
-  const [membersPerPage] = useState(5); // Adjust as needed
+  const [membersPerPage] = useState(5);
 
   const [selectedIdeaGroup, setSelectedIdeaGroup] = useState(null);
 
@@ -67,7 +64,6 @@ function UserSettings() {
     if (currentUser?.organizationId) {
       fetchUserData();
       fetchOrganizationMembers(currentUser.organizationId);
-      // Assuming `isAdmin` is a property of `currentUser`, adjust based on your actual data structure
       setIsAdmin(currentUser.isAdmin);
     }
   }, [currentUser]);
@@ -108,14 +104,12 @@ function UserSettings() {
       setInviteEmail("");
     } catch (error) {
       console.error("Error sending invite:", error);
-      alert("Failed to send invite: " + error.message); // Adding this can help debug without needing the console.
+      alert("Failed to send invite: " + error.message);
     }
   };
 
   const fetchIdeaGroups = async () => {
-    // Ensure currentUser and its properties are defined before making the API call
     if (currentUser?.organizationName) {
-      // Encode the organizationName to ensure the URL is correctly formatted
       const organizationNameEncoded = encodeURIComponent(
         currentUser.organizationName
       );
@@ -153,7 +147,6 @@ function UserSettings() {
       const data = await response.json();
       setFormData(data);
       setIsAdmin(data.role === "admin");
-      // console.log(data.role);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     }
@@ -187,18 +180,15 @@ function UserSettings() {
   const handleSubmitEmail = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(
-        `/api/person/settings/account/email`, // Ensure the URL is correct.
-        {
-          method: "POST",
-          body: JSON.stringify({ new_email: formData.email }), // Change 'email' to 'new_email'
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCookie("csrftoken"),
-          },
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`/api/person/settings/account/email`, {
+        method: "POST",
+        body: JSON.stringify({ new_email: formData.email }),
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        credentials: "include",
+      });
       if (!response.ok) throw new Error("Network response was not ok");
       setSuccessMessage((prev) => ({
         ...prev,
@@ -225,28 +215,25 @@ function UserSettings() {
         }
       );
       if (!response.ok) throw new Error("Network response was not ok");
-      // Handle success...
     } catch (error) {
       console.error("Error updating password:", error);
     }
   };
 
   const handleProfilePicUpdate = (url) => {
-    console.log("Received Cloudinary URL:", url); // This should log the Cloudinary URL
-    setProfilePicUrl(url); // Update the state with the new profile picture URL
+    console.log("Received Cloudinary URL:", url);
+    setProfilePicUrl(url);
   };
 
   const handleSubmitProfile = async (e) => {
     e.preventDefault();
 
-    console.log("Submitting with profilePicUrl:", profilePicUrl); // Debug log
+    console.log("Submitting with profilePicUrl:", profilePicUrl);
 
     const updatedFormData = {
       ...formData,
-      profilePic: profilePicUrl, // Ensure this matches the backend expectation
+      profilePic: profilePicUrl,
     };
-
-    // console.log("Updated form data:", JSON.stringify(updatedFormData, null, 2));
 
     try {
       const response = await fetch(
@@ -266,7 +253,6 @@ function UserSettings() {
       const data = await response.json();
       console.log("Profile updated successfully:", data);
       if (data.profilePic) {
-        // Assuming the response includes the updated profile picture URL
         updateCurrentUser({ ...currentUser, profilePic: data.profilePic });
         setProfilePicSuccessMessage("Profile updated successfully!");
       }
@@ -292,9 +278,8 @@ function UserSettings() {
         },
       });
       if (!response.ok) throw new Error("Failed to update member role");
-      // Handle success - Optionally refresh members list or show success message
       console.log(`Role updated for member ${memberId}`);
-      fetchOrganizationMembers(currentUser.organizationId); // Refresh members list
+      fetchOrganizationMembers(currentUser.organizationId);
     } catch (error) {
       console.error("Error updating member role:", error);
     }
@@ -350,8 +335,8 @@ function UserSettings() {
                       <th>Description</th>
                       <th>Status</th>
                       <th>Comment</th>
-                      <th>Created At</th> {/* New Header */}
-                      <th>Last Updated</th> {/* New Header */}
+                      <th>Created At</th> {}
+                      <th>Last Updated</th> {}
                       <th>Edit</th>
                     </tr>
                   </thead>
@@ -362,12 +347,11 @@ function UserSettings() {
                         <td>{group.description}</td>
                         <td>{group.status}</td>
                         <td>{group.comment}</td>
-                        <td>{new Date(group.created).toLocaleString()}</td>{" "}
-                        {/* Display Created */}
+                        <td>{new Date(group.created).toLocaleString()}</td> {}
                         <td>
                           {new Date(group.last_updated).toLocaleString()}
                         </td>{" "}
-                        {/* Display Last Updated */}
+                        {}
                         <td>
                           <button
                             className="btn btn-xs btn-secondary"

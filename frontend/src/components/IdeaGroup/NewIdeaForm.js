@@ -51,9 +51,6 @@ const NewIdeaForm = ({
     });
 
     try {
-      // console.log("Current User:", currentUser);
-      // console.log("Posting with personId:", currentUser.personId);
-      // console.log("Posting with userId:", currentUser.userId);
       const response = await fetch(`/api/ideas/`, {
         method: "POST",
         headers: {
@@ -117,7 +114,7 @@ const NewIdeaForm = ({
           <textarea
             id="ideaDescription"
             value={ideaDescription}
-            maxLength="300" // Updated character limit
+            maxLength="300"
             onChange={handleIdeaDescriptionChange}
             style={{ height: "184px" }}
             className="textarea textarea-bordered w-full mb-2 h-46"

@@ -6,14 +6,12 @@ function HallOfFameModal({ toggleModal }) {
   const { currentUser } = useAuth();
 
   useEffect(() => {
-    // Fetch the top 10 users of the organization
     const fetchTopUsers = async () => {
-      // Adjust the URL and method according to your backend
       const response = await fetch(
         `/api/hall-of-fame/${currentUser.organizationId}`
       );
       const data = await response.json();
-      setTopUsers(data.topUsers); // Adjust according to your data structure
+      setTopUsers(data.topUsers);
     };
 
     fetchTopUsers();
@@ -21,7 +19,7 @@ function HallOfFameModal({ toggleModal }) {
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      {/* Modal content */}
+      {}
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div className="mt-3 text-center">
           <h3 className="text-lg leading-6 font-medium text-gray-900">

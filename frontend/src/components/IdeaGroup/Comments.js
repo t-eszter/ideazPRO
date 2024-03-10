@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import { getCookie } from "../Authentication/csrftoken";
 
 const Comments = ({ ideaId, title }) => {
-  // Assuming onClose is a prop function to handle closing the modal
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const defaultProfilePic = "/images/profile_pics/profile_pic_anon.svg"; // Default profile picture path
+  const defaultProfilePic = "/images/profile_pics/profile_pic_anon.svg";
 
   useEffect(() => {
     fetch(`/api/comments/${ideaId}`)

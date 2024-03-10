@@ -3,13 +3,11 @@ import { getCookie } from "../Authentication/csrftoken";
 import { useAuth } from "../Authentication/AuthContext";
 
 function NewIdeaGroupForm({ onClose, onAdd }) {
-  //   const { currentUser } = useAuth();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // The status is hardcoded to "active" in the POST request body
     const requestBody = JSON.stringify({
       name,
       description,
@@ -43,7 +41,7 @@ function NewIdeaGroupForm({ onClose, onAdd }) {
 
       <div className="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
         <div className="modal-content py-4 text-left px-6">
-          {/* Modal Header */}
+          {}
           <div className="flex justify-between items-center pb-3">
             <p className="text-2xl font-bold">Add New Idea Group</p>
             <div className="modal-close cursor-pointer z-50" onClick={onClose}>
@@ -59,7 +57,7 @@ function NewIdeaGroupForm({ onClose, onAdd }) {
             </div>
           </div>
 
-          {/* Modal Body */}
+          {}
           <form onSubmit={handleSubmit} className="mt-5">
             <div className="mb-4">
               <label
@@ -91,7 +89,7 @@ function NewIdeaGroupForm({ onClose, onAdd }) {
               ></textarea>
             </div>
 
-            {/* Modal Footer */}
+            {}
             <div className="flex items-center justify-end p-6 border-t border-solid border-gray-300 rounded-b">
               <button
                 type="button"

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import ReactLogo from "./ideaz_logo.svg";
 import { useNavigate } from "react-router-dom";
 import CSRFToken, { getCookie } from "./Authentication/csrftoken";
-// import { useAuth } from "./Authentication/AuthContext";
 import Login from "./components/Login";
 
 function Home() {

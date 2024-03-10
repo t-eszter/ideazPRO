@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getCookie } from "../Authentication/csrftoken"; // Make sure the path is correct
+import { getCookie } from "../Authentication/csrftoken";
 
 function IdeaGroupEditModal({ group, onClose, onEdit }) {
   const [name, setName] = useState(group.name);
@@ -9,11 +9,10 @@ function IdeaGroupEditModal({ group, onClose, onEdit }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Example API endpoint - adjust URL as needed
     const url = `/api/ideagroups/update/${group.id}`;
     try {
       const response = await fetch(url, {
-        method: "PUT", // Or "PUT", depending on your backend
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": getCookie("csrftoken"),
@@ -21,8 +20,8 @@ function IdeaGroupEditModal({ group, onClose, onEdit }) {
         body: JSON.stringify({ name, description, status, comment }),
       });
       if (!response.ok) throw new Error("Failed to update idea group");
-      onEdit(); // Refresh the IdeaGroups list
-      onClose(); // Close the modal
+      onEdit();
+      onClose();
     } catch (error) {
       console.error("Error updating idea group:", error);
     }

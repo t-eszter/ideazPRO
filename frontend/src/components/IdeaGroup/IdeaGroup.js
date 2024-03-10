@@ -1,4 +1,3 @@
-//IdeaGroup.js
 import React, { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import NewIdeaForm from "./NewIdeaForm";
@@ -17,15 +16,12 @@ const IdeaGroup = () => {
   const { organizationName, groupId, groupSlug } = useParams();
   const navigate = useNavigate();
 
-  // Determine the mode based on the URL parameters
   const isGuestUserMode = groupId !== undefined;
   const isOrganizationMode = organizationName !== undefined && !isGuestUserMode;
 
-  // NewIdeaForm
   const [showNewIdeaForm, setShowNewIdeaForm] = useState(false);
 
   const handleNewIdeaAdded = (newIdea) => {
-    // setIdeas((prevIdeas) => [...prevIdeas, newIdea]);
     setShowNewIdeaForm(false);
   };
 
@@ -82,21 +78,17 @@ const IdeaGroup = () => {
         const data = await response.json();
 
         if (isOrganizationMode) {
-          // Filter idea groups to only include those with 'active' or 'closed' status
           const filteredIdeaGroups = data.filter(
             (group) => group.status === "active" || group.status === "closed"
           );
 
           setIdeaGroups(filteredIdeaGroups);
 
-          // Set active group based on slug or first group in the filtered list
           const activeGroupFromSlug = filteredIdeaGroups.find(
             (group) => group.slug === groupSlug
           );
           setActiveGroup(activeGroupFromSlug || filteredIdeaGroups[0]);
         } else if (isGuestUserMode) {
-          // Assuming you only deal with one group in guest user mode
-          // No need to filter since you're dealing with a single group
           setActiveGroup(data.group);
           setIdeaGroups([data.group]);
           setIdeas(data.ideas);
@@ -166,19 +158,17 @@ const IdeaGroup = () => {
                 style={{ breakInside: "avoid" }}
               >
                 <DraggableIdeaCard
-                  // key={idea.id}
                   idea={idea}
                   position={
                     positions[idea.id] || { x: 0, y: 0, isMoved: false }
                   }
                   onMove={handleMove}
-                  // onLike={(ideaId, increment) => handleVote(ideaId, increment)}
                 />
               </div>
             ))}
         </div>
 
-        {/* NewIdeaForm */}
+        {}
         <div className="fixed bottom-4 right-4 z-40">
           {activeGroup && activeGroup.status !== "closed" && (
             <button
@@ -205,8 +195,6 @@ const IdeaGroup = () => {
 
         <ul className="flex justify-left gap-8 py-4 px-8 sticky bottom-0 z-30 bg-alabaster-100">
           {ideaGroups.map((group) => {
-            // Check if it's GuestUserMode
-
             if (isGuestUserMode) {
               return (
                 <div

@@ -30,12 +30,10 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
 
     const date = new Date(dateString);
 
-    // check if date is valid
     if (isNaN(date.getTime())) {
       return "Invalid Date";
     }
 
-    // format date
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -47,19 +45,13 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
   };
 
   const renderTextWithLinks = (text) => {
-    // This regex matches URLs
     const urlRegex =
       /(\bhttps?:\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
 
-    // Split text into parts by URL
     const parts = text.split(urlRegex);
-
-    // Log parts to see how the text is being split
-    // console.log(parts);
 
     return parts.map((part, index) => {
       if (urlRegex.test(part)) {
-        // Render part as a link
         return (
           <a
             key={index}
@@ -72,7 +64,6 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
           </a>
         );
       } else {
-        // Render part as plain text
         return part;
       }
     });
@@ -97,7 +88,7 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
               </h3>
               <p className="text-gray-600 text-sm leading-5">
                 {renderTextWithLinks(idea.description)}
-                {/* {idea.description} */}
+                {}
               </p>
             </div>
             <div className="flip-card-back h-fit flex flex-col">

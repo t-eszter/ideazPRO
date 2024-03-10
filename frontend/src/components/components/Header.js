@@ -29,12 +29,11 @@ function Header() {
   const toggleHallOfFameModal = () => setIsHallOfFameOpen(!isHallOfFameOpen);
 
   const toggleRegisterModal = () => {
-    setIsRegisterOpen(!isRegisterOpen); // Corrected to properly toggle isRegisterOpen
+    setIsRegisterOpen(!isRegisterOpen);
   };
 
   useEffect(() => {
     const storedUserName = localStorage.getItem("userName");
-    // console.log("Org name:::" + localStorage.getItem("organizationName"));
   }, []);
 
   const handleLogout = async () => {
@@ -55,11 +54,11 @@ function Header() {
     el.value = window.location.href;
     document.body.appendChild(el);
     el.select();
-    el.setSelectionRange(0, 99999); // For mobile devices
+    el.setSelectionRange(0, 99999);
 
     try {
       var successful = document.execCommand("copy");
-      setIsCopied(true); // Update state to indicate the URL has been copied
+      setIsCopied(true);
     } catch (err) {
       console.error("Oops, unable to copy", err);
     }

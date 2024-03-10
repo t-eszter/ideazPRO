@@ -15,12 +15,9 @@ function Login({ isOpenProp, toggleLogin }) {
   });
   const [loginError, setLoginError] = useState("");
 
-  // Synchronize internal isOpen state with external isOpenProp
   useEffect(() => {
     setIsOpen(isOpenProp);
   }, [isOpenProp]);
-
-  // Automatically open the modal based on query parameters (e.g., ?login=true)
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -34,9 +31,8 @@ function Login({ isOpenProp, toggleLogin }) {
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
-  // Inside your Login component
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
     try {
       const response = await fetch("/auth/login/", {
@@ -55,9 +51,7 @@ function Login({ isOpenProp, toggleLogin }) {
 
       const data = await response.json();
 
-      // Check if userId is included in the response
       if (data.organizationName && data.userId !== undefined) {
-        // Adjust this line to include userId
         login(
           data.userName,
           data.organizationName,
@@ -76,10 +70,9 @@ function Login({ isOpenProp, toggleLogin }) {
           data.profilePic
         );
         console.log("Navigating to:", `/${data.organizationName}`);
-        navigate(`/${data.organizationName}`); // Navigate to the organization page
-        toggleLogin(); // Close the login modal
+        navigate(`/${data.organizationName}`);
+        toggleLogin();
       } else {
-        // Handle case where necessary data is missing
         setLoginError(
           "Login successful, but necessary information is missing."
         );
@@ -89,8 +82,6 @@ function Login({ isOpenProp, toggleLogin }) {
       setLoginError(error.message || "Login failed. Please try again.");
     }
   };
-
-  // if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
@@ -102,7 +93,7 @@ function Login({ isOpenProp, toggleLogin }) {
             value={credentials.username}
             onChange={handleChange}
             placeholder="Username"
-            className="input" // Apply your input styling here
+            className="input"
           />
           <input
             type="password"
@@ -110,7 +101,7 @@ function Login({ isOpenProp, toggleLogin }) {
             value={credentials.password}
             onChange={handleChange}
             placeholder="Password"
-            className="input" // Apply your input styling here
+            className="input"
           />
           <div className="flex justify-end space-x-2">
             <button type="button" onClick={toggleLogin} className="button">

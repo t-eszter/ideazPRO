@@ -25,7 +25,7 @@ const ProtectedIdeaGroup = () => (
 const App = () => {
   useEffect(() => {
     fetch("get-csrf-token/", {
-      credentials: "include", // Important for including cookies
+      credentials: "include",
     });
   }, []);
 
@@ -47,7 +47,7 @@ const App = () => {
             />
             <Route
               path="/:organizationName/:groupSlug"
-              element={<ProtectedIdeaGroup />} // Protected route
+              element={<ProtectedIdeaGroup />}
             />
             <Route
               path="/:organizationName"
@@ -71,7 +71,7 @@ const App = () => {
 
 const container = document.getElementById("root");
 if (container) {
-  const root = createRoot(container); // Ensure this is after the DOM content is guaranteed to be loaded.
+  const root = createRoot(container);
   root.render(
     <React.StrictMode>
       <AuthProvider>

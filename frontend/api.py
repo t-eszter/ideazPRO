@@ -55,7 +55,6 @@ def check_profanity(text):
     print("Node.js script output:", result.stdout)
     return "Profanity detected!" in result.stdout
 
-# api.py
 class IdeaGroupList(generics.ListAPIView):
     serializer_class = IdeaGroupSerializer
 
@@ -70,9 +69,7 @@ class IdeaGroupCreateView(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        # Retrieve the Person instance associated with the authenticated user
         person = get_object_or_404(Person, user=self.request.user)
-        # Use the organization from the Person instance to set the organization foreign key
         serializer.save(organization=person.organization)
 
 
@@ -110,7 +107,6 @@ def create_idea_group(request):
         except Organization.DoesNotExist:
             return Response({'error': 'Organization not found'}, status=status.HTTP_404_NOT_FOUND)
     else:
-        # In case of a guest user, organization is not set
         data['organization'] = None
 
     serializer = IdeaGroupSerializer(data=data)
@@ -120,7 +116,6 @@ def create_idea_group(request):
             'success': True,
             'data': {
                 'id': ideagroup.id,
-                # Include other necessary data if needed
             }
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -151,13 +146,12 @@ def ideas_for_guest(request, id):
         group = IdeaGroup.objects.get(pk=id)
         ideas = Idea.objects.filter(group=group)
 
-        # Serialize both group and ideas
         serialized_group = IdeaGroupSerializer(group).data
         serialized_ideas = IdeaSerializer(ideas, many=True).data
 
         return Response({
-            'group': serialized_group,  # Data about the group
-            'ideas': serialized_ideas   # Data about the ideas
+            'group': serialized_group,
+            'ideas': serialized_ideas
         })
 
     except IdeaGroup.DoesNotExist:
@@ -168,31 +162,23 @@ def ideas_for_guest(request, id):
 class UpdateIdeaView(APIView):
     def put(self, request, idea_id):
         try:
-            # Convert idea_id to UUID
-            # uuid_idea_id = UUID(idea_id)
 
-            # Retrieve the idea
             idea = Idea.objects.get(id=idea_id)
 
-            # Update likes if 'increment' is provided
             increment = request.data.get("increment")
             if increment is not None:
                 idea.likes += int(increment)
                 idea.save()
 
-            # Check if an organization_id is provided to update the IdeaGroup
             organization_id = request.data.get("organization_id")
             if organization_id:
-                # Convert organization_id to UUID and retrieve the organization
                 uuid_organization_id = UUID(organization_id)
                 organization = Organization.objects.get(id=uuid_organization_id)
 
-                # Get the IdeaGroup associated with the idea and update its organization
                 idea_group = idea.idea_group
                 idea_group.organization = organization
                 idea_group.save()
 
-            # Serialize and return the updated idea
             serializer = IdeaUpdateSerializer(idea)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -205,25 +191,22 @@ class UpdateIdeaView(APIView):
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
-        with transaction.atomic():  # Ensure atomicity of the user creation and organization linking
+        with transaction.atomic():
             try:
                 data = request.data
 
-                # Create the User
                 user = User.objects.create_user(
                     username=data['username'],
                     email=data['email'],
                     password=data['password']
                 )
 
-                # Prepare person_data
                 person_data = {
                     'firstName': data.get('firstName'),
                     'lastName': data.get('lastName'),
-                    'role': 'guest',  # Default role
+                    'role': 'guest',
                 }
 
-                # Handle organization logic
                 if 'organizationId' in data and data['organizationId']:
                     organization = Organization.objects.get(id=data['organizationId'])
                     person_data['organization'] = organization
@@ -234,20 +217,16 @@ class RegisterView(APIView):
                     person_data['organization'] = organization
                     person_data['role'] = 'admin'
 
-                # Create the Person
                 person = Person.objects.create(user=user, **person_data)
 
-                # If there's an IdeaGroup ID, update its organization field
                 idea_group_id = data.get('idea_group_id')
                 if idea_group_id:
                     idea_group = get_object_or_404(IdeaGroup, id=uuid.UUID(idea_group_id))
                     idea_group.organization = organization
                     idea_group.save()
 
-                # Create or get a token for the created user
                 token, created = Token.objects.get_or_create(user=user)
 
-                # Automatically log the user in after registration
                 login(request, user)
 
                 return JsonResponse({
@@ -265,7 +244,6 @@ class RegisterView(APIView):
 
 
 
-# @csrf_exempt  # Use this decorator cautiously and only if necessary
 def login_view(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -276,7 +254,6 @@ def login_view(request):
         if user:
             login(request, user)
             try:
-                # Assuming a one-to-one relationship between User and Person
                 person = Person.objects.get(user=user)
                 organization_name = 'guest'
                 organization_id = None
@@ -287,8 +264,6 @@ def login_view(request):
                 if person.profilePic:
                     profile_pic_url = person.profilePic
                 else:
-                    # Handle the default profile picture as a static file
-                    # Adjust the path as necessary based on where you store your static files
                     profile_pic_url = request.build_absolute_uri(settings.STATIC_URL + 'images/profile_pics/profile_pic_anon.svg')
 
                 print("Profile Pic URL:", profile_pic_url)
@@ -300,7 +275,7 @@ def login_view(request):
                     'organizationName': organization_name,
                     'organizationId': organization_id,
                     'userName': user.username,
-                    'userId': user.id,  # Use Django User model's ID
+                    'userId': user.id,
                     'firstName': person.firstName,
                     'lastName': person.lastName,
                     'email': user.email,
@@ -315,16 +290,11 @@ def login_view(request):
 
 def organization_members(request, organization_id):
     try:
-        # Retrieve the organization by its ID
         organization = get_object_or_404(Organization, id=organization_id)
 
-        # Retrieve all Person instances related to the organization
         members = organization.members.all().select_related('user')
 
-        # for person in Person.objects.all():
-        #     print(person.firstName, person.organization)
 
-        # Create a list to hold member data
         members_data = []
         for member in members:
             members_data.append({
@@ -333,25 +303,21 @@ def organization_members(request, organization_id):
                 "email": member.user.email,
                 "firstName": member.firstName,
                 "lastName": member.lastName,
-                "regDate": member.regDate.strftime('%Y-%m-%d %H:%M:%S'),  # Format datetime
+                "regDate": member.regDate.strftime('%Y-%m-%d %H:%M:%S'),
                 "role": member.role,
                 "profilePic": member.profilePic if member.profilePic else None,
             })
 
-        # Return a JsonResponse
         return JsonResponse({"organization": organization.name, "members": members_data})
     except ObjectDoesNotExist:
         return JsonResponse({"error": "The requested organization does not exist."}, status=404)
 
 def fetch_person_details(request, username):
     if request.method == "GET":
-        # Retrieve the User object based on the username
         user = get_object_or_404(User, username=username)
         
-        # Retrieve the associated Person object
         person = get_object_or_404(Person, user=user)
         
-        # Construct the data to return
         person_data = {
             "username": user.username,
             "firstName": person.firstName,
@@ -364,14 +330,11 @@ def fetch_person_details(request, username):
             "organizationId": str(person.organization.id) if person.organization else None,
         }
         
-        # Return a JsonResponse
         return JsonResponse(person_data)
     else:
-        # Method Not Allowed
         return JsonResponse({"error": "GET request required."}, status=405)
 
 
-# User setiings
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request):
@@ -383,12 +346,9 @@ def change_password(request):
         return JsonResponse({'error': 'Wrong password.'}, status=400)
 
     try:
-        # Validate the new password
         password_validation.validate_password(new_password, user)
-        # Set the new password
         user.set_password(new_password)
         user.save()
-        # Important: Update the session with the new password
         update_session_auth_hash(request, user)
         return JsonResponse({'success': 'Password updated successfully.'})
     except Exception as e:
@@ -402,42 +362,36 @@ def change_email(request):
     print("Email to update:", new_email)
     print("Request body:", request.data)
 
-    # Optional: Add additional checks, e.g., format validation or uniqueness check
     user.email = new_email
     user.save()
     return JsonResponse({'success': 'Email updated successfully.'})
 
 
-@require_http_methods(["POST"])  # Ensuring that this view only accepts POST requests.
+@require_http_methods(["POST"])
 def update_person_details(request, user_id):
     User = get_user_model()
     try:
-        # Attempt to parse the JSON payload from the request body
         data = json.loads(request.body)
         user = User.objects.get(pk=user_id)
-        person = user.person  # Access the related Person object
+        person = user.person
 
-        # Update User model fields if needed
         user.email = data.get('email', user.email)
         if 'password' in data:
             user.set_password(data['password'])
         user.save()
 
-        # Update Person model fields with data from the request
         person.firstName = data.get('firstName', person.firstName)
         person.lastName = data.get('lastName', person.lastName)
         
-        # Update the profile picture if provided
         profile_pic = data.get('profilePic')
         if profile_pic:
             person.profilePic = profile_pic
         person.save()
 
-        # Prepare the response data
         response_data = {
             "status": "success",
             "message": "User and Person details updated successfully.",
-            "profilePic": person.profilePic  # Confirm the update
+            "profilePic": person.profilePic
         }
 
         return JsonResponse(response_data)
@@ -447,18 +401,13 @@ def update_person_details(request, user_id):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
-
-
-
 class IdeaGroupUpdateView(RetrieveUpdateAPIView):
     queryset = IdeaGroup.objects.all()
     serializer_class = IdeaGroupSerializer
-    permission_classes = [IsAuthenticated]  # Customize as needed
+    permission_classes = [IsAuthenticated]
 
     def perform_update(self, serializer):
-        # Optional: Add any custom update logic here
         serializer.save()
-
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -467,18 +416,14 @@ def handle_vote(request, idea_id):
         user = request.user
         vote_type = request.data.get('voteType')
 
-        # Find existing vote by the user for the idea
         vote, created = Vote.objects.get_or_create(user=user, idea_id=idea_id, defaults={'vote_type': vote_type})
 
         if not created and vote.vote_type != vote_type:
-            # If vote exists but the type is different, update it
             vote.vote_type = vote_type
             vote.save()
         elif not created and vote.vote_type == vote_type:
-            # If vote exists and the type is the same, remove the vote
             vote.delete()
 
-    # Fetch the total votes for the idea
     idea_votes = Idea.objects.annotate(
         upvotes=Count('votes', filter=Q(votes__vote_type='upvote')),
         downvotes=Count('votes', filter=Q(votes__vote_type='downvote')),
@@ -486,34 +431,28 @@ def handle_vote(request, idea_id):
     
     total_votes = idea_votes.upvotes - idea_votes.downvotes
 
-    # Check the current user's vote
     user_vote = None
     if request.user.is_authenticated:
         user_vote_qs = Vote.objects.filter(user=request.user, idea_id=idea_id)
         if user_vote_qs.exists():
             user_vote = user_vote_qs.first().vote_type
 
-    # Return the vote counts and the current user's vote
     return Response({
         'total_votes': total_votes,
         'user_vote': user_vote
     })
 
-
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
 def send_invite(request, organization_id):
-    print('hello')
     if request.method == "POST":
-        print('hello')
         try:
             data = json.loads(request.body)
             to_email = data.get('email')
             subject = "You're Invited!"
             content = data.get('emailContent')
             
-            # Simplified function to send email
             message = Mail(
                 from_email='invite@ideaz.pro',
                 to_emails=to_email,
@@ -522,12 +461,10 @@ def send_invite(request, organization_id):
             )
             sg = SendGridAPIClient(os.getenv('SENDGRID_API_KEY'))
             response = sg.send(message)
-            # logger.info(response.status_code, response.body, response.headers)
             
             return JsonResponse({"message": "Invitation sent successfully."}, status=200)
 
         except Exception as e:
-            # logger.error(f"Error sending invite: {str(e)}")
             return JsonResponse({"error": str(e)}, status=500)
     else:
         return JsonResponse({"error": "Method not allowed"}, status=405)
@@ -540,7 +477,6 @@ class RegisterFromInvite(APIView):
             return Response(serializer.data)
         except Organization.DoesNotExist:
             return Response({'error': 'Organization not found'}, status=status.HTTP_404_NOT_FOUND)
-
 
 @require_POST
 def update_member_role(request, member_id):
@@ -579,39 +515,31 @@ class CommentCreateView(APIView):
 
 
 def hall_of_fame_view(request, organization_id):
-    # Get the organization object
     organization = get_object_or_404(Organization, pk=organization_id)
 
-    # Initialize a list to store top users data
     top_users_data = []
 
-    # Get all persons in the organization
     persons = Person.objects.filter(organization=organization)
 
     for person in persons:
-        # Calculate points for ideas (5 points each)
         ideas_points = Idea.objects.filter(
             person=person,
             group__organization=organization
         ).count() * 5
 
-        # Calculate points for votes (1 point each for upvotes)
         votes_points = Vote.objects.filter(
             idea__person=person,
             vote_type='upvote',
             idea__group__organization=organization
         ).count()
 
-        # Total points
         total_points = ideas_points + votes_points
 
-        # Append the data to the list
         top_users_data.append({
             'name': person.user.username,
             'points': total_points
         })
 
-    # Sort the list by points in descending order and get the top 10
     top_users_data.sort(key=lambda x: x['points'], reverse=True)
     top_ten_users = top_users_data[:10]
 

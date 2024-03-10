@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-const modalRoot = document.getElementById("modal-root"); // Ensure this exists in your index.html
+const modalRoot = document.getElementById("modal-root");
 
 const Modal = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;

@@ -5,7 +5,6 @@ const LikeCounter = ({ ideaId }) => {
   const [voteCount, setVoteCount] = useState(0);
   const [userVote, setUserVote] = useState(null);
 
-  // Function to fetch current votes for an idea
   const fetchIdeaVotes = async () => {
     try {
       const response = await fetch(`/api/ideas/vote/${ideaId}`, {
@@ -23,7 +22,6 @@ const LikeCounter = ({ ideaId }) => {
     }
   };
 
-  // Function to submit a vote for an idea
   const onLike = async (voteType) => {
     try {
       const response = await fetch(`/api/ideas/vote/${ideaId}`, {
@@ -32,7 +30,7 @@ const LikeCounter = ({ ideaId }) => {
           "Content-Type": "application/json",
           "X-CSRFToken": getCookie("csrftoken"),
         },
-        body: JSON.stringify({ voteType }), // voteType: 'upvote', 'downvote', or null to remove vote
+        body: JSON.stringify({ voteType }),
       });
       if (!response.ok) throw new Error("Failed to update vote");
       const updatedData = await response.json();
