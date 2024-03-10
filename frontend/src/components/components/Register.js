@@ -11,7 +11,7 @@ function Register({ toggleRegister }) {
   const params = useParams();
   const navigate = useNavigate();
 
-  const groupId = params.groupId;
+  const groupId = useParams().groupId || query.get("groupId");
   const orgIdFromQuery = query.get("orgId");
 
   const [isOpen, setIsOpen] = useState(true);
@@ -26,6 +26,7 @@ function Register({ toggleRegister }) {
     organization_name: "",
     existingOrganizationId: orgIdFromQuery || null,
     joinExisting: orgIdFromQuery ? true : null,
+    groupId: groupId,
   });
 
   const [organizationDetails, setOrganizationDetails] = useState(null);
@@ -33,29 +34,29 @@ function Register({ toggleRegister }) {
   const [isRegistered, setIsRegistered] = useState(false);
 
   useEffect(() => {
-    if (groupId) {
-      fetch(`/api/idea-groups/${groupId}/`)
-        .then((response) => response.json())
-        .then((data) => {
+    const fetchGroupAndOrganizationDetails = async () => {
+      try {
+        if (groupId) {
+          const response = await fetch(`/api/idea-groups/${groupId}/`);
+          const data = await response.json();
           setOrganizationDetails(data.organization_details);
-          if (data.organization_details) {
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              existingOrganizationId: data.organization_details.id,
-              joinExisting: true,
-            }));
-          } else {
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              joinExisting: false,
-            }));
-          }
-        })
-        .catch((error) =>
-          console.error("Failed to fetch IdeaGroup details:", error)
+          // Adjust joinExisting based on whether the IdeaGroup has an organization
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            existingOrganizationId: data.organization_details?.id || null,
+            joinExisting: !!data.organization_details,
+          }));
+        }
+      } catch (error) {
+        console.error(
+          "Failed to fetch IdeaGroup or organization details:",
+          error
         );
-    }
-  }, [groupId]);
+      }
+    };
+
+    fetchGroupAndOrganizationDetails();
+  }, [groupId, orgIdFromQuery]);
 
   useEffect(() => {
     if (orgIdFromQuery) {
@@ -96,19 +97,26 @@ function Register({ toggleRegister }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     let registrationData = {
       ...formData.user,
       firstName: formData.firstName,
       lastName: formData.lastName,
+      organization_name: formData.organization_name.trim(),
+      existingOrganizationId: formData.existingOrganizationId,
+      groupId, // Always include groupId in the registration payload if available
     };
 
-    if (formData.joinExisting) {
-      registrationData.existingOrganizationId = formData.existingOrganizationId;
-    } else {
-      registrationData.organization_name = formData.organization_name.trim();
-    }
+    // Simplify registrationData by removing undefined or null properties
+    Object.keys(registrationData).forEach(
+      (key) =>
+        (registrationData[key] === undefined ||
+          registrationData[key] === null) &&
+        delete registrationData[key]
+    );
 
     try {
+      console.log("Sending registration data:", registrationData);
       const response = await fetch("/api/register", {
         method: "POST",
         headers: {
@@ -118,17 +126,12 @@ function Register({ toggleRegister }) {
         body: JSON.stringify(registrationData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        setErrors(errorData);
-        console.error("Registration failed:", errorData);
-        return;
-      }
-
+      if (!response.ok) throw new Error(await response.text());
       setIsRegistered(true);
       navigate("/login?fromRegister=true");
     } catch (error) {
       console.error("Registration error:", error);
+      setErrors({ ...errors, form: "Registration failed. Please try again." });
     }
   };
 
