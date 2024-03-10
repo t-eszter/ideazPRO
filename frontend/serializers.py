@@ -6,14 +6,21 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 
 class IdeaGroupSerializer(serializers.ModelSerializer):
+    organization_details = serializers.SerializerMethodField()
+
     class Meta:
         model = IdeaGroup
-        fields = ['id', 'name', 'description', 'status', 'slug', 'organization', 'comment', 'created', 'last_updated']
-        read_only_fields = ('slug', 'organization', 'created', 'last_updated')
+        fields = ['id', 'name', 'description', 'status', 'slug', 'organization_details', 'comment', 'created', 'last_updated']
+        read_only_fields = ('slug', 'created', 'last_updated')
 
-        def perform_create(self, serializer):
-            user_organization = self.request.user.organization
-            serializer.save(organization=user_organization)
+    def get_organization_details(self, obj):
+        if obj.organization:
+            return {"id": obj.organization.id, "name": obj.organization.name}
+        return None
+
+    def perform_create(self, serializer):
+        user_organization = self.request.user.organization
+        serializer.save(organization=user_organization)
         
 
 class IdeaSerializer(serializers.ModelSerializer):
@@ -31,49 +38,10 @@ class IdeaSerializer(serializers.ModelSerializer):
         return None 
 
     def get_posted_by(self, obj):
-        # Assuming 'person' field in Idea model and 'user' field in Person model
         if obj.person and obj.person.user:
             return obj.person.user.username
         return "Anonymous"
-
-# class PersonSerializer(serializers.ModelSerializer):
-#     organization_name = serializers.CharField(write_only=True, allow_blank=False, max_length=100)
-#     idea_group_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
-
-#     class Meta:
-#         model = Person
-#         fields = ['firstName', 'lastName', 'username', 'email', 'password', 'organization_name', 'idea_group_id']
-#         extra_kwargs = {'password': {'write_only': True, 'required': True}}
-
-#     def validate_organization_name(self, value):
-#         if Organization.objects.filter(name=value).exists():
-#             raise serializers.ValidationError("An organization with this name already exists.")
-#         return value
-
-#     def create(self, validated_data):
-#         organization_name = validated_data.pop('organization_name')
-#         idea_group_id = validated_data.pop('idea_group_id', None)
-
-#         with transaction.atomic():
-#             organization, created = Organization.objects.get_or_create(name=organization_name)
-#             validated_data['password'] = make_password(validated_data.get('password'))
-            
-#             if created:
-#                 validated_data['role'] = 'admin'
-            
-#             person = Person.objects.create(organization=organization, **validated_data)
-            
-#             if idea_group_id:
-#                 try:
-#                     idea_group = IdeaGroup.objects.get(id=idea_group_id)
-#                     print(f"Found IdeaGroup: {idea_group.name}")  # Debugging statement
-#                     idea_group.organization = organization
-#                     idea_group.save()
-#                 except IdeaGroup.DoesNotExist:
-#                     print(f"IdeaGroup with id {idea_group_id} does not exist.")
-#                     pass
-            
-#             return person
+#
 
 class UserSerializer(serializers.ModelSerializer):
     profilePic = serializers.SerializerMethodField()
@@ -119,7 +87,7 @@ class PersonSerializer(serializers.ModelSerializer):
         elif organization_name:
             organization, _ = Organization.objects.get_or_create(name=organization_name)
         else:
-            organization = None  # Or handle as needed
+            organization = None  
             
 
         validated_data['user'] = user
@@ -129,7 +97,6 @@ class PersonSerializer(serializers.ModelSerializer):
         return person
 
     def update(self, instance, validated_data):
-        # Custom update logic if necessary
         pass
 
 
@@ -145,15 +112,14 @@ class IdeaUpdateSerializer(serializers.ModelSerializer):
         fields = ['id', 'likes', 'title', 'description']
 
 class CommentSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)  # This now includes profilePic via the UserSerializer
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'comment', 'idea', 'user', 'commentTime']  # No need for a separate 'person' field
+        fields = ['id', 'comment', 'idea', 'user', 'commentTime'] 
         read_only_fields = ('id', 'user', 'commentTime')
 
 
     def create(self, validated_data):
-        # Assuming the request user is set automatically from the view
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)

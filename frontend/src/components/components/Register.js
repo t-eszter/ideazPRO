@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { getCookie } from "../Authentication/csrftoken";
-import Login from "./Login";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -10,15 +9,11 @@ function useQuery() {
 function Register({ toggleRegister }) {
   const query = useQuery();
   const params = useParams();
-
-  const orgId = query.get("orgId");
-  const groupId = params.groupId;
-
-  const initialModalOpenState = !!orgId || !!groupId;
-  const [isOpen, setIsOpen] = useState(initialModalOpenState);
-
   const navigate = useNavigate();
 
+  const groupId = params.groupId;
+
+  const [isOpen, setIsOpen] = useState(true);
   const [formData, setFormData] = useState({
     user: {
       username: "",
@@ -29,111 +24,74 @@ function Register({ toggleRegister }) {
     lastName: "",
     organization_name: "",
     existingOrganizationId: null,
+    joinExisting: null,
   });
 
   const [organizationDetails, setOrganizationDetails] = useState(null);
-  const [organizationNameError, setOrganizationNameError] = useState("");
-
-  console.log("Register component mounted.");
-  console.log("Org ID:", orgId, "Group ID:", groupId);
+  const [errors, setErrors] = useState({});
+  const [isRegistered, setIsRegistered] = useState(false);
 
   useEffect(() => {
-    setIsOpen(initialModalOpenState);
-    if (orgId) {
-      fetch(`/api/invite/orgs/${orgId}`)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((data) => {
-          setOrganizationDetails(data);
-        })
-        .catch((error) =>
-          console.error("Failed to fetch organization details:", error)
-        );
-    }
-
-    if (groupId && !orgId) {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        idea_group_id: groupId,
-      }));
-
+    if (groupId) {
       fetch(`/api/idea-groups/${groupId}/`)
         .then((response) => response.json())
         .then((data) => {
-          setOrganizationDetails(data.organization);
+          setOrganizationDetails(data.organization_details);
+          if (data.organization_details) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              existingOrganizationId: data.organization_details.id,
+              joinExisting: true,
+            }));
+          } else {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              joinExisting: false,
+            }));
+          }
         })
         .catch((error) =>
           console.error("Failed to fetch IdeaGroup details:", error)
         );
     }
-
-    const checkLoginStatus = () => {
-      const token = localStorage.getItem("userToken");
-      if (token) {
-        setIsLoggedIn(true);
-        setUser({ name: "User Name" });
-      }
-    };
-    checkLoginStatus();
-  }, [orgId, groupId]);
+  }, [groupId]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
 
-    if (name === "newOrganizationName") {
-      if (/\s/.test(value)) {
-        setOrganizationNameError("Organization name cannot contain spaces.");
-      } else {
-        setOrganizationNameError("");
-      }
-
-      setOrganizationOptions((prev) => ({
-        ...prev,
-        newOrganizationName: value,
+    if (name === "username" || name === "email" || name === "password") {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        user: {
+          ...prevFormData.user,
+          [name]: value,
+        },
       }));
-    } else if (name in formData.user) {
-      setFormData({
-        ...formData,
-        user: { ...formData.user, [name]: value },
-      });
+    } else if (type === "radio") {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        joinExisting: value === "true",
+      }));
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value,
+      }));
     }
   };
 
-  const [errors, setErrors] = useState({});
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
-
-  const [organizationOptions, setOrganizationOptions] = useState({
-    existingOrganizationId: null,
-    newOrganizationName: "",
-    joinExisting: true,
-  });
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({});
-
-    const registrationData = {
-      username: formData.user.username,
-      email: formData.user.email,
-      password: formData.user.password,
+    let registrationData = {
+      ...formData.user,
       firstName: formData.firstName,
       lastName: formData.lastName,
-      idea_group_id: formData.idea_group_id,
     };
 
-    if (orgId && organizationDetails) {
-      registrationData.organizationId = orgId;
-    } else if (!orgId && organizationOptions.newOrganizationName) {
-      registrationData.organization_name =
-        organizationOptions.newOrganizationName;
+    if (formData.joinExisting) {
+      registrationData.existingOrganizationId = formData.existingOrganizationId;
+    } else {
+      registrationData.organization_name = formData.organization_name.trim();
     }
 
     try {
@@ -153,70 +111,14 @@ function Register({ toggleRegister }) {
         return;
       }
 
-      const registerData = await response.json();
-      console.log("Registration successful:", registerData);
       setIsRegistered(true);
+      navigate("/login?fromRegister=true");
     } catch (error) {
       console.error("Registration error:", error);
-      setErrors({
-        non_field_errors: [
-          "A network or server error occurred. Please try again.",
-        ],
-      });
     }
   };
 
   if (!isOpen) return null;
-
-  if (isLoggedIn) {
-    return (
-      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div className="flex justify-center items-center h-full">
-          <div className="bg-white p-5 rounded-lg shadow-lg w-1/3">
-            <button onClick={toggleRegister} className="float-right">
-              X
-            </button>
-            <h2 className="text-center text-2xl mb-4">Welcome, {user.name}</h2>
-            <button
-              onClick={handleLogout}
-              className="w-full p-2 bg-blue-500 text-white"
-            >
-              Log Out
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  useEffect(() => {
-    if (isRegistered) {
-      const timer = setTimeout(() => {
-        navigate("/login?fromRegister=true");
-      }, 4000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [isRegistered, navigate]);
-
-  if (isRegistered) {
-    return (
-      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div className="flex justify-center items-center h-full">
-          <div className="bg-white p-5 rounded-lg shadow-lg w-1/3">
-            <button onClick={toggleRegister} className="float-right">
-              X
-            </button>
-            <h2 className="text-center text-2xl mb-4">
-              Registration successful, now you can log in.
-              <br />
-              Redirecting to login...
-            </h2>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -227,83 +129,50 @@ function Register({ toggleRegister }) {
           </button>
           <form onSubmit={handleSubmit}>
             <h2 className="text-center text-2xl mb-4">Register</h2>
-            {}
-            <input
-              type="hidden"
-              name="idea_group_id"
-              value={formData.idea_group_id}
-            />
-            {orgId && organizationDetails ? (
-              <p>Joining {organizationDetails.name}</p>
-            ) : groupId && organizationDetails ? (
-              <div>
-                <label>
-                  <input
-                    type="radio"
-                    name="organizationChoice"
-                    value="existing"
-                    checked={organizationOptions.joinExisting}
-                    onChange={() =>
-                      setOrganizationOptions((prev) => ({
-                        ...prev,
-                        joinExisting: true,
-                      }))
-                    }
-                  />
-                  Join existing organization: {organizationDetails.name}
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="organizationChoice"
-                    value="new"
-                    checked={!organizationOptions.joinExisting}
-                    onChange={() =>
-                      setOrganizationOptions((prev) => ({
-                        ...prev,
-                        joinExisting: false,
-                      }))
-                    }
-                  />
-                  Create new organization
-                </label>
-                {organizationNameError && (
-                  <div className="text-red-500">{organizationNameError}</div>
-                )}
-                {organizationOptions.joinExisting ? null : (
-                  <input
-                    type="text"
-                    name="newOrganizationName"
-                    value={organizationOptions.newOrganizationName}
-                    onChange={handleChange}
-                    placeholder="New Organization Name"
-                  />
-                )}
-              </div>
-            ) : (
-              <div>
-                <label>
-                  Create new organization
-                  <input
-                    type="text"
-                    name="newOrganizationName"
-                    value={organizationOptions.newOrganizationName}
-                    onChange={handleChange}
-                    placeholder="New Organization Name"
-                  />
-                </label>
-                {organizationNameError && (
-                  <div className="text-red-500">{organizationNameError}</div>
-                )}
-              </div>
+            {organizationDetails && (
+              <>
+                <div>
+                  <label>
+                    <input
+                      type="radio"
+                      name="joinExisting"
+                      value="true"
+                      checked={formData.joinExisting === true}
+                      onChange={handleChange}
+                    />
+                    Join existing organization: {organizationDetails.name}
+                  </label>
+                </div>
+                <div>
+                  <label>
+                    <input
+                      type="radio"
+                      name="joinExisting"
+                      value="false"
+                      checked={formData.joinExisting === false}
+                      onChange={handleChange}
+                    />
+                    Create new organization
+                  </label>
+                </div>
+              </>
             )}
-            {}
+            {formData.joinExisting === false && (
+              <input
+                type="text"
+                name="organization_name"
+                value={formData.organization_name}
+                onChange={handleChange}
+                placeholder="Organization Name"
+                className="block w-full p-2 mb-4"
+              />
+            )}
             <input
               type="text"
               name="firstName"
               value={formData.firstName}
-              placeholder="First Name"
               onChange={handleChange}
+              placeholder="First Name"
               className="block w-full p-2 mb-4"
             />
             <input
@@ -322,9 +191,6 @@ function Register({ toggleRegister }) {
               placeholder="Username"
               className="block w-full p-2 mb-4"
             />
-            {errors.username && (
-              <div className="text-red-500">{errors.username}</div>
-            )}
             <input
               type="email"
               name="email"
@@ -341,7 +207,6 @@ function Register({ toggleRegister }) {
               placeholder="Password"
               className="block w-full p-2 mb-4"
             />
-            {}
             <button type="submit" className="w-full p-2 bg-blue-500 text-white">
               Register
             </button>

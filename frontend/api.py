@@ -195,30 +195,43 @@ class RegisterView(APIView):
             try:
                 data = request.data
 
+                # Create User
                 user = User.objects.create_user(
                     username=data['username'],
                     email=data['email'],
                     password=data['password']
                 )
 
+                # Initial person data
                 person_data = {
                     'firstName': data.get('firstName'),
                     'lastName': data.get('lastName'),
-                    'role': 'guest',
                 }
 
-                if 'organizationId' in data and data['organizationId']:
-                    organization = Organization.objects.get(id=data['organizationId'])
-                    person_data['organization'] = organization
-                    person_data['role'] = 'user'
-                else:
-                    organization_name = data.get('organization_name', 'Default Organization Name')
-                    organization = Organization.objects.create(name=organization_name)
-                    person_data['organization'] = organization
-                    person_data['role'] = 'admin'
+                organization = None
 
+                # Check if joining an existing organization by ID
+                if 'existingOrganizationId' in data and data['existingOrganizationId']:
+                    # Correctly fetch and associate with existing organization
+                    organization = Organization.objects.get(id=data['existingOrganizationId'])
+                    person_data['role'] = 'user'  # Assuming the role to be 'user' for existing org
+                elif 'organization_name' in data and data['organization_name']:
+                    # This path creates a new organization only if a specific name is provided
+                    organization_name = data['organization_name']
+                    organization, created = Organization.objects.get_or_create(name=organization_name)
+                    person_data['role'] = 'admin' if created else 'user'
+                else:
+                    # Fallback to a default behavior or handle error
+                    return JsonResponse({'status': 'error', 'message': 'Organization information missing.'}, status=400)
+
+                # Add organization to person data if available
+                if organization:
+                    person_data['organization'] = organization
+
+                # Create Person with the above details
                 person = Person.objects.create(user=user, **person_data)
 
+                # IdeaGroup handling omitted for brevity
                 idea_group_id = data.get('idea_group_id')
                 if idea_group_id:
                     idea_group = get_object_or_404(IdeaGroup, id=uuid.UUID(idea_group_id))
@@ -227,19 +240,22 @@ class RegisterView(APIView):
 
                 token, created = Token.objects.get_or_create(user=user)
 
+                # Login the user
                 login(request, user)
 
                 return JsonResponse({
                     'status': 'success',
                     'userId': user.id,
                     'personId': person.id,
-                    'organizationId': organization.id,
+                    'organizationId': organization.id if organization else None,
                     'token': token.key,
-                    'message': 'User, Person, and Organization created successfully.'
+                    'message': 'User, Person, and Organization processed successfully.'
                 })
 
             except Exception as e:
+                # In real-world scenarios, consider logging the exception
                 return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
 
 
 
