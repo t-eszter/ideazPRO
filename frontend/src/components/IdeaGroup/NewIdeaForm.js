@@ -130,10 +130,10 @@ const NewIdeaForm = ({
             <input
               type="checkbox"
               id="postAnonymously"
-              checked={isAnonymous || !currentUser} // Ensure it's checked if not logged in
+              checked={isAnonymous || !currentUser}
               onChange={toggleAnonymous}
               className="checkbox"
-              disabled={!currentUser} // Disable if not logged in
+              disabled={!currentUser}
             />
             <span className="label-text w-full pl-2" htmlFor="postAnonymously">
               Post Anonymously

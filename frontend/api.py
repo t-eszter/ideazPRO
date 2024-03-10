@@ -129,6 +129,12 @@ def create_idea(request):
         person = get_object_or_404(Person, id=person_id) if person_id else None
         group = get_object_or_404(IdeaGroup, pk=data['group'])
 
+        title_contains_profanity = check_profanity(data['title'])
+        description_contains_profanity = check_profanity(data['description'])
+
+        if title_contains_profanity or description_contains_profanity:
+            return JsonResponse({'error': 'Profanity detected in title or description. Please remove any inappropriate content.'}, status=400)
+
         idea = Idea.objects.create(
             title=data['title'],
             description=data['description'],
