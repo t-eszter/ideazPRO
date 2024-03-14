@@ -33,6 +33,32 @@ function Register({ toggleRegister }) {
   const [errors, setErrors] = useState({});
   const [isRegistered, setIsRegistered] = useState(false);
 
+  // password validation
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
+
+  const [passwordCriteria, setPasswordCriteria] = useState({
+    minLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasDigit: false,
+    hasSpecialChar: false,
+  });
+
+  const validateAndUpdatePasswordCriteria = (password) => {
+    const criteria = {
+      minLength: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasLowerCase: /[a-z]/.test(password),
+      hasDigit: /\d/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>_]/.test(password),
+    };
+
+    setPasswordCriteria(criteria);
+
+    const valid = Object.values(criteria).every(Boolean);
+    setIsPasswordValid(valid);
+  };
+
   useEffect(() => {
     const fetchGroupAndOrganizationDetails = async () => {
       try {
@@ -40,7 +66,6 @@ function Register({ toggleRegister }) {
           const response = await fetch(`/api/idea-groups/${groupId}/`);
           const data = await response.json();
           setOrganizationDetails(data.organization_details);
-          // Adjust joinExisting based on whether the IdeaGroup has an organization
           setFormData((prevFormData) => ({
             ...prevFormData,
             existingOrganizationId: data.organization_details?.id || null,
@@ -72,7 +97,7 @@ function Register({ toggleRegister }) {
   }, [orgIdFromQuery]);
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
 
     if (name === "username" || name === "email" || name === "password") {
       setFormData((prevFormData) => ({
@@ -82,11 +107,9 @@ function Register({ toggleRegister }) {
           [name]: value,
         },
       }));
-    } else if (type === "radio") {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        joinExisting: value === "true",
-      }));
+      if (name === "password") {
+        validateAndUpdatePasswordCriteria(value);
+      }
     } else {
       setFormData((prevFormData) => ({
         ...prevFormData,
@@ -104,10 +127,9 @@ function Register({ toggleRegister }) {
       lastName: formData.lastName,
       organization_name: formData.organization_name.trim(),
       existingOrganizationId: formData.existingOrganizationId,
-      groupId, // Always include groupId in the registration payload if available
+      groupId,
     };
 
-    // Simplify registrationData by removing undefined or null properties
     Object.keys(registrationData).forEach(
       (key) =>
         (registrationData[key] === undefined ||
@@ -251,6 +273,43 @@ function Register({ toggleRegister }) {
                   placeholder="Password"
                   className="input input-bordered input-sm w-full"
                 />
+              </div>
+              <div className="password-criteria">
+                <p
+                  style={{
+                    color: passwordCriteria.minLength ? "green" : "black",
+                  }}
+                >
+                  At least 8 characters
+                </p>
+                <p
+                  style={{
+                    color: passwordCriteria.hasUpperCase ? "green" : "black",
+                  }}
+                >
+                  At least one uppercase letter
+                </p>
+                <p
+                  style={{
+                    color: passwordCriteria.hasLowerCase ? "green" : "black",
+                  }}
+                >
+                  At least one lowercase letter
+                </p>
+                <p
+                  style={{
+                    color: passwordCriteria.hasDigit ? "green" : "black",
+                  }}
+                >
+                  At least one digit
+                </p>
+                <p
+                  style={{
+                    color: passwordCriteria.hasSpecialChar ? "green" : "black",
+                  }}
+                >
+                  At least one special character
+                </p>
               </div>
               <button type="submit" className="btn btn-primary w-full">
                 Register

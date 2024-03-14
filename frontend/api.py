@@ -36,7 +36,10 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, Q
 
-logger = logging.getLogger(__name__)
+# password validation
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+
 
 from .models import *
 from .serializers import *
@@ -133,7 +136,7 @@ def create_idea(request):
         description_contains_profanity = check_profanity(data['description'])
 
         if title_contains_profanity or description_contains_profanity:
-            return JsonResponse({'error': 'Profanity detected in title or description. Please remove any inappropriate content.'}, status=400)
+            return JsonResponse({'error': 'Profanity detected. Please be respectful and rephrase your idea.'}, status=400)
 
         idea = Idea.objects.create(
             title=data['title'],
@@ -201,6 +204,12 @@ class RegisterView(APIView):
         with transaction.atomic():
             try:
                 data = request.data
+
+                try:
+                    validate_password(data['password'])
+                except ValidationError as e:
+                    return JsonResponse({'status': 'error', 'message': ' '.join(e.messages)}, status=400)
+                    
                 user = User.objects.create_user(
                     username=data['username'],
                     email=data['email'],
