@@ -1,5 +1,10 @@
-import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -11,6 +16,7 @@ import UserSettings from "./UserSettings/UserSettings";
 import ProtectedRoute from "./Authentication/ProtectedRoute";
 import Register from "./components/Register";
 import Login from "./components/Login";
+import Modal from "./components/Modal";
 
 import { AuthProvider } from "./Authentication/AuthContext";
 
@@ -21,6 +27,40 @@ const ProtectedIdeaGroup = () => (
     <IdeaGroup />
   </ProtectedRoute>
 );
+
+const ModalRouteHandler = () => {
+  const location = useLocation();
+  const [modalContent, setModalContent] = useState(null);
+
+  useEffect(() => {
+    switch (location.pathname) {
+      case "/login":
+        setModalContent("login");
+        break;
+      case "/register":
+        setModalContent("register");
+        break;
+      default:
+        setModalContent(null);
+        break;
+    }
+  }, [location]);
+
+  return (
+    <>
+      {modalContent === "register" && (
+        <Modal isOpen={modalContent !== null}>
+          <Register />
+        </Modal>
+      )}
+      {modalContent === "login" && (
+        <Modal isOpen={modalContent !== null}>
+          <Login />
+        </Modal>
+      )}
+    </>
+  );
+};
 
 const App = () => {
   useEffect(() => {
@@ -35,8 +75,8 @@ const App = () => {
         <Router>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<div />} />
+            <Route path="/login" element={<div />} />
             <Route
               path="/settings/:username"
               element={
@@ -63,6 +103,7 @@ const App = () => {
             <Route path="/guests/:groupId" element={<IdeaGroup />} />{" "}
             {/* Accessible to anyone */}
           </Routes>
+          <ModalRouteHandler />
         </Router>
       </DndProvider>
     </HelmetProvider>
