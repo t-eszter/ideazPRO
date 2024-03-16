@@ -8,6 +8,8 @@ import {
 import { Link } from "react-router-dom";
 import Register from "./Register";
 import Login from "./Login";
+import Modal from "./Modal";
+import ShareModalContent from "./ShareModalContent";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Authentication/AuthContext";
 import HallOfFameModal from "./HallOfFame";
@@ -22,14 +24,14 @@ function Header() {
   const { currentUser, updateCurrentUser, logout } = useAuth();
   const [isHallOfFameOpen, setIsHallOfFameOpen] = useState(false);
 
-  const toggleLoginModal = () => {
-    setIsLoginOpen(!isLoginOpen);
-  };
-
+  const toggleLoginModal = () => setIsLoginOpen(!isLoginOpen);
+  const toggleRegisterModal = () => setIsRegisterOpen(!isRegisterOpen);
   const toggleHallOfFameModal = () => setIsHallOfFameOpen(!isHallOfFameOpen);
+  const toggleShareModal = () => setIsModalOpen(!isModalOpen);
 
-  const toggleRegisterModal = () => {
-    setIsRegisterOpen(!isRegisterOpen);
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+    setIsCopied(false);
   };
 
   useEffect(() => {
@@ -42,11 +44,6 @@ function Header() {
     localStorage.removeItem("userName");
     localStorage.removeItem("organizationName");
     navigate("/");
-  };
-
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-    setIsCopied(false);
   };
 
   const copyToClipboard = () => {
@@ -151,46 +148,23 @@ function Header() {
         </div>
       </div>
 
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 bg-lochmara-800 bg-opacity-80 z-50 overflow-y-auto h-full w-full"
-          id="my-modal"
-        >
-          <div className="flex justify-center items-center h-full">
-            <div className="relative bg-white rounded-lg shadow w-1/3">
-              <button
-                onClick={toggleModal}
-                className="absolute top-0 right-0 m-2 text-gray-600 bg-transparent rounded-lg text-xl p-1.5 ml-auto inline-flex items-center"
-                aria-label="Close"
-              >
-                <IoClose />
-              </button>
-              <div className="p-6 text-center">
-                <h3 className="mb-5 text-lg font-normal text-gray-500 ">
-                  Share this URL
-                </h3>
-                <input
-                  type="text"
-                  value={window.location.href}
-                  readOnly
-                  className="text-gray-900 bg-gray-100 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 block w-full rounded-lg p-2.5"
-                />
-                <button
-                  onClick={copyToClipboard}
-                  className="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mt-6"
-                >
-                  {isCopied ? "Copied!" : "Copy"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {isRegisterOpen && (
+        <Modal isOpen={isRegisterOpen} onClose={toggleRegisterModal}>
+          <Register toggleRegister={toggleRegisterModal} />
+        </Modal>
       )}
-
-      {isRegisterOpen && <Register toggleRegister={toggleRegisterModal} />}
-      {isLoginOpen && <Login toggleLogin={toggleLoginModal} />}
+      {isLoginOpen && (
+        <Modal isOpen={isLoginOpen} onClose={toggleLoginModal}>
+          <Login toggleLogin={toggleLoginModal} />
+        </Modal>
+      )}
       {isHallOfFameOpen && (
         <HallOfFameModal toggleModal={toggleHallOfFameModal} />
+      )}
+      {isModalOpen && (
+        <Modal isOpen={isModalOpen} onClose={toggleShareModal}>
+          <ShareModalContent />
+        </Modal>
       )}
     </header>
   );

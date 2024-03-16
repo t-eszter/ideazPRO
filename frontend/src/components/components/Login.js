@@ -3,6 +3,7 @@ import { getCookie } from "../Authentication/csrftoken";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Authentication/AuthContext";
 import { useLocation } from "react-router-dom";
+import Modal from "./Modal";
 
 function Login({ isOpenProp, toggleLogin }) {
   const { login } = useAuth();
@@ -84,49 +85,42 @@ function Login({ isOpenProp, toggleLogin }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
-      <div class="flex flex-row gap-4 w-1/3">
-        <div className="bg-white p-5 rounded-lg shadow-lg w-11/12">
-          <h2 className="text-center text-2xl mb-4 ">Login</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Username</span>
-              </label>
-              <input
-                type="text"
-                name="username"
-                value={credentials.username}
-                onChange={handleChange}
-                placeholder="Username"
-                className="input input-bordered"
-              />
-            </div>
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Password</span>
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={credentials.password}
-                onChange={handleChange}
-                placeholder="Password"
-                className="input input-bordered"
-              />
-            </div>
-            <div className="flex justify-end space-x-2">
-              <button type="submit" className="btn btn-primary">
-                Login
-              </button>
-            </div>
-            {loginError && <div className="text-red-500">{loginError}</div>}
-          </form>
+    <div className="px-8">
+      <h2 className="text-center text-2xl mb-4 ">Login</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Username</span>
+          </label>
+          <input
+            type="text"
+            name="username"
+            value={credentials.username}
+            onChange={handleChange}
+            placeholder="Username"
+            className="input input-sm input-bordered"
+          />
         </div>
-        <button onClick={toggleLogin} className="btn btn-square btn-sm">
-          X
-        </button>
-      </div>
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Password</span>
+          </label>
+          <input
+            type="password"
+            name="password"
+            value={credentials.password}
+            onChange={handleChange}
+            placeholder="Password"
+            className="input input-sm input-bordered"
+          />
+        </div>
+        <div className="flex justify-center space-x-2">
+          <button type="submit" className="btn btn-sm btn-primary">
+            Login
+          </button>
+        </div>
+        {loginError && <div className="text-red-500">{loginError}</div>}
+      </form>
     </div>
   );
 }

@@ -158,6 +158,7 @@ const IdeaGroup = () => {
                 style={{ breakInside: "avoid" }}
               >
                 <DraggableIdeaCard
+                  isLoggedIn={!!currentUser}
                   idea={idea}
                   position={
                     positions[idea.id] || { x: 0, y: 0, isMoved: false }

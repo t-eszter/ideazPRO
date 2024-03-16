@@ -4,7 +4,7 @@ import LikeCounter from "./LikeCounter";
 import Comments from "./Comments";
 import Modal from "../components/Modal";
 
-const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
+const DraggableIdeaCard = ({ idea, position, onMove, onLike, isLoggedIn }) => {
   const [{ isDragging }, dragRef] = useDrag(() => ({
     type: "idea",
     item: { id: idea.id, originalPosition: position },
@@ -20,9 +20,18 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
   }));
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
+    if (!isLoggedIn) {
+      // User is not logged in, set an error message
+      setErrorMessage("You must be logged in to view comments.");
+      setIsModalOpen(true); // Open the modal to show the error message
+    } else {
+      // User is logged in, clear any error messages and toggle the modal normally
+      setErrorMessage("");
+      setIsModalOpen(!isModalOpen);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -114,8 +123,22 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike }) => {
                 Comments
               </a>
             </div>
-            <Modal isOpen={isModalOpen} onClose={toggleModal}>
-              <Comments ideaId={idea.id} title={idea.title} />
+            <Modal
+              isOpen={isModalOpen}
+              onClose={() => {
+                setIsModalOpen(false);
+                setErrorMessage("");
+              }}
+            >
+              {errorMessage ? (
+                <div className="flex flex-col items-center">
+                  <div className="text-lg text-center whitespace-pre-line">
+                    {errorMessage}
+                  </div>
+                </div>
+              ) : (
+                <Comments ideaId={idea.id} title={idea.title} />
+              )}
             </Modal>
           </div>
         </div>

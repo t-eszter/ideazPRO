@@ -29,6 +29,7 @@ module.exports = {
         source: ["Source Serif Pro", "serif"],
         rubik: ["Rubik", "sans-serif"],
         kumbh: ["Kumbh Sans", "sans-serif"],
+        sans: ["Kumbh Sans", "sans-serif"],
       },
 
       backgroundSize: {

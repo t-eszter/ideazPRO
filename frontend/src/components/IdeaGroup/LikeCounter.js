@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { getCookie } from "../Authentication/csrftoken";
+import Modal from "../components/Modal";
 
 const LikeCounter = ({ ideaId }) => {
   const [voteCount, setVoteCount] = useState(0);
   const [userVote, setUserVote] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchIdeaVotes = async () => {
     try {
@@ -36,8 +39,14 @@ const LikeCounter = ({ ideaId }) => {
       const updatedData = await response.json();
       setVoteCount(updatedData.total_votes);
       setUserVote(updatedData.user_vote);
+      setErrorMessage(""); // Reset error message on successful vote
+      setIsModalOpen(false); // Close the modal if open
     } catch (error) {
       console.error("Error updating vote:", error);
+      setErrorMessage(
+        "To vote on ideas, \nplease log in or register an account."
+      );
+      setIsModalOpen(true); // Open the modal on error
     }
   };
 
@@ -45,8 +54,15 @@ const LikeCounter = ({ ideaId }) => {
     fetchIdeaVotes();
   }, [ideaId]);
 
+  // Function to close the modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setErrorMessage("");
+  };
+
   return (
     <div className="bg-white flex flex-col w-8 drop-shadow-card">
+      {/* Your buttons and vote count display */}
       <button
         disabled={userVote === "upvote"}
         onClick={() => onLike(userVote === "upvote" ? null : "upvote")}
@@ -60,6 +76,15 @@ const LikeCounter = ({ ideaId }) => {
       >
         👎
       </button>
+
+      {/* Integrated Modal for displaying error message */}
+      <Modal isOpen={!!errorMessage} onClose={handleCloseModal}>
+        <div className="flex flex-col items-center">
+          <div className="text-lg text-center whitespace-pre-line">
+            {errorMessage}
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
