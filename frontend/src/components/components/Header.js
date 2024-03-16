@@ -24,13 +24,20 @@ function Header() {
   const { currentUser, updateCurrentUser, logout } = useAuth();
   const [isHallOfFameOpen, setIsHallOfFameOpen] = useState(false);
 
-  const toggleLoginModal = () => setIsLoginOpen(!isLoginOpen);
-  const toggleRegisterModal = () => setIsRegisterOpen(!isRegisterOpen);
   const toggleHallOfFameModal = () => setIsHallOfFameOpen(!isHallOfFameOpen);
-  const toggleShareModal = () => setIsModalOpen(!isModalOpen);
 
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
+  const [modalContent, setModalContent] = useState("");
+
+  const switchToLogin = () => {
+    setModalContent("login");
+  };
+
+  const handleModalOpen = (content) => {
+    setModalContent(content);
+  };
+
+  const handleModalClose = () => {
+    setModalContent("");
     setIsCopied(false);
   };
 
@@ -97,7 +104,7 @@ function Header() {
         )}
         {!currentUser && (
           <button
-            onClick={toggleModal}
+            onClick={() => handleModalOpen("share")}
             className="btn-share flex flex-row items-center gap-2"
           >
             <IoShareSocialOutline />
@@ -113,10 +120,10 @@ function Header() {
               </a>
             ) : (
               <>
-                <a href="#" onClick={toggleRegisterModal}>
+                <a href="#" onClick={() => handleModalOpen("register")}>
                   Register
                 </a>
-                <a href="#" onClick={toggleLoginModal}>
+                <a href="#" onClick={() => handleModalOpen("login")}>
                   Login
                 </a>
               </>
@@ -148,22 +155,19 @@ function Header() {
         </div>
       </div>
 
-      {isRegisterOpen && (
-        <Modal isOpen={isRegisterOpen} onClose={toggleRegisterModal}>
-          <Register toggleRegister={toggleRegisterModal} />
-        </Modal>
-      )}
-      {isLoginOpen && (
-        <Modal isOpen={isLoginOpen} onClose={toggleLoginModal}>
-          <Login toggleLogin={toggleLoginModal} />
-        </Modal>
-      )}
-      {isHallOfFameOpen && (
-        <HallOfFameModal toggleModal={toggleHallOfFameModal} />
-      )}
-      {isModalOpen && (
-        <Modal isOpen={isModalOpen} onClose={toggleShareModal}>
-          <ShareModalContent />
+      {modalContent && (
+        <Modal isOpen={!!modalContent} onClose={handleModalClose}>
+          {modalContent === "register" && (
+            <Register
+              toggleRegister={handleModalClose}
+              switchToLogin={switchToLogin} // Pass this method as a prop
+            />
+          )}
+          {modalContent === "login" && <Login toggleLogin={handleModalClose} />}
+          {modalContent === "share" && <ShareModalContent />}
+          {modalContent === "hallOfFame" && (
+            <HallOfFameModal toggleModal={handleModalClose} />
+          )}
         </Modal>
       )}
     </header>

@@ -70,7 +70,6 @@ function Login({ isOpenProp, toggleLogin }) {
           data.personid,
           data.profilePic
         );
-        console.log("Navigating to:", `/${data.organizationName}`);
         navigate(`/${data.organizationName}`);
         toggleLogin();
       } else {

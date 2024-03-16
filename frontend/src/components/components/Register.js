@@ -6,13 +6,19 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-function Register({ toggleRegister }) {
+function Register({ toggleRegister, switchToLogin }) {
   const query = useQuery();
   const params = useParams();
   const navigate = useNavigate();
 
   const groupId = useParams().groupId || query.get("groupId");
   const orgIdFromQuery = query.get("orgId");
+
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const isValidInput = (value) => {
+    return /^[a-zA-Z0-9_-]+$/.test(value);
+  };
 
   const [isOpen, setIsOpen] = useState(true);
   const [formData, setFormData] = useState({
@@ -99,27 +105,46 @@ function Register({ toggleRegister }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "username" || name === "email" || name === "password") {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        user: {
-          ...prevFormData.user,
-          [name]: value,
-        },
-      }));
-      if (name === "password") {
-        validateAndUpdatePasswordCriteria(value);
-      }
+    // Update formData regardless of the validation outcome
+    // Adjust how you update based on the structure of your formData
+    const updatedFormData = { ...formData };
+    if (name in updatedFormData.user) {
+      updatedFormData.user[name] = value;
     } else {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: value,
-      }));
+      updatedFormData[name] = value;
+    }
+    setFormData(updatedFormData);
+
+    // Perform validation for special characters
+    if (name === "username" || name === "organization_name") {
+      if (!isValidInput(value)) {
+        // Set error for invalid input but don't block the formData update
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [name]: "Only alphanumeric, '_' and '-' characters are allowed.",
+        }));
+      } else {
+        // Clear any existing error for the field
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [name]: "",
+        }));
+      }
+    }
+
+    // Continue to validate the password criteria if the password field is being updated
+    if (name === "password") {
+      validateAndUpdatePasswordCriteria(value);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (Object.values(errors).some((error) => error !== "")) {
+      console.log("Please correct errors before submitting the form.");
+      return;
+    }
 
     let registrationData = {
       ...formData.user,
@@ -150,7 +175,12 @@ function Register({ toggleRegister }) {
 
       if (!response.ok) throw new Error(await response.text());
       setIsRegistered(true);
-      navigate("/login?fromRegister=true");
+      setSuccessMessage("Registration successful! Redirecting to login...");
+      // navigate("/login?fromRegister=true");
+      setTimeout(() => {
+        switchToLogin(); // Switch to the login component
+        setSuccessMessage(""); // Optionally clear the success message
+      }, 2000);
     } catch (error) {
       console.error("Registration error:", error);
       setErrors({ ...errors, form: "Registration failed. Please try again." });
@@ -159,159 +189,171 @@ function Register({ toggleRegister }) {
 
   if (!isOpen) return null;
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-2 px-8">
-      <h2 className="text-center text-2xl mb-4 ">Register</h2>
-      {organizationDetails && (
-        <div className="form-control">
-          <label className="cursor-pointer label">
-            <span className="label-text">
-              Join existing organization: {organizationDetails.name}
-            </span>
+  if (isRegistered) {
+    return <div className="text-center p-4">{successMessage}</div>;
+  } else {
+    return (
+      <form onSubmit={handleSubmit} className="space-y-2 px-8">
+        <h2 className="text-center text-2xl mb-4 ">Register</h2>
+        {organizationDetails && (
+          <div className="form-control">
+            <label className="cursor-pointer label">
+              <span className="label-text">
+                Join existing organization: {organizationDetails.name}
+              </span>
+              <input
+                type="radio"
+                name="joinExisting"
+                value="true"
+                checked={formData.joinExisting === true}
+                onChange={handleChange}
+                className="radio radio-primary radio-sm"
+              />
+            </label>
+            <label className="cursor-pointer label">
+              <span className="label-text">Create new organization</span>
+              <input
+                type="radio"
+                name="joinExisting"
+                value="false"
+                checked={formData.joinExisting === false}
+                onChange={handleChange}
+                className="radio radio-primary radio-sm"
+              />
+            </label>
+          </div>
+        )}
+        {formData.joinExisting === false && (
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Organization Name</span>
+            </label>
             <input
-              type="radio"
-              name="joinExisting"
-              value="true"
-              checked={formData.joinExisting === true}
+              type="text"
+              name="organization_name"
+              value={formData.organization_name}
               onChange={handleChange}
-              className="radio radio-primary radio-sm"
+              placeholder="Organization Name"
+              className="input input-bordered input-sm w-full"
             />
-          </label>
-          <label className="cursor-pointer label">
-            <span className="label-text">Create new organization</span>
-            <input
-              type="radio"
-              name="joinExisting"
-              value="false"
-              checked={formData.joinExisting === false}
-              onChange={handleChange}
-              className="radio radio-primary radio-sm"
-            />
-          </label>
-        </div>
-      )}
-      {formData.joinExisting === false && (
+            {errors.organization_name && (
+              <div className="text-red-500 text-xs pt-2">
+                {errors.organization_name}
+              </div>
+            )}
+          </div>
+        )}
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Organization Name</span>
+            <span className="label-text">First Name</span>
           </label>
           <input
             type="text"
-            name="organization_name"
-            value={formData.organization_name}
+            name="firstName"
+            value={formData.firstName}
             onChange={handleChange}
-            placeholder="Organization Name"
+            placeholder="First Name"
             className="input input-bordered input-sm w-full"
           />
         </div>
-      )}
-      <div className="form-control">
-        <label className="label">
-          <span className="label-text">First Name</span>
-        </label>
-        <input
-          type="text"
-          name="firstName"
-          value={formData.firstName}
-          onChange={handleChange}
-          placeholder="First Name"
-          className="input input-bordered input-sm w-full"
-        />
-      </div>
-      <div className="form-control">
-        <label className="label">
-          <span className="label-text">Last Name</span>
-        </label>
-        <input
-          type="text"
-          name="lastName"
-          value={formData.lastName}
-          onChange={handleChange}
-          placeholder="Last Name"
-          className="input input-bordered input-sm w-full"
-        />
-      </div>
-      <div className="form-control">
-        <label className="label">
-          <span className="label-text">Username</span>
-        </label>
-        <input
-          type="text"
-          name="username"
-          value={formData.user.username}
-          onChange={handleChange}
-          placeholder="Username"
-          className="input input-bordered input-sm w-full"
-        />
-      </div>
-      <div className="form-control">
-        <label className="label">
-          <span className="label-text">Email</span>
-        </label>
-        <input
-          type="email"
-          name="email"
-          value={formData.user.email}
-          onChange={handleChange}
-          placeholder="Email"
-          className="input input-bordered input-sm w-full"
-        />
-      </div>
-      <div className="form-control">
-        <label className="label">
-          <span className="label-text">Password</span>
-        </label>
-        <input
-          type="password"
-          name="password"
-          value={formData.user.password}
-          onChange={handleChange}
-          placeholder="Password"
-          className="input input-bordered input-sm w-full"
-        />
-      </div>
-      <div className="password-criteria text-xs">
-        <p
-          style={{
-            color: passwordCriteria.minLength ? "green" : "black",
-          }}
-        >
-          At least 8 characters
-        </p>
-        <p
-          style={{
-            color: passwordCriteria.hasUpperCase ? "green" : "black",
-          }}
-        >
-          At least one uppercase letter
-        </p>
-        <p
-          style={{
-            color: passwordCriteria.hasLowerCase ? "green" : "black",
-          }}
-        >
-          At least one lowercase letter
-        </p>
-        <p
-          style={{
-            color: passwordCriteria.hasDigit ? "green" : "black",
-          }}
-        >
-          At least one digit
-        </p>
-        <p
-          style={{
-            color: passwordCriteria.hasSpecialChar ? "green" : "black",
-          }}
-        >
-          At least one special character
-        </p>
-      </div>
-      <button type="submit" className="btn btn-sm btn-primary w-full">
-        Register
-      </button>
-    </form>
-  );
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Last Name</span>
+          </label>
+          <input
+            type="text"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            placeholder="Last Name"
+            className="input input-bordered input-sm w-full"
+          />
+        </div>
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Username</span>
+          </label>
+          <input
+            type="text"
+            name="username"
+            value={formData.user.username}
+            onChange={handleChange}
+            placeholder="Username"
+            className="input input-bordered input-sm w-full"
+          />
+          {errors.username && (
+            <div className="text-red-500 text-xs pt-2">{errors.username}</div>
+          )}
+        </div>
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Email</span>
+          </label>
+          <input
+            type="email"
+            name="email"
+            value={formData.user.email}
+            onChange={handleChange}
+            placeholder="Email"
+            className="input input-bordered input-sm w-full"
+          />
+        </div>
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Password</span>
+          </label>
+          <input
+            type="password"
+            name="password"
+            value={formData.user.password}
+            onChange={handleChange}
+            placeholder="Password"
+            className="input input-bordered input-sm w-full"
+          />
+        </div>
+        <div className="password-criteria text-xs">
+          <p
+            style={{
+              color: passwordCriteria.minLength ? "green" : "black",
+            }}
+          >
+            At least 8 characters
+          </p>
+          <p
+            style={{
+              color: passwordCriteria.hasUpperCase ? "green" : "black",
+            }}
+          >
+            At least one uppercase letter
+          </p>
+          <p
+            style={{
+              color: passwordCriteria.hasLowerCase ? "green" : "black",
+            }}
+          >
+            At least one lowercase letter
+          </p>
+          <p
+            style={{
+              color: passwordCriteria.hasDigit ? "green" : "black",
+            }}
+          >
+            At least one digit
+          </p>
+          <p
+            style={{
+              color: passwordCriteria.hasSpecialChar ? "green" : "black",
+            }}
+          >
+            At least one special character
+          </p>
+        </div>
+        <button type="submit" className="btn btn-sm btn-primary w-full">
+          Register
+        </button>
+      </form>
+    );
+  }
 }
 
 export default Register;
