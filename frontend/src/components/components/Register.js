@@ -103,38 +103,42 @@ function Register({ toggleRegister, switchToLogin }) {
   }, [orgIdFromQuery]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
 
-    // Update formData regardless of the validation outcome
-    // Adjust how you update based on the structure of your formData
-    const updatedFormData = { ...formData };
-    if (name in updatedFormData.user) {
-      updatedFormData.user[name] = value;
+    // Handling changes differently based on the input type
+    if (type === "radio") {
+      const updatedValue = value === "true"; // Convert string to boolean
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: updatedValue,
+      }));
     } else {
-      updatedFormData[name] = value;
-    }
-    setFormData(updatedFormData);
-
-    // Perform validation for special characters
-    if (name === "username" || name === "organization_name") {
-      if (!isValidInput(value)) {
-        // Set error for invalid input but don't block the formData update
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          [name]: "Only alphanumeric, '_' and '-' characters are allowed.",
-        }));
+      // For non-radio inputs, proceed as before
+      const updatedFormData = { ...formData };
+      if (name in updatedFormData.user) {
+        updatedFormData.user[name] = value;
       } else {
-        // Clear any existing error for the field
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          [name]: "",
-        }));
+        updatedFormData[name] = value;
       }
-    }
+      setFormData(updatedFormData);
 
-    // Continue to validate the password criteria if the password field is being updated
-    if (name === "password") {
-      validateAndUpdatePasswordCriteria(value);
+      if (name === "username" || name === "organization_name") {
+        if (!isValidInput(value)) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: "Only alphanumeric, '_' and '-' characters are allowed.",
+          }));
+        } else {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: "",
+          }));
+        }
+      }
+
+      if (name === "password") {
+        validateAndUpdatePasswordCriteria(value);
+      }
     }
   };
 
