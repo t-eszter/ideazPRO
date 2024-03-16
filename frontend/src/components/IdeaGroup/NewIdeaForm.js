@@ -81,7 +81,7 @@ const NewIdeaForm = ({
   };
 
   return (
-    <div className="absolute bottom-40 right-4 w-1/4 h-[460px] bg-white p-4 rounded drop-shadow-lg">
+    <div className="absolute bottom-40 right-4 w-1/4 h-fit bg-white p-4 rounded drop-shadow-lg">
       <button
         onClick={handleClose}
         className="absolute top-0 right-0 p-2 text-xl"

@@ -5,7 +5,7 @@ import Logo from "../ideaz_logo.svg";
 
 const modalRoot = document.getElementById("modal-root");
 
-const Modal = ({ isOpen, onClose, children }) => {
+const Modal = ({ isOpen, onClose, children, showCloseButton = true }) => {
   if (!isOpen) return null;
 
   const handleModalContentClick = (e) => {
@@ -51,12 +51,14 @@ const Modal = ({ isOpen, onClose, children }) => {
             <div className="font-kumbh w-1/2 rounded-r-lg bg-alabaster-50 p-5 flex items-center justify-center">
               <div className="w-full">{children}</div>
             </div>
-            <button
-              onClick={onClose}
-              className="self-start w-10 h-10 ml-4 bg-alabaster-50 rounded-full text-lg font-semibold z-20"
-            >
-              &times;
-            </button>
+            {showCloseButton && (
+              <button
+                onClick={onClose}
+                className="self-start w-10 h-10 ml-4 bg-alabaster-50 rounded-full text-lg font-semibold z-20"
+              >
+                &times;
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -31,6 +31,8 @@ const ProtectedIdeaGroup = () => (
 const ModalRouteHandler = () => {
   const location = useLocation();
   const [modalContent, setModalContent] = useState(null);
+  const isLoginOrRegister =
+    location.pathname === "/login" || location.pathname === "/register";
 
   useEffect(() => {
     switch (location.pathname) {
@@ -49,12 +51,18 @@ const ModalRouteHandler = () => {
   return (
     <>
       {modalContent === "register" && (
-        <Modal isOpen={modalContent !== null}>
+        <Modal
+          isOpen={modalContent !== null}
+          showCloseButton={!isLoginOrRegister}
+        >
           <Register />
         </Modal>
       )}
       {modalContent === "login" && (
-        <Modal isOpen={modalContent !== null}>
+        <Modal
+          isOpen={modalContent !== null}
+          showCloseButton={!isLoginOrRegister}
+        >
           <Login />
         </Modal>
       )}
