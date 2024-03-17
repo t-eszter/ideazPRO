@@ -122,6 +122,7 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike, isLoggedIn }) => {
               >
                 Comments
               </a>
+              <span className="font-semibold text-black">{idea.tags}</span>
             </div>
             <Modal
               isOpen={isModalOpen}

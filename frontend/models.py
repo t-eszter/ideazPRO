@@ -70,6 +70,7 @@ class Idea(models.Model):
     postedDate = models.DateTimeField(auto_now_add=True)
     group = models.ForeignKey(IdeaGroup, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True, related_name='ideas')
+    tags = models.ManyToManyField('Tag', related_name='ideas', blank=True)
 
     def __str__(self):
         return self.title 
@@ -94,4 +95,10 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.comment
+
+class Tag(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
 

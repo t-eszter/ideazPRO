@@ -36,6 +36,8 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, Q
 
+
+
 # password validation
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -45,6 +47,7 @@ from .models import *
 from .serializers import *
 
 User = get_user_model()
+
 
 @require_GET
 @ensure_csrf_cookie
@@ -123,6 +126,26 @@ def create_idea_group(request):
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# Text classification
+from transformers import AutoTokenizer, TFAutoModelForSeq2SeqLM
+
+tokenizer = AutoTokenizer.from_pretrained("efederici/text2tags")
+model = TFAutoModelForSeq2SeqLM.from_pretrained("efederici/text2tags")
+
+def tag(text: str):
+    """Generates tags from given text."""
+    text = text.strip().replace('\n', '')
+    text = 'summarize: ' + text
+    tokenized_text = tokenizer(text, return_tensors="tf", truncation=True, padding=True, max_length=512)
+
+    tags_ids = model.generate(tokenized_text['input_ids'],
+                              num_beams=4,
+                              no_repeat_ngram_size=2,
+                              max_length=20,
+                              early_stopping=True)
+
+    output = tokenizer.decode(tags_ids[0].numpy(), skip_special_tokens=True)
+    return output.split(', ')
 
 @require_POST
 def create_idea(request):
@@ -144,6 +167,15 @@ def create_idea(request):
             group=group,
             person=person
         )
+
+        tags_list = tag(data['description'])
+
+        if tags_list:
+            for tag_name in tags_list:
+                if tag_name:
+                    tag, created = Tag.objects.get_or_create(name=tag_name.strip())
+                    idea.tags.add(tag)
+
         return JsonResponse({'message': 'Idea created successfully', 'id': idea.id}, status=201)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
@@ -209,7 +241,7 @@ class RegisterView(APIView):
                     validate_password(data['password'])
                 except ValidationError as e:
                     return JsonResponse({'status': 'error', 'message': ' '.join(e.messages)}, status=400)
-                    
+
                 user = User.objects.create_user(
                     username=data['username'],
                     email=data['email'],
