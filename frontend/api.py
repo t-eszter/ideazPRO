@@ -167,15 +167,14 @@ def create_idea(request):
             person=person
         )
 
-        # Use the topic tagger to generate tags for the idea's description
         tags_list = tag(data['description'])
 
-        # Check if tags_list is not empty
         if tags_list:
             for tag_name in tags_list:
                 if tag_name:
-                    tag, created = Tag.objects.get_or_create(name=tag_name.strip())
-                    idea.tags.add(tag)
+                    tag_obj, created = Tag.objects.get_or_create(name=tag_name.strip())  # Renamed variable here
+                    idea.tags.add(tag_obj)
+
 
         return JsonResponse({'message': 'Idea created successfully', 'id': idea.id}, status=201)
     except Exception as e:

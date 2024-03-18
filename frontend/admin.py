@@ -42,8 +42,12 @@ class VoteAdmin(admin.ModelAdmin):
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('id', 'name') 
 
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+
 admin.site.register(IdeaGroup, IdeaGroupAdmin)
 admin.site.register(Idea, IdeaAdmin)
 admin.site.register(Person)
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Vote, VoteAdmin)
+admin.site.register(Tag, TagAdmin)
