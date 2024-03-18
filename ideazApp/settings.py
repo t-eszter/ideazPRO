@@ -23,6 +23,8 @@ EMAIL_SECRET = config('EMAIL_SECRET')
 
 SENDGRID_API_KEY = config('SENDGRID_API_KEY')
 
+HUGGINGFACE = config('HUGGINGFACE')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

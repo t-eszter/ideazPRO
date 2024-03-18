@@ -127,25 +127,24 @@ def create_idea_group(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Text classification
-from transformers import AutoTokenizer, TFAutoModelForSeq2SeqLM
-
-tokenizer = AutoTokenizer.from_pretrained("efederici/text2tags")
-model = TFAutoModelForSeq2SeqLM.from_pretrained("efederici/text2tags")
+import requests
 
 def tag(text: str):
-    """Generates tags from given text."""
-    text = text.strip().replace('\n', '')
-    text = 'summarize: ' + text
-    tokenized_text = tokenizer(text, return_tensors="tf", truncation=True, padding=True, max_length=512)
+    API_URL = "https://api-inference.huggingface.co/models/efederici/text2tags"
+    api_key = os.getenv('HUGGINGFACE')
+    headers = {
+        "Authorization": f"Bearer {api_key}"
+    }
+    payload = {
+        "inputs": text,
+        "parameters": {"return_full_text": False}
+    }
 
-    tags_ids = model.generate(tokenized_text['input_ids'],
-                              num_beams=4,
-                              no_repeat_ngram_size=2,
-                              max_length=20,
-                              early_stopping=True)
-
-    output = tokenizer.decode(tags_ids[0].numpy(), skip_special_tokens=True)
-    return output.split(', ')
+    response = requests.post(API_URL, headers=headers, json=payload)
+    result = response.json()
+    
+    tags = result[0]['generated_text'].split(', ')
+    return tags
 
 @require_POST
 def create_idea(request):
@@ -168,8 +167,10 @@ def create_idea(request):
             person=person
         )
 
+        # Use the topic tagger to generate tags for the idea's description
         tags_list = tag(data['description'])
 
+        # Check if tags_list is not empty
         if tags_list:
             for tag_name in tags_list:
                 if tag_name:
