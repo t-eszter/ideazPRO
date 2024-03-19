@@ -17,8 +17,7 @@ import HallOfFameModal from "./HallOfFame";
 function Header() {
   const navigate = useNavigate();
   const defaultProfilePic = "/images/profile_pics/profile_pic_anon.svg";
-  const { currentUser, updateCurrentUser, logout } = useAuth();
-  const [isHallOfFameOpen, setIsHallOfFameOpen] = useState(false);
+  const { currentUser, logout } = useAuth();
   const toggleHallOfFameModal = () => setModalContent("hallOfFame");
 
   // const toggleHallOfFameModal = () => setIsHallOfFameOpen(!isHallOfFameOpen);
@@ -38,33 +37,12 @@ function Header() {
     setIsCopied(false);
   };
 
-  useEffect(() => {
-    const storedUserName = localStorage.getItem("userName");
-  }, []);
-
   const handleLogout = async () => {
     await logout();
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
     localStorage.removeItem("organizationName");
     navigate("/");
-  };
-
-  const copyToClipboard = () => {
-    const el = document.createElement("textarea");
-    el.value = window.location.href;
-    document.body.appendChild(el);
-    el.select();
-    el.setSelectionRange(0, 99999);
-
-    try {
-      var successful = document.execCommand("copy");
-      setIsCopied(true);
-    } catch (err) {
-      console.error("Oops, unable to copy", err);
-    }
-
-    document.body.removeChild(el);
   };
 
   return (
@@ -156,7 +134,7 @@ function Header() {
         <Modal
           isOpen={!!modalContent}
           onClose={handleModalClose}
-          contentType={modalContent} // This line is added to pass the content type to the Modal
+          contentType={modalContent}
         >
           {modalContent === "register" && (
             <Register

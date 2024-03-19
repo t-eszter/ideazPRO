@@ -28,7 +28,15 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  const login = (userName, orgName, orgId, userId, personId, profilePic) => {
+  const login = (
+    userName,
+    orgName,
+    orgId,
+    userId,
+    personId,
+    profilePic,
+    role
+  ) => {
     const user = {
       name: userName,
       profilePic: profilePic,
@@ -36,6 +44,7 @@ export const AuthProvider = ({ children }) => {
       organizationId: orgId,
       userId,
       personId,
+      role,
     };
 
     console.log(profilePic),
@@ -53,6 +62,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("organizationName");
     localStorage.removeItem("organizationId");
     localStorage.removeItem("userId");
+    localStorage.removeItem("personId");
+    localStorage.removeItem("role");
     setCurrentUser(null);
   };
 

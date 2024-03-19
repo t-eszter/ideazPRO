@@ -59,7 +59,8 @@ function Login({ isOpenProp, toggleLogin }) {
           data.organizationId,
           data.userId,
           data.personid,
-          data.profilePic
+          data.profilePic,
+          data.role
         );
         console.log(
           "Login successful for:",
@@ -68,7 +69,8 @@ function Login({ isOpenProp, toggleLogin }) {
           data.organizationId,
           data.userId,
           data.personid,
-          data.profilePic
+          data.profilePic,
+          data.role
         );
         navigate(`/${data.organizationName}`);
         toggleLogin();

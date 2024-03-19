@@ -9,6 +9,7 @@ import Header from "../components/Header";
 
 function UserSettings() {
   const { currentUser, updateCurrentUser } = useAuth();
+  const isAdmin = currentUser?.role === "admin";
 
   const [showAddGroupForm, setShowAddGroupForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ function UserSettings() {
   });
 
   const [members, setMembers] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+
   const [ideaGroups, setIdeaGroups] = useState([]);
 
   const [searchQueryIdeaGroups, setSearchQueryIdeaGroups] = useState("");
@@ -65,10 +66,43 @@ function UserSettings() {
   useEffect(() => {
     if (currentUser?.organizationId) {
       fetchUserData();
-      fetchOrganizationMembers(currentUser.organizationId);
-      setIsAdmin(currentUser.isAdmin);
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser?.organizationId && isAdmin) {
+      fetchOrganizationMembers(currentUser.organizationId);
+      fetchTags();
+      fetchIdeaGroups();
+    }
+  }, [currentUser, isAdmin]);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch(`/api/person/${currentUser.name}/`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) throw new Error("Network response was not ok");
+      const data = await response.json();
+      setFormData(data);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    }
+  };
+
+  const fetchTags = async () => {
+    try {
+      const response = await fetch(
+        `/api/organizations/${currentUser.organizationId}/tags`
+      );
+      if (!response.ok) throw new Error("Network response was not ok");
+      const data = await response.json();
+      setTags(data.tags);
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+    }
+  };
 
   const sendInvite = async (e) => {
     e.preventDefault();
@@ -132,25 +166,6 @@ function UserSettings() {
       } catch (error) {
         console.error("Error fetching idea groups:", error);
       }
-    }
-  };
-
-  useEffect(() => {
-    fetchIdeaGroups();
-  }, [currentUser]);
-
-  const fetchUserData = async () => {
-    try {
-      const response = await fetch(`/api/person/${currentUser.name}/`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-      });
-      if (!response.ok) throw new Error("Network response was not ok");
-      const data = await response.json();
-      setFormData(data);
-      setIsAdmin(data.role === "admin");
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
     }
   };
 
@@ -223,14 +238,14 @@ function UserSettings() {
   };
 
   const handleProfilePicUpdate = (url) => {
-    console.log("Received Cloudinary URL:", url);
+    // console.log("Received Cloudinary URL:", url);
     setProfilePicUrl(url);
   };
 
   const handleSubmitProfile = async (e) => {
     e.preventDefault();
 
-    console.log("Submitting with profilePicUrl:", profilePicUrl);
+    // console.log("Submitting with profilePicUrl:", profilePicUrl);
 
     const updatedFormData = {
       ...formData,
@@ -287,44 +302,28 @@ function UserSettings() {
     }
   };
 
-  console.log(
-    "Fetching tags for organization:",
-    currentUser.organizationId,
-    currentUser.isAdmin
-  );
-
-  useEffect(() => {
-    const fetchTags = async () => {
-      try {
-        const response = await fetch(
-          `/api/organizations/${currentUser.organizationId}/tags`
-        );
-        if (!response.ok) throw new Error("Network response was not ok");
-        const data = await response.json();
-        setTags(data.tags);
-      } catch (error) {
-        console.error("Error fetching tags:", error);
-      }
-    };
-
-    fetchTags();
-  }, [currentUser]);
-
   return (
     <div>
       <Header />
       <div className="m-8 flex flex-row-reverse space-between gap-8">
         {isAdmin && (
           <div id="left-side" className="w-3/4 flex flex-col gap-8 order-last">
-            <div className="tag-cloud">
-              {tags.map((tag) => (
-                <span
-                  key={tag.name}
-                  style={{ fontSize: `${Math.min(tag.count * 1.2, 5)}em` }}
-                >
-                  {tag.name}
-                </span>
-              ))}
+            <div
+              id="tag-cloud"
+              className=" bg-white shadow-lg rounded-lg p-6 flex flex-col"
+            >
+              <h3 className="text-xl font-semibold mb-4">Tags</h3>
+              <div className="flex ">
+                {tags.map((tag) => (
+                  <span
+                    key={tag.name}
+                    className="text-sm text-semibold pr-4"
+                    style={{ fontSize: `${Math.min(tag.count * 1.2, 5)}em` }}
+                  >
+                    #{tag.name}
+                  </span>
+                ))}
+              </div>
             </div>
             <div
               id="invite"

@@ -3,6 +3,7 @@ import ReactLogo from "./ideaz_logo.svg";
 import { useNavigate } from "react-router-dom";
 import CSRFToken, { getCookie } from "./Authentication/csrftoken";
 import Login from "./components/Login";
+import Modal from "./components/Modal";
 
 function Home() {
   const [groupName, setgroupName] = useState("");
@@ -67,7 +68,7 @@ function Home() {
           <input
             id="groupName"
             type="text"
-            placeholder="Title..."
+            placeholder="I would like to collect ideas about..."
             className="input input-bordered max-w-xs w-full mb-2"
             value={groupName}
             onChange={(e) => setgroupName(e.target.value)}
@@ -84,7 +85,10 @@ function Home() {
         If you already have an account, you can
         <a
           href="#"
-          onClick={() => toggleLoginModal(true)}
+          onClick={(e) => {
+            e.preventDefault();
+            setIsLoginOpen(true);
+          }}
           className="text-blue-500 hover:text-blue-700"
         >
           &nbsp;log in&nbsp;
@@ -93,7 +97,9 @@ function Home() {
       </p>
       {/* Login Modal */}
       {isLoginOpen && (
-        <Login isOpenProp={isLoginOpen} toggleLogin={toggleLoginModal} />
+        <Modal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)}>
+          <Login toggleLogin={() => setIsLoginOpen(false)} />
+        </Modal>
       )}
     </div>
   );

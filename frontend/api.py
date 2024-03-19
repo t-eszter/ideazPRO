@@ -342,6 +342,7 @@ def login_view(request):
                     'email': user.email,
                     'personid': person.id,
                     'profilePic': profile_pic_url,
+                    'role': person.role,
                 })
             except Person.DoesNotExist:
                 return JsonResponse({'error': 'Person profile does not exist.'}, status=400)
@@ -616,7 +617,7 @@ def tag_cloud_view(request, organization_id):
     ).annotate(count=Count('ideas')).order_by('-count')
 
     tag_data = [{'name': tag.name, 'count': tag.count} for tag in tags]
-    
+
     print("Organization:", organization)
     print("Tags Count:", tags.count())
     for tag in tags:
