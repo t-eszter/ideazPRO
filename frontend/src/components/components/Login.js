@@ -5,7 +5,7 @@ import { useAuth } from "../Authentication/AuthContext";
 import { useLocation } from "react-router-dom";
 import Modal from "./Modal";
 
-function Login({ isOpenProp, toggleLogin }) {
+function Login({ isOpenProp, toggleLogin, switchToRegister }) {
   const { login } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();

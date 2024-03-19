@@ -14,9 +14,8 @@ import IdeaGroup from "./IdeaGroup/IdeaGroup";
 import Home from "./Home";
 import UserSettings from "./UserSettings/UserSettings";
 import ProtectedRoute from "./Authentication/ProtectedRoute";
-import Register from "./components/Register";
-import Login from "./components/Login";
 import Modal from "./components/Modal";
+import Authentication from "./Authentication/Authentication";
 
 import { AuthProvider } from "./Authentication/AuthContext";
 
@@ -30,43 +29,23 @@ const ProtectedIdeaGroup = () => (
 
 const ModalRouteHandler = () => {
   const location = useLocation();
-  const [modalContent, setModalContent] = useState(null);
-  const isLoginOrRegister =
-    location.pathname === "/login" || location.pathname === "/register";
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    switch (location.pathname) {
-      case "/login":
-        setModalContent("login");
-        break;
-      case "/register":
-        setModalContent("register");
-        break;
-      default:
-        setModalContent(null);
-        break;
-    }
-  }, [location]);
+    const isAuthRoute =
+      location.pathname.includes("/login") ||
+      location.pathname.includes("/register");
+    setIsModalOpen(isAuthRoute);
+  }, [location.pathname]);
+
+  const handleClose = () => {
+    setIsModalOpen(false);
+  };
 
   return (
-    <>
-      {modalContent === "register" && (
-        <Modal
-          isOpen={modalContent !== null}
-          showCloseButton={!isLoginOrRegister}
-        >
-          <Register />
-        </Modal>
-      )}
-      {modalContent === "login" && (
-        <Modal
-          isOpen={modalContent !== null}
-          showCloseButton={!isLoginOrRegister}
-        >
-          <Login />
-        </Modal>
-      )}
-    </>
+    <Modal isOpen={isModalOpen} onClose={handleClose}>
+      <Authentication />
+    </Modal>
   );
 };
 

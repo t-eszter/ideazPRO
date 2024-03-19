@@ -6,7 +6,7 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-function Register({ toggleRegister, switchToLogin }) {
+function Register({ switchToLogin }) {
   const query = useQuery();
   const params = useParams();
   const navigate = useNavigate();
@@ -140,6 +140,10 @@ function Register({ toggleRegister, switchToLogin }) {
         validateAndUpdatePasswordCriteria(value);
       }
     }
+  };
+
+  const handleSuccessfulRegistration = () => {
+    navigate("/register?justRegistered=true");
   };
 
   const handleSubmit = async (e) => {
