@@ -149,7 +149,9 @@ const IdeaGroup = () => {
         ref={dropRef}
         className="h-screen flex flex-col justify-between relative bg-alabaster-100"
       >
-        <div className="columns-4 gap-4 p-12">
+        <div className="columns-4 gap-8 p-8 relative">
+          {" "}
+          {/* Ensure this is relative */}
           {Array.isArray(ideas) &&
             ideas.map((idea) => (
               <div
@@ -167,6 +169,13 @@ const IdeaGroup = () => {
                 />
               </div>
             ))}
+          {activeGroup &&
+            activeGroup.status === "closed" &&
+            activeGroup.comment && (
+              <div className="fixed w-80 text-black text-md text-semibold right-0 bottom-20 mt-8 mr-8 px-6 py-4 bg-flamingo-50 shadow-lg rounded-md z-50">
+                <p className="text-sm text-gray-700">{activeGroup.comment}</p>
+              </div>
+            )}
         </div>
 
         {}
@@ -194,7 +203,7 @@ const IdeaGroup = () => {
           />
         )}
 
-        <ul className="flex justify-left gap-8 py-4 px-8 sticky bottom-0 z-30 bg-alabaster-100">
+        <ul className="flex justify-left gap-8 py-4 px-8 sticky bottom-0 z-30 bg-alabaster-100/50">
           {ideaGroups.map((group) => {
             if (isGuestUserMode) {
               return (

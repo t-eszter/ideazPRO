@@ -46,19 +46,22 @@ function Home() {
   };
 
   return (
-    <div className="font-kumbh flex flex-col content-center items-center justify-center w-full h-screen gap-12">
-      <div className="flex flew-row items-center gap-4 ">
+    <div className="font-kumbh flex flex-col content-center items-center justify-center w-full h-screen gap-4 md:gap-12">
+      <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
         <h1 className="text-3xl">Welcome to</h1>
         <img
-          className="w-auto h-12 mr-5"
+          className="w-auto h-12 lg:h-20 mr-5"
           src={ReactLogo}
           alt="Ideaz pro logo"
         />
       </div>
-      <h3 className="text-4xl font-bold">
+      <h3 className="text-2xl md:text-4xl font-bold text-center">
         What topic would you like to brainstorm about?
       </h3>
-      <form onSubmit={handleSubmit} className="w-full max-w-xs flex flex-col">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full md:max-w-md lg:max-w-lg flex flex-col items-center"
+      >
         <CSRFToken />
         <label className="form-control w-full max-w-xs">
           <input
@@ -71,15 +74,19 @@ function Home() {
           />
         </label>
         <button
-          className="btn btn-accent text-white focus:outline-lochmara-500 focus:outlne-2 self-center"
+          className="btn btn-accent text-white focus:outline-lochmara-500 focus:outline-2 self-center"
           type="submit"
         >
           Create idea board
         </button>
       </form>
-      <p>
+      <p className="text-center">
         If you already have an account, you can
-        <a href="#" onClick={() => toggleLoginModal(true)}>
+        <a
+          href="#"
+          onClick={() => toggleLoginModal(true)}
+          className="text-blue-500 hover:text-blue-700"
+        >
           &nbsp;log in&nbsp;
         </a>
         here.

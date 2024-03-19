@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import CSRFToken, { getCookie } from "../Authentication/csrftoken";
 import { IoClose } from "react-icons/io5";
 import { useAuth } from "../Authentication/AuthContext";
@@ -16,6 +16,14 @@ const NewIdeaForm = ({
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(activeGroup.id);
   const { currentUser } = useAuth();
+
+  const titleInputRef = useRef(null);
+
+  useEffect(() => {
+    if (titleInputRef.current) {
+      titleInputRef.current.focus();
+    }
+  }, []);
 
   const handleClose = () => {
     onClose();
@@ -81,13 +89,7 @@ const NewIdeaForm = ({
   };
 
   return (
-    <div className="absolute bottom-40 right-4 w-1/4 h-fit bg-white p-4 rounded drop-shadow-lg">
-      <button
-        onClick={handleClose}
-        className="absolute top-0 right-0 p-2 text-xl"
-      >
-        <IoClose />
-      </button>
+    <div className="absolute bottom-20 right-4 w-1/4 h-fit bg-white p-4 rounded drop-shadow-2xl z-50">
       <form onSubmit={handlePostIdea}>
         <CSRFToken />
         <label className="form-control w-full max-w-xs">
@@ -103,6 +105,7 @@ const NewIdeaForm = ({
             className="input input-bordered max-w-xs w-full mb-2"
             value={ideaTitle}
             onChange={handleIdeaTitleChange}
+            ref={titleInputRef}
           />
         </label>
         <label className="form-control">
@@ -140,9 +143,17 @@ const NewIdeaForm = ({
             </span>
           </label>
         </div>
-        <button className="btn btn-primary" type="submit">
-          Post idea
-        </button>
+        <div className="flex flex-row justify-between">
+          <button className="btn btn-primary" type="submit">
+            Post idea
+          </button>
+          <button
+            onClick={handleClose}
+            className="absolute bottom-4 right-4 p-2 text-xl"
+          >
+            <IoClose />
+          </button>
+        </div>
       </form>
     </div>
   );

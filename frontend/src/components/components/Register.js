@@ -167,7 +167,6 @@ function Register({ toggleRegister, switchToLogin }) {
     );
 
     try {
-      console.log("Sending registration data:", registrationData);
       const response = await fetch("/api/register", {
         method: "POST",
         headers: {
@@ -177,13 +176,28 @@ function Register({ toggleRegister, switchToLogin }) {
         body: JSON.stringify(registrationData),
       });
 
-      if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        if (
+          errorResponse.message.includes(
+            "duplicate key value violates unique constraint"
+          )
+        ) {
+          setErrors({
+            ...errors,
+            username: "Username already exists. Please choose a different one.",
+          });
+        } else {
+          throw new Error(errorResponse.message);
+        }
+        return;
+      }
+
       setIsRegistered(true);
       setSuccessMessage("Registration successful! Redirecting to login...");
-      // navigate("/login?fromRegister=true");
       setTimeout(() => {
-        switchToLogin(); // Switch to the login component
-        setSuccessMessage(""); // Optionally clear the success message
+        switchToLogin();
+        setSuccessMessage("");
       }, 2000);
     } catch (error) {
       console.error("Registration error:", error);

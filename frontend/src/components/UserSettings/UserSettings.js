@@ -44,6 +44,8 @@ function UserSettings() {
   const [profilePicUrl, setProfilePicUrl] = useState("");
   const [profilePicSuccessMessage, setProfilePicSuccessMessage] = useState("");
 
+  const [tags, setTags] = useState([]);
+
   const indexOfLastIdeaGroup = currentPageIdeaGroups * ideaGroupsPerPage;
   const indexOfFirstIdeaGroup = indexOfLastIdeaGroup - ideaGroupsPerPage;
   const currentIdeaGroups = ideaGroups
@@ -285,12 +287,45 @@ function UserSettings() {
     }
   };
 
+  console.log(
+    "Fetching tags for organization:",
+    currentUser.organizationId,
+    currentUser.isAdmin
+  );
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await fetch(
+          `/api/organizations/${currentUser.organizationId}/tags`
+        );
+        if (!response.ok) throw new Error("Network response was not ok");
+        const data = await response.json();
+        setTags(data.tags);
+      } catch (error) {
+        console.error("Error fetching tags:", error);
+      }
+    };
+
+    fetchTags();
+  }, [currentUser]);
+
   return (
     <div>
       <Header />
-      <div className="m-8 flex flex-row gap-8">
+      <div className="m-8 flex flex-row-reverse space-between gap-8">
         {isAdmin && (
-          <div id="left-side" className="w-3/4 flex flex-col gap-8">
+          <div id="left-side" className="w-3/4 flex flex-col gap-8 order-last">
+            <div className="tag-cloud">
+              {tags.map((tag) => (
+                <span
+                  key={tag.name}
+                  style={{ fontSize: `${Math.min(tag.count * 1.2, 5)}em` }}
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
             <div
               id="invite"
               className=" bg-white shadow-lg rounded-lg p-6 flex flex-col"

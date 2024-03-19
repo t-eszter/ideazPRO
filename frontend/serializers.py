@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, IdeaGroup, Idea, Organization, Comment
+from .models import Person, IdeaGroup, Idea, Organization, Comment, Tag
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
@@ -27,6 +27,7 @@ class IdeaSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=IdeaGroup.objects.all())
     organization = serializers.SerializerMethodField()
     posted_by = serializers.SerializerMethodField()
+    tags = serializers.SerializerMethodField() 
 
     class Meta:
         model = Idea
@@ -41,6 +42,9 @@ class IdeaSerializer(serializers.ModelSerializer):
         if obj.person and obj.person.user:
             return obj.person.user.username
         return "Anonymous"
+
+    def get_tags(self, obj):
+        return [tag.name for tag in obj.tags.all()]
 #
 
 class UserSerializer(serializers.ModelSerializer):

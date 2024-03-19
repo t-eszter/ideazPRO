@@ -86,7 +86,7 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike, isLoggedIn }) => {
   return (
     <div ref={dragRef} className="flex flex-row">
       <div
-        className="flip-card-wrapper rounded  w-64 flex flex-row justify-left z-0"
+        className="flip-card-wrapper rounded  w-fit flex flex-row justify-left z-0"
         style={cardStyle}
       >
         <div className="flip-card h-fit">
@@ -118,11 +118,17 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike, isLoggedIn }) => {
               <a
                 href="#"
                 onClick={toggleModal}
-                className="text-blue-600 hover:underline cursor-pointer"
+                className="text-blue-600 hover:underline cursor-pointer pt-2"
               >
                 Comments
               </a>
-              <span className="font-semibold text-black">{idea.tags}</span>
+              <div className="text-black text-sm text-semibold py-2">
+                {idea.tags.map((tagName, index) => (
+                  <span key={index} className="tag">
+                    #{tagName}
+                  </span>
+                ))}
+              </div>
             </div>
             <Modal
               isOpen={isModalOpen}

@@ -15,16 +15,13 @@ import { useAuth } from "../Authentication/AuthContext";
 import HallOfFameModal from "./HallOfFame";
 
 function Header() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const navigate = useNavigate();
   const defaultProfilePic = "/images/profile_pics/profile_pic_anon.svg";
   const { currentUser, updateCurrentUser, logout } = useAuth();
   const [isHallOfFameOpen, setIsHallOfFameOpen] = useState(false);
+  const toggleHallOfFameModal = () => setModalContent("hallOfFame");
 
-  const toggleHallOfFameModal = () => setIsHallOfFameOpen(!isHallOfFameOpen);
+  // const toggleHallOfFameModal = () => setIsHallOfFameOpen(!isHallOfFameOpen);
 
   const [modalContent, setModalContent] = useState("");
 
@@ -156,11 +153,15 @@ function Header() {
       </div>
 
       {modalContent && (
-        <Modal isOpen={!!modalContent} onClose={handleModalClose}>
+        <Modal
+          isOpen={!!modalContent}
+          onClose={handleModalClose}
+          contentType={modalContent} // This line is added to pass the content type to the Modal
+        >
           {modalContent === "register" && (
             <Register
               toggleRegister={handleModalClose}
-              switchToLogin={switchToLogin} // Pass this method as a prop
+              switchToLogin={switchToLogin}
             />
           )}
           {modalContent === "login" && <Login toggleLogin={handleModalClose} />}

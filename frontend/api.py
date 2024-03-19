@@ -128,23 +128,35 @@ def create_idea_group(request):
 
 # Text classification
 import requests
+from collections import Counter
 
 def tag(text: str):
-    API_URL = "https://api-inference.huggingface.co/models/efederici/text2tags"
+    print(os.getenv('HUGGINGFACE')) 
+    API_URL = "https://rnk0d6m4s18549uw.eu-west-1.aws.endpoints.huggingface.cloud"
     api_key = os.getenv('HUGGINGFACE')
     headers = {
-        "Authorization": f"Bearer {api_key}"
+        "Accept" : "application/json",
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json" 
     }
     payload = {
         "inputs": text,
-        "parameters": {"return_full_text": False}
     }
 
     response = requests.post(API_URL, headers=headers, json=payload)
     result = response.json()
-    
-    tags = result[0]['generated_text'].split(', ')
-    return tags
+
+    print(response.text)
+
+    if 'summary_text' in result[0]:
+        tags = [tag.strip().replace(' ', '') for tag in result[0]['summary_text'].split(',') if tag.strip()]
+    else:
+        tags = []
+
+    tag_counts = Counter(tags)
+    sorted_tags = sorted(tag_counts.items(), key=lambda item: (-item[1], item[0]))
+
+    return [tag for tag, count in sorted_tags]
 
 @require_POST
 def create_idea(request):
@@ -170,14 +182,18 @@ def create_idea(request):
         tags_list = tag(data['description'])
 
         if tags_list:
-            for tag_name in tags_list:
+            highest_count = Counter(tags_list).most_common(1)[0][1] if tags_list else 0
+            top_tags = [tag for tag, count in Counter(tags_list).items() if count == highest_count]
+
+            for tag_name in top_tags[:1]:
                 if tag_name:
-                    tag_obj, created = Tag.objects.get_or_create(name=tag_name.strip())  # Renamed variable here
+                    tag_obj, created = Tag.objects.get_or_create(name=tag_name)
                     idea.tags.add(tag_obj)
 
 
         return JsonResponse({'message': 'Idea created successfully', 'id': idea.id}, status=201)
     except Exception as e:
+        print(f"Error calling Hugging Face API: {e}")
         return JsonResponse({'error': str(e)}, status=400)
 
 
@@ -580,12 +596,30 @@ def hall_of_fame_view(request, organization_id):
 
         total_points = ideas_points + votes_points
 
+        profile_pic_url = person.profilePic if person.profilePic else None
+
         top_users_data.append({
             'name': person.user.username,
-            'points': total_points
+            'points': total_points,
+            'profilePic': profile_pic_url
         })
 
     top_users_data.sort(key=lambda x: x['points'], reverse=True)
-    top_ten_users = top_users_data[:10]
+    top_ten_users = top_users_data[:7]
 
     return JsonResponse({'topUsers': top_ten_users})
+
+def tag_cloud_view(request, organization_id):
+    organization = get_object_or_404(Organization, pk=organization_id)
+    tags = Tag.objects.filter(
+        ideas__group__organization=organization
+    ).annotate(count=Count('ideas')).order_by('-count')
+
+    tag_data = [{'name': tag.name, 'count': tag.count} for tag in tags]
+    
+    print("Organization:", organization)
+    print("Tags Count:", tags.count())
+    for tag in tags:
+        print(tag.name, tag.count)
+
+    return JsonResponse({'tags': tag_data})

@@ -20,12 +20,14 @@ urlpatterns = [
     path('api/ideagroups', IdeaGroupCreateView.as_view(), name='ideagroup-create'),
     
     # update member's role for admins
-
     path('api/members/<int:member_id>/update-role', update_member_role, name='update-role'),
 
     #comments
     path('api/comments/<uuid:idea_id>', CommentsList.as_view(), name='comments-list'),
     path('api/comments/new/<uuid:idea_id>', CommentCreateView.as_view(), name='comments-list'), 
+
+    #tags
+    path('api/organizations/<uuid:organization_id>/tags', tag_cloud_view, name='tag-cloud'),
 
     #Hall of Fame view
     path('api/hall-of-fame/<uuid:organization_id>', hall_of_fame_view, name='hall_of_fame'),
@@ -53,8 +55,6 @@ urlpatterns = [
 
     path('auth/login/', login_view, name='custom_rest_login'),
     path('auth/logout/', LogoutView.as_view(), name='rest_logout'),
-
-
 
     # React
     re_path(r'^(?:.*)/?$', views.index, name='index'),

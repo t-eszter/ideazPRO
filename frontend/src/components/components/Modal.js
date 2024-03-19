@@ -1,16 +1,26 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import Illustration from "./reg_illu.svg";
+import HallOfFameIllu from "./hallOfFameIllu.svg";
 import Logo from "../ideaz_logo.svg";
 
 const modalRoot = document.getElementById("modal-root");
 
-const Modal = ({ isOpen, onClose, children, showCloseButton = true }) => {
+const Modal = ({
+  isOpen,
+  onClose,
+  children,
+  showCloseButton = true,
+  contentType,
+}) => {
   if (!isOpen) return null;
 
   const handleModalContentClick = (e) => {
     e.stopPropagation();
   };
+
+  const illustrationSrc =
+    contentType === "hallOfFame" ? HallOfFameIllu : Illustration;
 
   return ReactDOM.createPortal(
     <div
@@ -43,8 +53,8 @@ const Modal = ({ isOpen, onClose, children, showCloseButton = true }) => {
           {/* LEFT SIDE */}
           <div className="flex flex-row w-2/3 h-2/3 z-10 ">
             <div className="w-1/2 py-[10%] rounded-l-lg bg-sinbad-200 flex flex-col gap-8 items-center content-center p-10">
-              <img src={Logo} alt="Logo" className="w-32" />
-              <img src={Illustration} alt="Illustration" className="" />
+              <img src={Logo} alt="Logo" className="w-48" />
+              <img src={illustrationSrc} alt="Illustration" className="" />
             </div>
 
             {/* RIGHT SIDE */}
