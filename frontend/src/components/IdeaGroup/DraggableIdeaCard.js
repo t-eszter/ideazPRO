@@ -4,20 +4,20 @@ import LikeCounter from "./LikeCounter";
 import Comments from "./Comments";
 import Modal from "../components/Modal";
 
-const DraggableIdeaCard = ({ idea, position, onMove, onLike, isLoggedIn }) => {
-  const [{ isDragging }, dragRef] = useDrag(() => ({
-    type: "idea",
-    item: { id: idea.id, originalPosition: position },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-    end: (item, monitor) => {
-      const clientOffset = monitor.getClientOffset();
-      if (item && clientOffset) {
-        onMove(item.id, clientOffset.x, clientOffset.y);
-      }
-    },
-  }));
+const DraggableIdeaCard = ({ idea, onLike, isLoggedIn }) => {
+  // const [{ isDragging }, dragRef] = useDrag(() => ({
+  //   type: "idea",
+  //   item: { id: idea.id, originalPosition: position },
+  //   collect: (monitor) => ({
+  //     isDragging: monitor.isDragging(),
+  //   }),
+  //   end: (item, monitor) => {
+  //     const clientOffset = monitor.getClientOffset();
+  //     if (item && clientOffset) {
+  //       onMove(item.id, clientOffset.x, clientOffset.y);
+  //     }
+  //   },
+  // }));
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -78,19 +78,16 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike, isLoggedIn }) => {
     });
   };
 
-  const cardStyle = {
-    opacity: isDragging ? 0.5 : 1,
-    transform: `translate(${position.x}px, ${position.y}px)`,
-  };
+  // const cardStyle = {
+  //   opacity: isDragging ? 0.5 : 1,
+  //   transform: `translate(${position.x}px, ${position.y}px)`,
+  // };
 
   return (
-    <div ref={dragRef} className="flex flex-row">
-      <div
-        className="flip-card-wrapper rounded  w-fit flex flex-row justify-left z-0"
-        style={cardStyle}
-      >
+    <div className="flex flex-row">
+      <div className="flip-card-wrapper rounded  w-fit flex flex-row justify-left z-0">
         <div className="flip-card h-fit">
-          <div className="flip-card-inner h-fit p-5">
+          <div className="flip-card-inner h-fit p-5 min-h-44">
             <div className="flip-card-front h-fit">
               <h3 className="text-m font-semibold text-gray-700 pb-2">
                 {idea.title}
@@ -122,11 +119,11 @@ const DraggableIdeaCard = ({ idea, position, onMove, onLike, isLoggedIn }) => {
               >
                 Comments
               </a>
-              <div className="text-black text-sm text-semibold py-2">
+              <div className="text-black text-sm text-semibold py-2 truncate">
                 {idea.tags.map((tagName, index) => (
-                  <span key={index} className="tag">
+                  <p key={index} className="truncate">
                     #{tagName}
-                  </span>
+                  </p>
                 ))}
               </div>
             </div>

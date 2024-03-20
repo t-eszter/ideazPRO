@@ -41,25 +41,25 @@ const IdeaGroup = () => {
     }
   }, [ideas]);
 
-  const handleMove = useCallback((id, newX, newY) => {
-    setPositions((prevPositions) => {
-      const currentPos = prevPositions[id] || { x: 0, y: 0, isMoved: false };
-      return {
-        ...prevPositions,
-        [id]: { x: currentPos.x + newX, y: currentPos.y + newY, isMoved: true },
-      };
-    });
-  }, []);
+  // const handleMove = useCallback((id, newX, newY) => {
+  //   setPositions((prevPositions) => {
+  //     const currentPos = prevPositions[id] || { x: 0, y: 0, isMoved: false };
+  //     return {
+  //       ...prevPositions,
+  //       [id]: { x: currentPos.x + newX, y: currentPos.y + newY, isMoved: true },
+  //     };
+  //   });
+  // }, []);
 
-  const [, dropRef] = useDrop({
-    accept: "idea",
-    drop: (item, monitor) => {
-      const delta = monitor.getDifferenceFromInitialOffset();
-      if (delta) {
-        handleMove(item.id, delta.x, delta.y);
-      }
-    },
-  });
+  // const [, dropRef] = useDrop({
+  //   accept: "idea",
+  //   drop: (item, monitor) => {
+  //     const delta = monitor.getDifferenceFromInitialOffset();
+  //     if (delta) {
+  //       handleMove(item.id, delta.x, delta.y);
+  //     }
+  //   },
+  // });
 
   useEffect(() => {
     const fetchIdeaGroups = async () => {
@@ -146,26 +146,24 @@ const IdeaGroup = () => {
     <div className="h-screen">
       <Header />
       <div
-        ref={dropRef}
+        // ref={dropRef}
         className="h-screen flex flex-col justify-between relative bg-alabaster-100"
       >
-        <div className="columns-4 gap-8 p-8 relative">
-          {" "}
-          {/* Ensure this is relative */}
+        {/* Masonry layout container with CSS columns */}
+        <div className="p-8 space-y-8 relative masonry-grid">
           {Array.isArray(ideas) &&
             ideas.map((idea) => (
               <div
                 key={idea.id}
-                className="grid-item mb-8"
-                style={{ breakInside: "avoid" }}
+                className="mb-8 break-inside-avoid" // Adjust for masonry item
               >
                 <DraggableIdeaCard
                   isLoggedIn={!!currentUser}
                   idea={idea}
-                  position={
-                    positions[idea.id] || { x: 0, y: 0, isMoved: false }
-                  }
-                  onMove={handleMove}
+                  // position={
+                  //   positions[idea.id] || { x: 0, y: 0, isMoved: false }
+                  // }
+                  // onMove={handleMove}
                 />
               </div>
             ))}
@@ -178,7 +176,6 @@ const IdeaGroup = () => {
             )}
         </div>
 
-        {}
         <div className="fixed bottom-4 right-4 z-40">
           {activeGroup && activeGroup.status !== "closed" && (
             <button
@@ -205,34 +202,23 @@ const IdeaGroup = () => {
 
         <ul className="flex justify-left gap-8 py-4 px-8 sticky bottom-0 z-30 bg-alabaster-100/50">
           {ideaGroups.map((group) => {
-            if (isGuestUserMode) {
-              return (
-                <div
-                  key={activeGroup?.id || "guest-group"}
-                  className="font-kumbh text-xl text-center text-lochmara-900 bg-white border-lochmara-900 border-2 border-solid hover:bg-lochmara-50 rounded-lg px-6 py-2 m-1 transition duration-300 ease-in-out"
-                >
-                  {activeGroup?.name}
-                </div>
-              );
-            } else {
-              const isClosed = group.status === "closed";
-              return (
-                <Link
-                  to={`/${organizationName}/${group.slug}/`}
-                  key={group.id}
-                  className={`font-kumbh text-xl text-center ${
-                    group.id === activeGroup?.id
-                      ? "text-white bg-lochmara-900 hover:bg-cerulean-700"
-                      : "text-lochmara-900 bg-white border-lochmara-900 border-2 border-solid hover:bg-lochmara-50"
-                  } rounded-lg px-6 py-2 m-1 transition duration-300 ease-in-out ${
-                    group.status === "closed" ? "line-through" : ""
-                  }`}
-                  onClick={() => handleGroupClick(group)}
-                >
-                  {group.name}
-                </Link>
-              );
-            }
+            const isClosed = group.status === "closed";
+            return (
+              <Link
+                to={`/${organizationName}/${group.slug}/`}
+                key={group.id}
+                className={`font-kumbh text-xl text-center ${
+                  group.id === activeGroup?.id
+                    ? "text-white bg-lochmara-900 hover:bg-cerulean-700"
+                    : "text-lochmara-900 bg-white border-lochmara-900 border-2 border-solid hover:bg-lochmara-50"
+                } rounded-lg px-6 py-2 m-1 transition duration-300 ease-in-out ${
+                  isClosed ? "line-through" : ""
+                }`}
+                onClick={() => handleGroupClick(group)}
+              >
+                {group.name}
+              </Link>
+            );
           })}
         </ul>
       </div>

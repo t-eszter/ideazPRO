@@ -313,7 +313,7 @@ function UserSettings() {
               className=" bg-white shadow-lg rounded-lg p-6 flex flex-col"
             >
               <h3 className="text-xl font-semibold mb-4">Tags</h3>
-              <div className="flex ">
+              <div className="flex flex-wrap gap-4">
                 {tags.map((tag) => (
                   <span
                     key={tag.name}
@@ -509,7 +509,6 @@ function UserSettings() {
                           >
                             <option value="user">User</option>
                             <option value="admin">Admin</option>
-                            <option value="guest">Guest</option>
                           </select>
                         </td>
                         <td>{member.regDate}</td>

@@ -11,10 +11,6 @@ function Home() {
   // const { currentUser } = useAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
-  const toggleLoginModal = () => {
-    setIsLoginOpen(!isLoginOpen);
-  };
-
   const createIdeaGroup = async (name) => {
     const formData = new FormData();
     formData.append("name", groupName);
@@ -47,7 +43,7 @@ function Home() {
   };
 
   return (
-    <div className="font-kumbh flex flex-col content-center items-center justify-center w-full h-screen gap-4 md:gap-12">
+    <div className="font-kumbh flex flex-col content-center items-center justify-center w-full h-screen gap-12 md:gap-12 p-12 bg-cerulean-50">
       <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
         <h1 className="text-3xl">Welcome to</h1>
         <img
@@ -56,7 +52,7 @@ function Home() {
           alt="Ideaz pro logo"
         />
       </div>
-      <h3 className="text-2xl md:text-4xl font-bold text-center">
+      <h3 className="text-4xl font-bold text-center leading-normal">
         What topic would you like to brainstorm about?
       </h3>
       <form
@@ -69,7 +65,7 @@ function Home() {
             id="groupName"
             type="text"
             placeholder="I would like to collect ideas about..."
-            className="input input-bordered max-w-xs w-full mb-2"
+            className="input input-bordered max-w-xs w-full mb-4"
             value={groupName}
             onChange={(e) => setgroupName(e.target.value)}
           />

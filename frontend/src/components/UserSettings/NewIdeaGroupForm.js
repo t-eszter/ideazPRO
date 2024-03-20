@@ -90,18 +90,15 @@ function NewIdeaGroupForm({ onClose, onAdd }) {
             </div>
 
             {}
-            <div className="flex items-center justify-end p-6 border-t border-solid border-gray-300 rounded-b">
-              <button
+            <div className="flex items-center justify-end">
+              {/* <button
                 type="button"
                 className="modal-close px-4 bg-gray-400 p-3 rounded-lg text-white hover:bg-gray-300"
                 onClick={onClose}
               >
                 Close
-              </button>
-              <button
-                type="submit"
-                className="px-4 bg-blue-500 p-3 rounded-lg text-white hover:bg-blue-400"
-              >
+              </button> */}
+              <button type="submit" className="px-4 btn btn-primary btn-sm">
                 Save Changes
               </button>
             </div>
