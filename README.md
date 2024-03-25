@@ -17,9 +17,9 @@ I recognized a niche in the market for a contemporary, user-centric digital sugg
 
 ## Features
 
-List the key features of your project. For example:
 - User authentication and authorization
 - Idea collection and evaluation
+- Automated tagging
 
 ## Installation and Setup
 
