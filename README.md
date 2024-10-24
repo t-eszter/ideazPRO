@@ -21,6 +21,8 @@ I recognized a niche in the market for a contemporary, user-centric digital sugg
 - Idea collection and evaluation
 - Automated tagging
 
-## Installation and Setup
+## Website
+
+www.ideaz.pro
 
 
