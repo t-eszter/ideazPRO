@@ -16,7 +16,12 @@ from decouple import config
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
+
 DB_SECRET = config('DB_SECRET')
+DB_HOST = config('DB_HOST')
+DB_DB = config('DB_DB')
+DB_DB = config('DB_DB')
+DB_URI = config('DB_URI')
 
 EMAIL_ADDRESS = config('EMAIL_ADDRESS')
 EMAIL_SECRET = config('EMAIL_SECRET')
@@ -151,10 +156,10 @@ AUTH_PASSWORD_VALIDATORS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'HOST': 'ec2-34-241-67-9.eu-west-1.compute.amazonaws.com',
+        'HOST': DB_HOST,
         'PORT': 5432,
-        'NAME': 'd3745ppemn1ndk',
-        'USER': 'zucxdfjuqnsxxf',
+        'NAME': DB_DB,
+        'USER': DB_USER,
         'PASSWORD': DB_SECRET,
     }
 }
