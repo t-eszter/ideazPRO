@@ -18,9 +18,6 @@ from decouple import config
 SECRET_KEY = config('SECRET_KEY')
 
 DB_SECRET = config('DB_SECRET')
-DB_HOST = config('DB_HOST')
-DB_DB = config('DB_DB')
-DB_USER = config('DB_USER')
 
 EMAIL_ADDRESS = config('EMAIL_ADDRESS')
 EMAIL_SECRET = config('EMAIL_SECRET')
