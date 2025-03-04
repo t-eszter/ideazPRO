@@ -152,10 +152,10 @@ AUTH_PASSWORD_VALIDATORS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'HOST': 'ec2-34-241-67-9.eu-west-1.compute.amazonaws.com',
+        'HOST': 'cejlvtufmo8r9j.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com',
         'PORT': 5432,
-        'NAME': 'd3745ppemn1ndk',
-        'USER': 'zucxdfjuqnsxxf',
+        'NAME': 'd1i9hlrmfg5l8g',
+        'USER': 'u4i1lnnrj9cebs',
         'PASSWORD': DB_SECRET,
     }
 }
