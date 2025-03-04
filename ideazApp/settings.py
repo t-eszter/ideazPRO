@@ -18,6 +18,9 @@ from decouple import config
 SECRET_KEY = config('SECRET_KEY')
 
 DB_SECRET = config('DB_SECRET')
+DB_HOST = config('DB_HOST')
+DB_DB = config('DB_DB')
+DB_USER = config('DB_USER')
 
 EMAIL_ADDRESS = config('EMAIL_ADDRESS')
 EMAIL_SECRET = config('EMAIL_SECRET')
@@ -152,10 +155,10 @@ AUTH_PASSWORD_VALIDATORS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'HOST': 'cejlvtufmo8r9j.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com',
+        'HOST': DB_HOST,
         'PORT': 5432,
-        'NAME': 'd1i9hlrmfg5l8g',
-        'USER': 'u4i1lnnrj9cebs',
+        'NAME': DB_DB,
+        'USER': DB_USER,
         'PASSWORD': DB_SECRET,
     }
 }
